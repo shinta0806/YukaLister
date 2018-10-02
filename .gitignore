@@ -259,3 +259,22 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+
+# 一般ファイル
+
+desktop.ini
+*.dll
+*.exe
+*.xlsx
+
+# 設定
+DatabaseSettings.php
+
+# フォルダー
+
+Database/*
+DebugFolderSettings/*
+SampleFolderSettings/*
+SampleMocchi/*
+ThirdPartyDocuments/*
+
