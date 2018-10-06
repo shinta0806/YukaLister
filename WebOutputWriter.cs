@@ -6,9 +6,11 @@
 
 // ----------------------------------------------------------------------------
 // 出力フロー
-// 1. インデックス系を「更新中」の表示にする
-// 2. インデックス系以外の古いリストを削除
-// 3. リスト出力（コンテンツ系およびインデックス系）
+// 1. 新しいリストをテンポラリーフォルダーに作成
+// 2. インデックス系を「更新中」の表示にする
+// 3. インデックス系以外の古いリストを削除
+// 4. インデックス系以外の新しいリストと出力フォルダーに移動
+// 5. インデックス系を移動
 // ----------------------------------------------------------------------------
 
 using Shinta;
@@ -137,6 +139,12 @@ namespace YukaLister.Shared
 		public override void Output()
 		{
 			PrepareOutput();
+
+			// 出力先フォルダーへの出力
+			OutputCss();
+			OutputJs();
+
+			// 一時フォルダーへの出力
 			Boolean aIsNewExists = OutputNew();
 			OutputCategoryAndHeads(aIsNewExists);
 			OutputTieUpGroupHeadAndTieUpGroups(aIsNewExists);
@@ -144,8 +152,15 @@ namespace YukaLister.Shared
 			OutputYearsAndSeasons(aIsNewExists);
 			OutputArtistAndHeads(aIsNewExists);
 			OutputComposerAndHeads(aIsNewExists);
-			OutputCss();
-			OutputJs();
+
+			// インデックス系を「更新中」表示にする
+			OutputNoticeIndexes();
+
+			// 古いファイルを削除
+			DeleteOldListContents();
+
+			// 一時フォルダーから移動
+			MoveList();
 		}
 
 		// --------------------------------------------------------------------
@@ -212,14 +227,9 @@ namespace YukaLister.Shared
 			mThNames[(Int32)OutputItems.SmartTrack] = "On</th><th>Off";
 			mThNames[(Int32)OutputItems.FileSize] = "サイズ";
 
-			// インデックス系を「更新中」表示にする
-			OutputNoticeIndexes();
-
-			// 古いファイルを削除
-			DeleteOldList();
-#if DEBUGz
-			Thread.Sleep(30 * 1000);
-#endif
+			// 一時フォルダー
+			mTempFolderPath = YlCommon.TempFilePath() + "\\";
+			Directory.CreateDirectory(mTempFolderPath);
 		}
 
 
@@ -271,6 +281,9 @@ namespace YukaLister.Shared
 
 		// テーブルに表示する項目名
 		private List<String> mThNames;
+
+		// リストを一時的に出力するフォルダー（末尾 '\\'）
+		private String mTempFolderPath;
 
 		// ====================================================================
 		// private メンバー関数
@@ -475,24 +488,24 @@ namespace YukaLister.Shared
 		}
 
 		// --------------------------------------------------------------------
-		// 古いリストを削除
+		// 古いリストを削除（インデックス以外）
 		// --------------------------------------------------------------------
-		private void DeleteOldList()
+		private void DeleteOldListContents()
 		{
 			Debug.Assert(!String.IsNullOrEmpty(mListExt), "DeleteOldList() mListExt が初期化されていない");
 
-			DeleteOldListCore(KIND_FILE_NAME_CATEGORY);
-			DeleteOldListCore(KIND_FILE_NAME_TIE_UP_GROUP);
-			DeleteOldListCore(KIND_FILE_NAME_PERIOD);
-			DeleteOldListCore(KIND_FILE_NAME_SEASON);
-			DeleteOldListCore(KIND_FILE_NAME_ARTIST);
-			DeleteOldListCore(KIND_FILE_NAME_COMPOSER);
+			DeleteOldListContentsCore(KIND_FILE_NAME_CATEGORY);
+			DeleteOldListContentsCore(KIND_FILE_NAME_TIE_UP_GROUP);
+			DeleteOldListContentsCore(KIND_FILE_NAME_PERIOD);
+			DeleteOldListContentsCore(KIND_FILE_NAME_SEASON);
+			DeleteOldListContentsCore(KIND_FILE_NAME_ARTIST);
+			DeleteOldListContentsCore(KIND_FILE_NAME_COMPOSER);
 		}
 
 		// --------------------------------------------------------------------
 		// 古いリストを削除
 		// --------------------------------------------------------------------
-		private void DeleteOldListCore(String oKindFileName)
+		private void DeleteOldListContentsCore(String oKindFileName)
 		{
 			String[] aListPathes = Directory.GetFiles(FolderPath, FILE_NAME_PREFIX + "_" + oKindFileName + "_*" + mListExt);
 
@@ -554,6 +567,94 @@ namespace YukaLister.Shared
 			else
 			{
 				return FILE_NAME_PREFIX + "_index_" + oKindFileName + mListExt;
+			}
+		}
+
+		// --------------------------------------------------------------------
+		// 一時フォルダーからリストを移動
+		// --------------------------------------------------------------------
+		private void MoveList()
+		{
+			String aNewFileName = OutputFileName(KIND_FILE_NAME_NEW, "すべて", null);
+			WebOutputSettings aWebOutputSettings = (WebOutputSettings)OutputSettings;
+			if (aWebOutputSettings.EnableNew)
+			{
+				try
+				{
+					// File.Move() には上書きフラグが無いので File.Copy() を使う
+					File.Copy(mTempFolderPath + aNewFileName, FolderPath + aNewFileName, true);
+					File.Delete(mTempFolderPath + aNewFileName);
+				}
+				catch (Exception)
+				{
+					LogWriter.ShowLogMessage(TraceEventType.Error, "リストファイル " + aNewFileName + " を移動できませんでした。", true);
+				}
+			}
+			else
+			{
+				try
+				{
+					File.Delete(FolderPath + aNewFileName);
+				}
+				catch (Exception)
+				{
+				}
+			}
+
+			MoveListContentsCore(KIND_FILE_NAME_CATEGORY);
+			MoveListIndexCore(KIND_FILE_NAME_CATEGORY);
+
+			MoveListContentsCore(KIND_FILE_NAME_TIE_UP_GROUP);
+			MoveListIndexCore(KIND_FILE_NAME_TIE_UP_GROUP);
+
+			MoveListContentsCore(KIND_FILE_NAME_PERIOD);
+			MoveListIndexCore(KIND_FILE_NAME_PERIOD);
+
+			MoveListContentsCore(KIND_FILE_NAME_SEASON);
+			MoveListIndexCore(KIND_FILE_NAME_SEASON);
+
+			MoveListContentsCore(KIND_FILE_NAME_ARTIST);
+			MoveListIndexCore(KIND_FILE_NAME_ARTIST);
+
+			MoveListContentsCore(KIND_FILE_NAME_COMPOSER);
+			MoveListIndexCore(KIND_FILE_NAME_COMPOSER);
+		}
+
+		// --------------------------------------------------------------------
+		// 一時フォルダーからリスト（インデックス以外）を移動
+		// --------------------------------------------------------------------
+		private void MoveListContentsCore(String oKindFileName)
+		{
+			String[] aListPathes = Directory.GetFiles(mTempFolderPath, FILE_NAME_PREFIX + "_" + oKindFileName + "_*" + mListExt);
+
+			foreach (String aPath in aListPathes)
+			{
+				try
+				{
+					File.Move(aPath, FolderPath + Path.GetFileName(aPath));
+				}
+				catch (Exception)
+				{
+					LogWriter.ShowLogMessage(TraceEventType.Error, "リストファイル " + Path.GetFileName(aPath) + " を移動できませんでした。", true);
+				}
+			}
+		}
+
+		// --------------------------------------------------------------------
+		// 一時フォルダーからリスト（インデックス）を移動
+		// --------------------------------------------------------------------
+		private void MoveListIndexCore(String oKindFileName)
+		{
+			String aIndexFileName = IndexFileName(oKindFileName);
+			try
+			{
+				// File.Move() には上書きフラグが無いので File.Copy() を使う
+				File.Copy(mTempFolderPath + aIndexFileName, FolderPath + aIndexFileName, true);
+				File.Delete(mTempFolderPath + aIndexFileName);
+			}
+			catch (Exception)
+			{
+				LogWriter.ShowLogMessage(TraceEventType.Error, "リストファイル " + Path.GetFileName(aIndexFileName) + " を移動できませんでした。", true);
 			}
 		}
 
@@ -776,7 +877,7 @@ namespace YukaLister.Shared
 			aTopTemplate = aTopTemplate.Replace(HTML_VAR_GENERATOR, YlCommon.APP_NAME_J + "  " + YlCommon.APP_VER);
 			aTopTemplate = aTopTemplate.Replace(HTML_VAR_GENERATE_DATE, DateTime.Now.ToString(YlCommon.DATE_FORMAT));
 
-			File.WriteAllText(FolderPath + IndexFileName(oKindFileName), aTopTemplate, Encoding.UTF8);
+			File.WriteAllText(mTempFolderPath + IndexFileName(oKindFileName), aTopTemplate, Encoding.UTF8);
 		}
 
 		// --------------------------------------------------------------------
@@ -846,7 +947,7 @@ namespace YukaLister.Shared
 			aTopTemplate = aTopTemplate.Replace(HTML_VAR_GENERATOR, YlCommon.APP_NAME_J + "  " + YlCommon.APP_VER);
 			aTopTemplate = aTopTemplate.Replace(HTML_VAR_GENERATE_DATE, DateTime.Now.ToString(YlCommon.DATE_FORMAT));
 
-			File.WriteAllText(FolderPath + IndexFileName(oKindFileName), aTopTemplate, Encoding.UTF8);
+			File.WriteAllText(mTempFolderPath + IndexFileName(oKindFileName), aTopTemplate, Encoding.UTF8);
 		}
 
 		// --------------------------------------------------------------------
@@ -939,13 +1040,8 @@ namespace YukaLister.Shared
 				aPrevTFound = aTFound;
 			}
 
-			if (aPrevTFound != null)
-			{
-				OutputOneList(aDummy, aTieUpNamesAndTFounds, "新着", KIND_FILE_NAME_NEW, "すべて", null, OutputItems.TieUpName, true);
-				return true;
-			}
-
-			return false;
+			OutputOneList(aDummy, aTieUpNamesAndTFounds, "新着", KIND_FILE_NAME_NEW, "すべて", null, OutputItems.TieUpName, true);
+			return true;
 		}
 
 		// --------------------------------------------------------------------
@@ -1020,7 +1116,7 @@ namespace YukaLister.Shared
 			aTemplate = aTemplate.Replace(HTML_VAR_GENERATE_DATE, DateTime.Now.ToString(YlCommon.DATE_FORMAT));
 			aTemplate = aTemplate.Replace(HTML_VAR_PROGRAMS, aSB.ToString());
 
-			File.WriteAllText(FolderPath + OutputFileName(oKindFileName, oGroupName, oPageName), aTemplate, Encoding.UTF8);
+			File.WriteAllText(mTempFolderPath + OutputFileName(oKindFileName, oGroupName, oPageName), aTemplate, Encoding.UTF8);
 
 			// 出力済みの内容をクリア
 			oChaptersAndTFounds.Clear();
