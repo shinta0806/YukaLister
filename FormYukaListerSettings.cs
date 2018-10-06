@@ -473,14 +473,14 @@ namespace YukaLister
 		{
 			try
 			{
-				OpenFileDialogImport.Filter = IMPORT_ANISON_INFO_FILTER;
-				OpenFileDialogImport.Title = YlCommon.FILE_BODY_ANISON_INFO_CSV_PROGRAM + Common.FILE_EXT_CSV + " または "
+				OpenFileDialogMisc.Filter = IMPORT_ANISON_INFO_FILTER;
+				OpenFileDialogMisc.Title = YlCommon.FILE_BODY_ANISON_INFO_CSV_PROGRAM + Common.FILE_EXT_CSV + " または "
 						+ YlCommon.FILE_BODY_ANISON_INFO_CSV_PROGRAM + Common.FILE_EXT_ZIP;
-				if (OpenFileDialogImport.ShowDialog() != DialogResult.OK)
+				if (OpenFileDialogMisc.ShowDialog() != DialogResult.OK)
 				{
 					return;
 				}
-				TextBoxImportProgramCsv.Text = OpenFileDialogImport.FileName;
+				TextBoxImportProgramCsv.Text = OpenFileDialogMisc.FileName;
 			}
 			catch (Exception oExcep)
 			{
@@ -494,14 +494,14 @@ namespace YukaLister
 		{
 			try
 			{
-				OpenFileDialogImport.Filter = IMPORT_ANISON_INFO_FILTER;
-				OpenFileDialogImport.Title = YlCommon.FILE_BODY_ANISON_INFO_CSV_ANISON + Common.FILE_EXT_CSV + " または "
+				OpenFileDialogMisc.Filter = IMPORT_ANISON_INFO_FILTER;
+				OpenFileDialogMisc.Title = YlCommon.FILE_BODY_ANISON_INFO_CSV_ANISON + Common.FILE_EXT_CSV + " または "
 						+ YlCommon.FILE_BODY_ANISON_INFO_CSV_ANISON + Common.FILE_EXT_ZIP;
-				if (OpenFileDialogImport.ShowDialog() != DialogResult.OK)
+				if (OpenFileDialogMisc.ShowDialog() != DialogResult.OK)
 				{
 					return;
 				}
-				TextBoxImportAnisonCsv.Text = OpenFileDialogImport.FileName;
+				TextBoxImportAnisonCsv.Text = OpenFileDialogMisc.FileName;
 			}
 			catch (Exception oExcep)
 			{
@@ -515,14 +515,14 @@ namespace YukaLister
 		{
 			try
 			{
-				OpenFileDialogImport.Filter = IMPORT_ANISON_INFO_FILTER;
-				OpenFileDialogImport.Title = YlCommon.FILE_BODY_ANISON_INFO_CSV_SF + Common.FILE_EXT_CSV + " または "
+				OpenFileDialogMisc.Filter = IMPORT_ANISON_INFO_FILTER;
+				OpenFileDialogMisc.Title = YlCommon.FILE_BODY_ANISON_INFO_CSV_SF + Common.FILE_EXT_CSV + " または "
 						+ YlCommon.FILE_BODY_ANISON_INFO_CSV_SF + Common.FILE_EXT_ZIP;
-				if (OpenFileDialogImport.ShowDialog() != DialogResult.OK)
+				if (OpenFileDialogMisc.ShowDialog() != DialogResult.OK)
 				{
 					return;
 				}
-				TextBoxImportSfCsv.Text = OpenFileDialogImport.FileName;
+				TextBoxImportSfCsv.Text = OpenFileDialogMisc.FileName;
 			}
 			catch (Exception oExcep)
 			{
@@ -536,14 +536,14 @@ namespace YukaLister
 		{
 			try
 			{
-				OpenFileDialogImport.Filter = IMPORT_ANISON_INFO_FILTER;
-				OpenFileDialogImport.Title = YlCommon.FILE_BODY_ANISON_INFO_CSV_GAME + Common.FILE_EXT_CSV + " または "
+				OpenFileDialogMisc.Filter = IMPORT_ANISON_INFO_FILTER;
+				OpenFileDialogMisc.Title = YlCommon.FILE_BODY_ANISON_INFO_CSV_GAME + Common.FILE_EXT_CSV + " または "
 						+ YlCommon.FILE_BODY_ANISON_INFO_CSV_GAME + Common.FILE_EXT_ZIP;
-				if (OpenFileDialogImport.ShowDialog() != DialogResult.OK)
+				if (OpenFileDialogMisc.ShowDialog() != DialogResult.OK)
 				{
 					return;
 				}
-				TextBoxImportGameCsv.Text = OpenFileDialogImport.FileName;
+				TextBoxImportGameCsv.Text = OpenFileDialogMisc.FileName;
 			}
 			catch (Exception oExcep)
 			{
@@ -588,13 +588,13 @@ namespace YukaLister
 		{
 			try
 			{
-				OpenFileDialogImport.Filter = "ニコカラりすたー情報ファイル|*" + YlCommon.FILE_EXT_NKLINFO;
-				OpenFileDialogImport.Title = "ニコカラりすたー情報ファイル";
-				if (OpenFileDialogImport.ShowDialog() != DialogResult.OK)
+				OpenFileDialogMisc.Filter = "ニコカラりすたー情報ファイル|*" + YlCommon.FILE_EXT_NKLINFO;
+				OpenFileDialogMisc.Title = "ニコカラりすたー情報ファイル";
+				if (OpenFileDialogMisc.ShowDialog() != DialogResult.OK)
 				{
 					return;
 				}
-				TextBoxImportNicoKaraLister.Text = OpenFileDialogImport.FileName;
+				TextBoxImportNicoKaraLister.Text = OpenFileDialogMisc.FileName;
 			}
 			catch (Exception oExcep)
 			{
@@ -913,6 +913,26 @@ namespace YukaLister
 			catch (Exception oExcep)
 			{
 				mLogWriter.ShowLogMessage(TraceEventType.Error, "詳細情報リンククリック時エラー：\n" + oExcep.Message);
+				mLogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+			}
+		}
+
+		private void ButtonBrowseYukariConfigPathSeed_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				OpenFileDialogMisc.Filter = "ゆかり設定ファイル|config" + Common.FILE_EXT_INI;
+				OpenFileDialogMisc.Title = "ゆかり設定ファイル";
+				if (OpenFileDialogMisc.ShowDialog() != DialogResult.OK)
+				{
+					return;
+				}
+				TextBoxYukariConfigPathSeed.Text = OpenFileDialogMisc.FileName;
+			}
+			catch (Exception oExcep)
+			{
+				mLogWriter.ShowLogMessage(TraceEventType.Error, "ゆかり設定ファイル参照ボタンクリック時エラー：\n"
+						+ oExcep.Message);
 				mLogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}

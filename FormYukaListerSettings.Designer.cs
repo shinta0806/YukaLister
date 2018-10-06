@@ -37,6 +37,13 @@
 			this.ButtonBrowseYukariConfigPathSeed = new System.Windows.Forms.Button();
 			this.TextBoxYukariConfigPathSeed = new System.Windows.Forms.TextBox();
 			this.label1 = new System.Windows.Forms.Label();
+			this.TabPageTarget = new System.Windows.Forms.TabPage();
+			this.label16 = new System.Windows.Forms.Label();
+			this.ListBoxTargetExts = new System.Windows.Forms.ListBox();
+			this.ButtonRemoveExt = new System.Windows.Forms.Button();
+			this.ButtonAddExt = new System.Windows.Forms.Button();
+			this.TextBoxTargetExt = new System.Windows.Forms.TextBox();
+			this.LabelTargetExt = new System.Windows.Forms.Label();
 			this.TabPageOutput = new System.Windows.Forms.TabPage();
 			this.label15 = new System.Windows.Forms.Label();
 			this.panel2 = new System.Windows.Forms.Panel();
@@ -85,23 +92,16 @@
 			this.TextBoxImportYukaLister = new System.Windows.Forms.TextBox();
 			this.RadioButtonImportYukaLister = new System.Windows.Forms.RadioButton();
 			this.TabPageExport = new System.Windows.Forms.TabPage();
-			this.OpenFileDialogImport = new System.Windows.Forms.OpenFileDialog();
+			this.OpenFileDialogMisc = new System.Windows.Forms.OpenFileDialog();
 			this.FolderBrowserDialogOutputList = new System.Windows.Forms.FolderBrowserDialog();
 			this.LabelDescription = new System.Windows.Forms.Label();
 			this.LinkLabelHelp = new System.Windows.Forms.LinkLabel();
-			this.TabPageTarget = new System.Windows.Forms.TabPage();
-			this.LabelTargetExt = new System.Windows.Forms.Label();
-			this.ListBoxTargetExts = new System.Windows.Forms.ListBox();
-			this.ButtonRemoveExt = new System.Windows.Forms.Button();
-			this.ButtonAddExt = new System.Windows.Forms.Button();
-			this.TextBoxTargetExt = new System.Windows.Forms.TextBox();
-			this.label16 = new System.Windows.Forms.Label();
 			this.TabControlYukaListerSettings.SuspendLayout();
 			this.TabPageSettings.SuspendLayout();
+			this.TabPageTarget.SuspendLayout();
 			this.TabPageOutput.SuspendLayout();
 			this.TabPageMaintenance.SuspendLayout();
 			this.TabPageImport.SuspendLayout();
-			this.TabPageTarget.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// ButtonOK
@@ -163,6 +163,7 @@
 			this.ButtonBrowseYukariConfigPathSeed.TabIndex = 11;
 			this.ButtonBrowseYukariConfigPathSeed.Text = "参照 (&B)";
 			this.ButtonBrowseYukariConfigPathSeed.UseVisualStyleBackColor = true;
+			this.ButtonBrowseYukariConfigPathSeed.Click += new System.EventHandler(this.ButtonBrowseYukariConfigPathSeed_Click);
 			// 
 			// TextBoxYukariConfigPathSeed
 			// 
@@ -180,6 +181,78 @@
 			this.label1.TabIndex = 9;
 			this.label1.Text = "ゆかり設定ファイル (&Y)：";
 			this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+			// 
+			// TabPageTarget
+			// 
+			this.TabPageTarget.BackColor = System.Drawing.SystemColors.Control;
+			this.TabPageTarget.Controls.Add(this.label16);
+			this.TabPageTarget.Controls.Add(this.ListBoxTargetExts);
+			this.TabPageTarget.Controls.Add(this.ButtonRemoveExt);
+			this.TabPageTarget.Controls.Add(this.ButtonAddExt);
+			this.TabPageTarget.Controls.Add(this.TextBoxTargetExt);
+			this.TabPageTarget.Controls.Add(this.LabelTargetExt);
+			this.TabPageTarget.Location = new System.Drawing.Point(4, 22);
+			this.TabPageTarget.Name = "TabPageTarget";
+			this.TabPageTarget.Size = new System.Drawing.Size(544, 382);
+			this.TabPageTarget.TabIndex = 5;
+			this.TabPageTarget.Text = "リスト対象";
+			// 
+			// label16
+			// 
+			this.label16.Location = new System.Drawing.Point(16, 160);
+			this.label16.Name = "label16";
+			this.label16.Size = new System.Drawing.Size(176, 20);
+			this.label16.TabIndex = 12;
+			this.label16.Text = "（追加したい拡張子）";
+			this.label16.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+			// 
+			// ListBoxTargetExts
+			// 
+			this.ListBoxTargetExts.FormattingEnabled = true;
+			this.ListBoxTargetExts.ItemHeight = 12;
+			this.ListBoxTargetExts.Location = new System.Drawing.Point(192, 16);
+			this.ListBoxTargetExts.Name = "ListBoxTargetExts";
+			this.ListBoxTargetExts.Size = new System.Drawing.Size(208, 100);
+			this.ListBoxTargetExts.TabIndex = 11;
+			this.ListBoxTargetExts.SelectedIndexChanged += new System.EventHandler(this.ListBoxTargetExts_SelectedIndexChanged);
+			// 
+			// ButtonRemoveExt
+			// 
+			this.ButtonRemoveExt.Location = new System.Drawing.Point(304, 124);
+			this.ButtonRemoveExt.Name = "ButtonRemoveExt";
+			this.ButtonRemoveExt.Size = new System.Drawing.Size(96, 28);
+			this.ButtonRemoveExt.TabIndex = 10;
+			this.ButtonRemoveExt.Text = "× 削除 (&R)";
+			this.ButtonRemoveExt.UseVisualStyleBackColor = true;
+			this.ButtonRemoveExt.Click += new System.EventHandler(this.ButtonRemoveExt_Click);
+			// 
+			// ButtonAddExt
+			// 
+			this.ButtonAddExt.Location = new System.Drawing.Point(192, 124);
+			this.ButtonAddExt.Name = "ButtonAddExt";
+			this.ButtonAddExt.Size = new System.Drawing.Size(96, 28);
+			this.ButtonAddExt.TabIndex = 9;
+			this.ButtonAddExt.Text = "↑ 追加 (&A)";
+			this.ButtonAddExt.UseVisualStyleBackColor = true;
+			this.ButtonAddExt.Click += new System.EventHandler(this.ButtonAddExt_Click);
+			// 
+			// TextBoxTargetExt
+			// 
+			this.TextBoxTargetExt.AccessibleDescription = "";
+			this.TextBoxTargetExt.Location = new System.Drawing.Point(192, 160);
+			this.TextBoxTargetExt.Name = "TextBoxTargetExt";
+			this.TextBoxTargetExt.Size = new System.Drawing.Size(208, 19);
+			this.TextBoxTargetExt.TabIndex = 8;
+			this.TextBoxTargetExt.TextChanged += new System.EventHandler(this.TextBoxTargetExt_TextChanged);
+			// 
+			// LabelTargetExt
+			// 
+			this.LabelTargetExt.Location = new System.Drawing.Point(16, 16);
+			this.LabelTargetExt.Name = "LabelTargetExt";
+			this.LabelTargetExt.Size = new System.Drawing.Size(176, 20);
+			this.LabelTargetExt.TabIndex = 4;
+			this.LabelTargetExt.Text = "リスト化対象ファイルの拡張子 (&E)：";
+			this.LabelTargetExt.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			// 
 			// TabPageOutput
 			// 
@@ -685,78 +758,6 @@
 			this.LinkLabelHelp.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			this.LinkLabelHelp.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LinkLabelHelp_LinkClicked);
 			// 
-			// TabPageTarget
-			// 
-			this.TabPageTarget.BackColor = System.Drawing.SystemColors.Control;
-			this.TabPageTarget.Controls.Add(this.label16);
-			this.TabPageTarget.Controls.Add(this.ListBoxTargetExts);
-			this.TabPageTarget.Controls.Add(this.ButtonRemoveExt);
-			this.TabPageTarget.Controls.Add(this.ButtonAddExt);
-			this.TabPageTarget.Controls.Add(this.TextBoxTargetExt);
-			this.TabPageTarget.Controls.Add(this.LabelTargetExt);
-			this.TabPageTarget.Location = new System.Drawing.Point(4, 22);
-			this.TabPageTarget.Name = "TabPageTarget";
-			this.TabPageTarget.Size = new System.Drawing.Size(544, 382);
-			this.TabPageTarget.TabIndex = 5;
-			this.TabPageTarget.Text = "リスト対象";
-			// 
-			// LabelTargetExt
-			// 
-			this.LabelTargetExt.Location = new System.Drawing.Point(16, 16);
-			this.LabelTargetExt.Name = "LabelTargetExt";
-			this.LabelTargetExt.Size = new System.Drawing.Size(176, 20);
-			this.LabelTargetExt.TabIndex = 4;
-			this.LabelTargetExt.Text = "リスト化対象ファイルの拡張子 (&E)：";
-			this.LabelTargetExt.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-			// 
-			// ListBoxTargetExts
-			// 
-			this.ListBoxTargetExts.FormattingEnabled = true;
-			this.ListBoxTargetExts.ItemHeight = 12;
-			this.ListBoxTargetExts.Location = new System.Drawing.Point(192, 16);
-			this.ListBoxTargetExts.Name = "ListBoxTargetExts";
-			this.ListBoxTargetExts.Size = new System.Drawing.Size(208, 100);
-			this.ListBoxTargetExts.TabIndex = 11;
-			this.ListBoxTargetExts.SelectedIndexChanged += new System.EventHandler(this.ListBoxTargetExts_SelectedIndexChanged);
-			// 
-			// ButtonRemoveExt
-			// 
-			this.ButtonRemoveExt.Location = new System.Drawing.Point(304, 124);
-			this.ButtonRemoveExt.Name = "ButtonRemoveExt";
-			this.ButtonRemoveExt.Size = new System.Drawing.Size(96, 28);
-			this.ButtonRemoveExt.TabIndex = 10;
-			this.ButtonRemoveExt.Text = "× 削除 (&R)";
-			this.ButtonRemoveExt.UseVisualStyleBackColor = true;
-			this.ButtonRemoveExt.Click += new System.EventHandler(this.ButtonRemoveExt_Click);
-			// 
-			// ButtonAddExt
-			// 
-			this.ButtonAddExt.Location = new System.Drawing.Point(192, 124);
-			this.ButtonAddExt.Name = "ButtonAddExt";
-			this.ButtonAddExt.Size = new System.Drawing.Size(96, 28);
-			this.ButtonAddExt.TabIndex = 9;
-			this.ButtonAddExt.Text = "↑ 追加 (&A)";
-			this.ButtonAddExt.UseVisualStyleBackColor = true;
-			this.ButtonAddExt.Click += new System.EventHandler(this.ButtonAddExt_Click);
-			// 
-			// TextBoxTargetExt
-			// 
-			this.TextBoxTargetExt.AccessibleDescription = "";
-			this.TextBoxTargetExt.Location = new System.Drawing.Point(192, 160);
-			this.TextBoxTargetExt.Name = "TextBoxTargetExt";
-			this.TextBoxTargetExt.Size = new System.Drawing.Size(208, 19);
-			this.TextBoxTargetExt.TabIndex = 8;
-			this.TextBoxTargetExt.TextChanged += new System.EventHandler(this.TextBoxTargetExt_TextChanged);
-			// 
-			// label16
-			// 
-			this.label16.Location = new System.Drawing.Point(16, 160);
-			this.label16.Name = "label16";
-			this.label16.Size = new System.Drawing.Size(176, 20);
-			this.label16.TabIndex = 12;
-			this.label16.Text = "（追加したい拡張子）";
-			this.label16.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-			// 
 			// FormYukaListerSettings
 			// 
 			this.AcceptButton = this.ButtonOK;
@@ -781,14 +782,14 @@
 			this.TabControlYukaListerSettings.ResumeLayout(false);
 			this.TabPageSettings.ResumeLayout(false);
 			this.TabPageSettings.PerformLayout();
+			this.TabPageTarget.ResumeLayout(false);
+			this.TabPageTarget.PerformLayout();
 			this.TabPageOutput.ResumeLayout(false);
 			this.TabPageOutput.PerformLayout();
 			this.TabPageMaintenance.ResumeLayout(false);
 			this.TabPageMaintenance.PerformLayout();
 			this.TabPageImport.ResumeLayout(false);
 			this.TabPageImport.PerformLayout();
-			this.TabPageTarget.ResumeLayout(false);
-			this.TabPageTarget.PerformLayout();
 			this.ResumeLayout(false);
 
 		}
@@ -824,7 +825,7 @@
 		private System.Windows.Forms.RadioButton RadioButtonImportNicoKaraLister;
 		private System.Windows.Forms.Button ButtonBrowseImportNicoKaraLister;
 		private System.Windows.Forms.TextBox TextBoxImportNicoKaraLister;
-		private System.Windows.Forms.OpenFileDialog OpenFileDialogImport;
+		private System.Windows.Forms.OpenFileDialog OpenFileDialogMisc;
 		private System.Windows.Forms.Button ButtonImport;
 		private System.Windows.Forms.Panel panel5;
 		private System.Windows.Forms.CheckBox CheckBoxSyncMusicInfoDb;
