@@ -267,6 +267,7 @@ namespace YukaLister
 							aTargetFolderInfo.ParentPath = aFolders[0];
 							aTargetFolderInfo.FolderTask = FolderTask.Add;
 							aTargetFolderInfo.FolderTaskStatus = FolderTaskStatus.Queued;
+							aTargetFolderInfo.FolderExcludeSettingsStatus = FolderExcludeSettingsStatus.Unchecked;
 							aTargetFolderInfo.FolderSettingsStatus = FolderSettingsStatus.Unchecked;
 							mTargetFolderInfos.Add(aTargetFolderInfo);
 						}
@@ -1035,6 +1036,10 @@ namespace YukaLister
 		{
 			// フォルダー設定を読み込む
 			FolderSettingsInDisk aFolderSettingsInDisk = YlCommon.LoadFolderSettings(oFolderPath);
+			if (aFolderSettingsInDisk.IsExclude)
+			{
+				return;
+			}
 			FolderSettingsInMemory aFolderSettingsInMemory = YlCommon.CreateFolderSettingsInMemory(aFolderSettingsInDisk);
 
 			using (SQLiteConnection aMusicInfoDbConnection = YlCommon.CreateMusicInfoDbConnection())
@@ -1817,7 +1822,7 @@ namespace YukaLister
 					{
 						// 区切り文字で区切られた複数の歌手名が記載されている場合は分解して解析する
 						String[] aArtistNames = aDicByFile[YlCommon.RULE_VAR_ARTIST].Split(YlCommon.VAR_VALUE_DELIMITER[0]);
-						foreach(String aArtistName in aArtistNames)
+						foreach (String aArtistName in aArtistNames)
 						{
 							List<TPerson> aArtistsTmp = YlCommon.SelectPeopleByName(oMusicInfoDbContext, aArtistName);
 							if (aArtistsTmp.Count > 0)
@@ -2946,7 +2951,19 @@ namespace YukaLister
 										}
 										else
 										{
-											e.Value = "済";
+											if (aInfo.FolderExcludeSettingsStatus == FolderExcludeSettingsStatus.Unchecked)
+											{
+												FolderSettingsInDisk aFolderSettingsInDisk = YlCommon.LoadFolderSettings(aInfo.Path);
+												aInfo.FolderExcludeSettingsStatus = aFolderSettingsInDisk.IsExclude ? FolderExcludeSettingsStatus.True : FolderExcludeSettingsStatus.False;
+											}
+											if (aInfo.FolderExcludeSettingsStatus == FolderExcludeSettingsStatus.True)
+											{
+												e.Value = "対象外";
+											}
+											else
+											{
+												e.Value = "済";
+											}
 										}
 										aRow.Cells[e.ColumnIndex].Style = mCellStyles[(Int32)YukaListerStatus.Ready];
 									}
@@ -3026,7 +3043,6 @@ namespace YukaLister
 					return;
 				}
 
-				FolderSettingsStatus aFolderSettingsStatusBak = YlCommon.DetectFolderSettingsStatus(aTargetFolderInfo.Path);
 				DateTime aMusicInfoDbTimeBak = new FileInfo(YlCommon.MusicInfoDbPath()).LastWriteTime;
 
 				using (FormFolderSettings aFormFolderSettings = new FormFolderSettings(aTargetFolderInfo.Path, mYukaListerSettings, mLogWriter))
@@ -3035,28 +3051,26 @@ namespace YukaLister
 				}
 
 				// フォルダー設定の有無の表示を更新
-				// キャンセルでも実行（設定削除→キャンセルの場合は更新が必要）
-				if (YlCommon.DetectFolderSettingsStatus(aTargetFolderInfo.Path) != aFolderSettingsStatusBak)
+				// キャンセルでも実行（設定削除→キャンセルの場合はフォルダー設定の有無が変わる）
+				lock (mTargetFolderInfos)
 				{
-					lock (mTargetFolderInfos)
+					Int32 aIndex = mTargetFolderInfos.IndexOf(aTargetFolderInfo);
+					if (aIndex < 0)
 					{
-						Int32 aIndex = mTargetFolderInfos.IndexOf(aTargetFolderInfo);
-						if (aIndex < 0)
-						{
-							throw new Exception("フォルダー設定有無を更新する対象が見つかりません。");
-						}
-						while (aIndex < mTargetFolderInfos.Count)
-						{
-							if (!mTargetFolderInfos[aIndex].Path.StartsWith(aTargetFolderInfo.Path))
-							{
-								break;
-							}
-							mTargetFolderInfos[aIndex].FolderSettingsStatus = FolderSettingsStatus.Unchecked;
-							aIndex++;
-						}
+						throw new Exception("フォルダー設定有無を更新する対象が見つかりません。");
 					}
-					DataGridViewTargetFolders.Invalidate();
+					while (aIndex < mTargetFolderInfos.Count)
+					{
+						if (!mTargetFolderInfos[aIndex].Path.StartsWith(aTargetFolderInfo.Path))
+						{
+							break;
+						}
+						mTargetFolderInfos[aIndex].FolderExcludeSettingsStatus = FolderExcludeSettingsStatus.Unchecked;
+						mTargetFolderInfos[aIndex].FolderSettingsStatus = FolderSettingsStatus.Unchecked;
+						aIndex++;
+					}
 				}
+				DataGridViewTargetFolders.Invalidate();
 
 				// 楽曲情報データベースが更新された場合は同期を行う
 				DateTime aMusicInfoDbTime = new FileInfo(YlCommon.MusicInfoDbPath()).LastWriteTime;

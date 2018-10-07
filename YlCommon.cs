@@ -46,6 +46,17 @@ namespace YukaLister.Shared
 	}
 
 	// --------------------------------------------------------------------
+	// フォルダー除外設定の状態
+	// --------------------------------------------------------------------
+	public enum FolderExcludeSettingsStatus
+	{
+		False,		// 除外しない
+		True,		// 除外する
+		Unchecked,  // 未確認
+		__End__
+	}
+
+	// --------------------------------------------------------------------
 	// フォルダー設定の状態
 	// --------------------------------------------------------------------
 	public enum FolderSettingsStatus
@@ -3350,6 +3361,9 @@ namespace YukaLister.Shared
 
 		// 動作状況
 		public FolderTaskStatus FolderTaskStatus { get; set; }
+
+		// フォルダー除外設定の状態
+		public FolderExcludeSettingsStatus FolderExcludeSettingsStatus { get; set; }
 
 		// フォルダー設定の状態
 		public FolderSettingsStatus FolderSettingsStatus { get; set; }

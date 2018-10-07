@@ -34,6 +34,9 @@ namespace YukaLister.Shared
 		// 設定
 		// --------------------------------------------------------------------
 
+		// フォルダーを検索対象から除外する
+		public Boolean IsExclude { get; set; }
+
 		// ファイル命名規則（アプリ独自ルール表記）
 		public List<String> FileNameRules { get; set; }
 
@@ -57,7 +60,7 @@ namespace YukaLister.Shared
 	// public class FolderSettingsInDisk ___END___
 
 	// ====================================================================
-	// フォルダーごとの設定（アプリ動作時用）
+	// フォルダーごとの設定（アプリ動作時用、InDisk の IsExclude が false の場合のみインスタンス化する）
 	// ====================================================================
 
 	public class FolderSettingsInMemory

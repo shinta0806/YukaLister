@@ -67,9 +67,11 @@
 			this.ButtonOK = new System.Windows.Forms.Button();
 			this.ButtonCancel = new System.Windows.Forms.Button();
 			this.ContextMenuVarNames = new System.Windows.Forms.ContextMenuStrip(this.components);
-			this.label6 = new System.Windows.Forms.Label();
+			this.LabelPreview = new System.Windows.Forms.Label();
 			this.ButtonJump = new System.Windows.Forms.Button();
 			this.LinkLabelHelp = new System.Windows.Forms.LinkLabel();
+			this.panel3 = new System.Windows.Forms.Panel();
+			this.CheckBoxExclude = new System.Windows.Forms.CheckBox();
 			this.TabControlRules.SuspendLayout();
 			this.TabPageFileNameRules.SuspendLayout();
 			this.TabPageFolderNameRules.SuspendLayout();
@@ -117,7 +119,7 @@
 			// ButtonDeleteSettings
 			// 
 			this.ButtonDeleteSettings.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.ButtonDeleteSettings.Location = new System.Drawing.Point(16, 552);
+			this.ButtonDeleteSettings.Location = new System.Drawing.Point(16, 593);
 			this.ButtonDeleteSettings.Name = "ButtonDeleteSettings";
 			this.ButtonDeleteSettings.Size = new System.Drawing.Size(96, 28);
 			this.ButtonDeleteSettings.TabIndex = 11;
@@ -445,7 +447,7 @@
 			this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
 			this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.panel1.Location = new System.Drawing.Point(0, 536);
+			this.panel1.Location = new System.Drawing.Point(0, 577);
 			this.panel1.Name = "panel1";
 			this.panel1.Size = new System.Drawing.Size(1000, 5);
 			this.panel1.TabIndex = 9;
@@ -453,7 +455,7 @@
 			// ButtonOK
 			// 
 			this.ButtonOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.ButtonOK.Location = new System.Drawing.Point(560, 552);
+			this.ButtonOK.Location = new System.Drawing.Point(560, 593);
 			this.ButtonOK.Name = "ButtonOK";
 			this.ButtonOK.Size = new System.Drawing.Size(96, 28);
 			this.ButtonOK.TabIndex = 12;
@@ -465,7 +467,7 @@
 			// 
 			this.ButtonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.ButtonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-			this.ButtonCancel.Location = new System.Drawing.Point(672, 552);
+			this.ButtonCancel.Location = new System.Drawing.Point(672, 593);
 			this.ButtonCancel.Name = "ButtonCancel";
 			this.ButtonCancel.Size = new System.Drawing.Size(96, 28);
 			this.ButtonCancel.TabIndex = 13;
@@ -477,16 +479,16 @@
 			this.ContextMenuVarNames.Name = "ContextMenuVarNames";
 			this.ContextMenuVarNames.Size = new System.Drawing.Size(61, 4);
 			// 
-			// label6
+			// LabelPreview
 			// 
-			this.label6.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+			this.LabelPreview.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-			this.label6.Location = new System.Drawing.Point(120, 316);
-			this.label6.Name = "label6";
-			this.label6.Size = new System.Drawing.Size(544, 20);
-			this.label6.TabIndex = 6;
-			this.label6.Text = "フォルダー内のファイルの名前がどのように解析されるか確認できます。";
-			this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+			this.LabelPreview.Location = new System.Drawing.Point(120, 316);
+			this.LabelPreview.Name = "LabelPreview";
+			this.LabelPreview.Size = new System.Drawing.Size(544, 20);
+			this.LabelPreview.TabIndex = 6;
+			this.LabelPreview.Text = "フォルダー内のファイルの名前がどのように解析されるか確認できます。";
+			this.LabelPreview.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			// 
 			// ButtonJump
 			// 
@@ -511,16 +513,40 @@
 			this.LinkLabelHelp.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			this.LinkLabelHelp.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LinkLabelHelp_LinkClicked);
 			// 
+			// panel3
+			// 
+			this.panel3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.panel3.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+			this.panel3.Location = new System.Drawing.Point(0, 536);
+			this.panel3.Name = "panel3";
+			this.panel3.Size = new System.Drawing.Size(1000, 5);
+			this.panel3.TabIndex = 15;
+			// 
+			// CheckBoxExclude
+			// 
+			this.CheckBoxExclude.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+			this.CheckBoxExclude.AutoSize = true;
+			this.CheckBoxExclude.Location = new System.Drawing.Point(16, 552);
+			this.CheckBoxExclude.Name = "CheckBoxExclude";
+			this.CheckBoxExclude.Size = new System.Drawing.Size(200, 16);
+			this.CheckBoxExclude.TabIndex = 16;
+			this.CheckBoxExclude.Text = "このフォルダーを検索対象としない (&E)";
+			this.CheckBoxExclude.UseVisualStyleBackColor = true;
+			this.CheckBoxExclude.CheckedChanged += new System.EventHandler(this.CheckBoxExclude_CheckedChanged);
+			// 
 			// FormFolderSettings
 			// 
 			this.AcceptButton = this.ButtonOK;
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.CancelButton = this.ButtonCancel;
-			this.ClientSize = new System.Drawing.Size(784, 594);
+			this.ClientSize = new System.Drawing.Size(784, 635);
+			this.Controls.Add(this.CheckBoxExclude);
+			this.Controls.Add(this.panel3);
 			this.Controls.Add(this.LinkLabelHelp);
 			this.Controls.Add(this.ButtonJump);
-			this.Controls.Add(this.label6);
+			this.Controls.Add(this.LabelPreview);
 			this.Controls.Add(this.ButtonCancel);
 			this.Controls.Add(this.ButtonOK);
 			this.Controls.Add(this.panel1);
@@ -585,12 +611,14 @@
 		private System.Windows.Forms.Button ButtonCancel;
 		private System.Windows.Forms.Button ButtonReplaceFileNameRule;
 		private System.Windows.Forms.ContextMenuStrip ContextMenuVarNames;
-		private System.Windows.Forms.Label label6;
+		private System.Windows.Forms.Label LabelPreview;
 		private System.Windows.Forms.DataGridViewTextBoxColumn ColumnFile;
 		private System.Windows.Forms.DataGridViewTextBoxColumn ColumnAnalyze;
 		private System.Windows.Forms.DataGridViewButtonColumn ColumnEdit;
 		private System.Windows.Forms.Button ButtonJump;
 		private System.Windows.Forms.ComboBox ComboBoxFolderNameRuleValue;
 		private System.Windows.Forms.LinkLabel LinkLabelHelp;
+		private System.Windows.Forms.Panel panel3;
+		private System.Windows.Forms.CheckBox CheckBoxExclude;
 	}
 }

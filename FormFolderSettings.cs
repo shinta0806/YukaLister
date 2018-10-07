@@ -207,6 +207,7 @@ namespace YukaLister
 			{
 				aFolderSettings.FolderNameRules.Add(aItem);
 			}
+			aFolderSettings.IsExclude = CheckBoxExclude.Checked;
 
 			return aFolderSettings;
 		}
@@ -286,7 +287,9 @@ namespace YukaLister
 			Invoke(new Action(() =>
 			{
 				TabControlRules.Enabled = true;
-				ButtonPreview.Enabled = true;
+
+				// ButtonPreview は状況によって状態が異なる
+				UpdateButtonPreview();
 
 				// ButtonDeleteSettings は状況によって状態が異なる
 				UpdateSettingsFileStatus();
@@ -676,6 +679,7 @@ namespace YukaLister
 			{
 				ListBoxFolderNameRules.Items.Add(aFolderNameRule);
 			}
+			CheckBoxExclude.Checked = aSettings.IsExclude;
 		}
 
 #if false
@@ -724,11 +728,21 @@ namespace YukaLister
 		}
 
 		// --------------------------------------------------------------------
-		// データグリッドビューを更新
+		// 未登録検出ボタンを更新
 		// --------------------------------------------------------------------
 		private void UpdateButtonJump()
 		{
-			ButtonJump.Enabled = DataGridViewPreview.Rows.Count > 0;
+			ButtonJump.Enabled = !CheckBoxExclude.Checked && DataGridViewPreview.Rows.Count > 0;
+		}
+
+		// --------------------------------------------------------------------
+		// ファイル検索ボタンを更新
+		// --------------------------------------------------------------------
+		private void UpdateButtonPreview()
+		{
+			ButtonPreview.Enabled = !CheckBoxExclude.Checked;
+			LabelPreview.Enabled = !CheckBoxExclude.Checked;
+			DataGridViewPreview.Enabled = !CheckBoxExclude.Checked;
 		}
 
 		// --------------------------------------------------------------------
@@ -874,7 +888,7 @@ namespace YukaLister
 					ButtonDeleteSettings.Enabled = true;
 					break;
 				case FolderSettingsStatus.Inherit:
-					LabelSettingsFileStatus.Text = "親フォルダーの設定を参照しています（設定を変更しても親フォルダーには影響ありません）。";
+					LabelSettingsFileStatus.Text = "親フォルダーの設定を参照しています（設定変更すると親フォルダーとは別の設定になります）。";
 					ButtonDeleteSettings.Enabled = false;
 					break;
 				default:
@@ -1411,6 +1425,25 @@ namespace YukaLister
 			catch (Exception oExcep)
 			{
 				mLogWriter.ShowLogMessage(TraceEventType.Error, "詳細情報リンククリック時エラー：\n" + oExcep.Message);
+				mLogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+			}
+		}
+
+		private void CheckBoxExclude_CheckedChanged(object sender, EventArgs e)
+		{
+			try
+			{
+				FolderSettingsInDisk aSettings = YlCommon.LoadFolderSettings(mFolder);
+				mIsDirty |= (aSettings.IsExclude != CheckBoxExclude.Checked);
+
+				// コンポーネントに反映
+				TabControlRules.Enabled = !CheckBoxExclude.Checked;
+				UpdateButtonPreview();
+				UpdateButtonJump();
+			}
+			catch (Exception oExcep)
+			{
+				mLogWriter.ShowLogMessage(TraceEventType.Error, "フォルダー除外チェックボックスクリック時エラー：\n" + oExcep.Message);
 				mLogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
