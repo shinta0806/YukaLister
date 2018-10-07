@@ -148,10 +148,10 @@ namespace YukaLister
 
 			// 年齢制限
 			ContextMenuStripAgeLimits.Items.Add("全年齢対象（CERO A 相当）", null, ContextMenuStripAgeLimitsItem_Click);
-			ContextMenuStripAgeLimits.Items.Add("12 才以上対象（CERO B 相当）", null, ContextMenuStripAgeLimitsItem_Click);
-			ContextMenuStripAgeLimits.Items.Add("15 才以上対象（CERO C 相当）", null, ContextMenuStripAgeLimitsItem_Click);
-			ContextMenuStripAgeLimits.Items.Add("17 才以上対象（CERO D 相当）", null, ContextMenuStripAgeLimitsItem_Click);
-			ContextMenuStripAgeLimits.Items.Add("18 才以上対象（CERO Z 相当）", null, ContextMenuStripAgeLimitsItem_Click);
+			ContextMenuStripAgeLimits.Items.Add(YlCommon.AGE_LIMIT_CERO_B.ToString() + " 才以上対象（CERO B 相当）", null, ContextMenuStripAgeLimitsItem_Click);
+			ContextMenuStripAgeLimits.Items.Add(YlCommon.AGE_LIMIT_CERO_C.ToString() + " 才以上対象（CERO C 相当）", null, ContextMenuStripAgeLimitsItem_Click);
+			ContextMenuStripAgeLimits.Items.Add(YlCommon.AGE_LIMIT_CERO_D.ToString() + " 才以上対象（CERO D 相当）", null, ContextMenuStripAgeLimitsItem_Click);
+			ContextMenuStripAgeLimits.Items.Add(YlCommon.AGE_LIMIT_CERO_Z.ToString() + " 才以上対象（CERO Z 相当）", null, ContextMenuStripAgeLimitsItem_Click);
 
 			Common.CascadeForm(this);
 		}

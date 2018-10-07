@@ -50,8 +50,8 @@ namespace YukaLister.Shared
 	// --------------------------------------------------------------------
 	public enum FolderExcludeSettingsStatus
 	{
-		False,		// 除外しない
-		True,		// 除外する
+		False,      // 除外しない
+		True,       // 除外する
 		Unchecked,  // 未確認
 		__End__
 	}
@@ -440,6 +440,15 @@ namespace YukaLister.Shared
 				"備考", "最終更新日時", "ファイルサイズ", "楽曲名", "楽曲フリガナ", "摘要", "リリース日",
 				"歌手名", "歌手フリガナ", "作詞者名", "作詞者フリガナ", "作曲者名", "作曲者フリガナ", "編曲者名", "編曲者フリガナ",
 				"タイアップ名", "タイアップフリガナ", "年齢制限", "カテゴリー", "タイアップグループ名", "タイアップグループフリガナ", "制作会社名", "制作会社フリガナ" };
+
+		// --------------------------------------------------------------------
+		// 年齢制限
+		// --------------------------------------------------------------------
+
+		public const Int32 AGE_LIMIT_CERO_B = 12;
+		public const Int32 AGE_LIMIT_CERO_C = 15;
+		public const Int32 AGE_LIMIT_CERO_D = 17;
+		public const Int32 AGE_LIMIT_CERO_Z = 18;
 
 		// --------------------------------------------------------------------
 		// その他
@@ -1656,7 +1665,7 @@ namespace YukaLister.Shared
 					}
 					else
 					{
-						aDic[oFolderSettingsInMemory.FileRegexGroups[aMatchIndex][i]] +=VAR_VALUE_DELIMITER + aMatch.Groups[i + 1].Value.Trim();
+						aDic[oFolderSettingsInMemory.FileRegexGroups[aMatchIndex][i]] += VAR_VALUE_DELIMITER + aMatch.Groups[i + 1].Value.Trim();
 					}
 				}
 			}
