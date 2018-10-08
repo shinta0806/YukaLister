@@ -45,6 +45,22 @@ namespace YukaLister
 		}
 
 		// ====================================================================
+		// protected メンバー関数
+		// ====================================================================
+
+		// --------------------------------------------------------------------
+		// メッセージハンドラ
+		// --------------------------------------------------------------------
+		protected override void WndProc(ref Message oMsg)
+		{
+			if (oMsg.Msg == UpdaterLauncher.WM_UPDATER_UI_DISPLAYED)
+			{
+				WMUpdaterUIDisplayed();
+			}
+			base.WndProc(ref oMsg);
+		}
+
+		// ====================================================================
 		// private 定数
 		// ====================================================================
 
@@ -179,6 +195,7 @@ namespace YukaLister
 			mYukaListerSettings.ListOutputFolder = TextBoxListFolder.Text;
 
 			// メンテナンスタブ
+			mYukaListerSettings.CheckRss = CheckBoxCheckRss.Checked;
 			mYukaListerSettings.SyncMusicInfoDb = CheckBoxSyncMusicInfoDb.Checked;
 			mYukaListerSettings.SyncServer = TextBoxSyncServer.Text;
 			mYukaListerSettings.SyncAccount = TextBoxSyncAccount.Text;
@@ -223,6 +240,26 @@ namespace YukaLister
 			{
 				aOutputWriter.OutputSettings.Load();
 			}
+		}
+
+		// --------------------------------------------------------------------
+		// 進捗系のコンポーネントをすべて元に戻す
+		// --------------------------------------------------------------------
+		private void MakeAllComposNormal()
+		{
+			ProgressBarCheckRss.Visible = false;
+			ButtonCheckRss.Enabled = true;
+		}
+
+		// --------------------------------------------------------------------
+		// 最新情報確認コンポーネントを進捗中にする
+		// --------------------------------------------------------------------
+		private void MakeLatestComposRunning()
+		{
+			ProgressBarCheckRss.Visible = true;
+
+			// ボタンは全部無効化
+			ButtonCheckRss.Enabled = false;
 		}
 
 		// --------------------------------------------------------------------
@@ -302,6 +339,7 @@ namespace YukaLister
 			TextBoxListFolder.Text = mYukaListerSettings.ListOutputFolder;
 
 			// メンテナンスタブ
+			CheckBoxCheckRss.Checked = mYukaListerSettings.CheckRss;
 			CheckBoxSyncMusicInfoDb.Checked = mYukaListerSettings.SyncMusicInfoDb;
 			TextBoxSyncServer.Text = mYukaListerSettings.SyncServer;
 			TextBoxSyncAccount.Text = mYukaListerSettings.SyncAccount;
@@ -388,6 +426,14 @@ namespace YukaLister
 			TextBoxSyncServer.Enabled = aEnabled;
 			TextBoxSyncAccount.Enabled = aEnabled;
 			TextBoxSyncPassword.Enabled = aEnabled;
+		}
+
+		// --------------------------------------------------------------------
+		// ちょちょいと自動更新の画面が何かしら表示された
+		// --------------------------------------------------------------------
+		private void WMUpdaterUIDisplayed()
+		{
+			MakeAllComposNormal();
 		}
 
 		// ====================================================================
@@ -933,6 +979,46 @@ namespace YukaLister
 			{
 				mLogWriter.ShowLogMessage(TraceEventType.Error, "ゆかり設定ファイル参照ボタンクリック時エラー：\n"
 						+ oExcep.Message);
+				mLogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+			}
+		}
+
+		private void CheckBoxCheckRss_CheckedChanged(object sender, EventArgs e)
+		{
+			try
+			{
+				if (CheckBoxCheckRss.Checked)
+				{
+					return;
+				}
+				if (MessageBox.Show("最新情報・更新版の確認を無効にすると、" + YlCommon.APP_NAME_J
+						+ "の新版がリリースされても自動的にインストールされず、古いバージョンを使い続けることになります。\n"
+						+ "本当に無効にしてもよろしいですか？", "警告", MessageBoxButtons.YesNo, MessageBoxIcon.Warning)
+						!= DialogResult.Yes)
+				{
+					CheckBoxCheckRss.Checked = true;
+				}
+			}
+			catch (Exception oExcep)
+			{
+				mLogWriter.ShowLogMessage(TraceEventType.Error, "更新有効無効変更時エラー：\n" + oExcep.Message);
+				mLogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+			}
+		}
+
+		private void ButtonCheckRss_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				MakeLatestComposRunning();
+				if (!YlCommon.LaunchUpdater(true, true, Handle, true, false))
+				{
+					MakeAllComposNormal();
+				}
+			}
+			catch (Exception oExcep)
+			{
+				mLogWriter.ShowLogMessage(TraceEventType.Error, "最新情報確認時エラー：\n" + oExcep.Message);
 				mLogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}

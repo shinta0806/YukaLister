@@ -96,6 +96,9 @@
 			this.FolderBrowserDialogOutputList = new System.Windows.Forms.FolderBrowserDialog();
 			this.LabelDescription = new System.Windows.Forms.Label();
 			this.LinkLabelHelp = new System.Windows.Forms.LinkLabel();
+			this.ButtonCheckRss = new System.Windows.Forms.Button();
+			this.ProgressBarCheckRss = new System.Windows.Forms.ProgressBar();
+			this.CheckBoxCheckRss = new System.Windows.Forms.CheckBox();
 			this.TabControlYukaListerSettings.SuspendLayout();
 			this.TabPageSettings.SuspendLayout();
 			this.TabPageTarget.SuspendLayout();
@@ -429,6 +432,9 @@
 			// TabPageMaintenance
 			// 
 			this.TabPageMaintenance.BackColor = System.Drawing.SystemColors.Control;
+			this.TabPageMaintenance.Controls.Add(this.ButtonCheckRss);
+			this.TabPageMaintenance.Controls.Add(this.ProgressBarCheckRss);
+			this.TabPageMaintenance.Controls.Add(this.CheckBoxCheckRss);
 			this.TabPageMaintenance.Controls.Add(this.TextBoxSyncPassword);
 			this.TabPageMaintenance.Controls.Add(this.label8);
 			this.TabPageMaintenance.Controls.Add(this.TextBoxSyncAccount);
@@ -445,7 +451,7 @@
 			// 
 			// TextBoxSyncPassword
 			// 
-			this.TextBoxSyncPassword.Location = new System.Drawing.Point(152, 92);
+			this.TextBoxSyncPassword.Location = new System.Drawing.Point(152, 264);
 			this.TextBoxSyncPassword.Name = "TextBoxSyncPassword";
 			this.TextBoxSyncPassword.Size = new System.Drawing.Size(376, 19);
 			this.TextBoxSyncPassword.TabIndex = 16;
@@ -453,7 +459,7 @@
 			// 
 			// label8
 			// 
-			this.label8.Location = new System.Drawing.Point(48, 92);
+			this.label8.Location = new System.Drawing.Point(48, 264);
 			this.label8.Name = "label8";
 			this.label8.Size = new System.Drawing.Size(104, 20);
 			this.label8.TabIndex = 15;
@@ -462,14 +468,14 @@
 			// 
 			// TextBoxSyncAccount
 			// 
-			this.TextBoxSyncAccount.Location = new System.Drawing.Point(152, 68);
+			this.TextBoxSyncAccount.Location = new System.Drawing.Point(152, 240);
 			this.TextBoxSyncAccount.Name = "TextBoxSyncAccount";
 			this.TextBoxSyncAccount.Size = new System.Drawing.Size(376, 19);
 			this.TextBoxSyncAccount.TabIndex = 14;
 			// 
 			// label7
 			// 
-			this.label7.Location = new System.Drawing.Point(48, 68);
+			this.label7.Location = new System.Drawing.Point(48, 240);
 			this.label7.Name = "label7";
 			this.label7.Size = new System.Drawing.Size(104, 20);
 			this.label7.TabIndex = 13;
@@ -478,14 +484,14 @@
 			// 
 			// TextBoxSyncServer
 			// 
-			this.TextBoxSyncServer.Location = new System.Drawing.Point(152, 44);
+			this.TextBoxSyncServer.Location = new System.Drawing.Point(152, 216);
 			this.TextBoxSyncServer.Name = "TextBoxSyncServer";
 			this.TextBoxSyncServer.Size = new System.Drawing.Size(376, 19);
 			this.TextBoxSyncServer.TabIndex = 12;
 			// 
 			// label6
 			// 
-			this.label6.Location = new System.Drawing.Point(48, 44);
+			this.label6.Location = new System.Drawing.Point(48, 216);
 			this.label6.Name = "label6";
 			this.label6.Size = new System.Drawing.Size(104, 20);
 			this.label6.TabIndex = 11;
@@ -494,7 +500,7 @@
 			// 
 			// CheckBoxSyncMusicInfoDb
 			// 
-			this.CheckBoxSyncMusicInfoDb.Location = new System.Drawing.Point(16, 16);
+			this.CheckBoxSyncMusicInfoDb.Location = new System.Drawing.Point(16, 188);
 			this.CheckBoxSyncMusicInfoDb.Name = "CheckBoxSyncMusicInfoDb";
 			this.CheckBoxSyncMusicInfoDb.Size = new System.Drawing.Size(512, 20);
 			this.CheckBoxSyncMusicInfoDb.TabIndex = 0;
@@ -758,6 +764,36 @@
 			this.LinkLabelHelp.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			this.LinkLabelHelp.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LinkLabelHelp_LinkClicked);
 			// 
+			// ButtonCheckRss
+			// 
+			this.ButtonCheckRss.Location = new System.Drawing.Point(312, 40);
+			this.ButtonCheckRss.Name = "ButtonCheckRss";
+			this.ButtonCheckRss.Size = new System.Drawing.Size(216, 28);
+			this.ButtonCheckRss.TabIndex = 19;
+			this.ButtonCheckRss.Text = "今すぐ最新情報を確認する (&A)";
+			this.ButtonCheckRss.UseVisualStyleBackColor = true;
+			this.ButtonCheckRss.Click += new System.EventHandler(this.ButtonCheckRss_Click);
+			// 
+			// ProgressBarCheckRss
+			// 
+			this.ProgressBarCheckRss.Location = new System.Drawing.Point(16, 40);
+			this.ProgressBarCheckRss.MarqueeAnimationSpeed = 10;
+			this.ProgressBarCheckRss.Name = "ProgressBarCheckRss";
+			this.ProgressBarCheckRss.Size = new System.Drawing.Size(280, 28);
+			this.ProgressBarCheckRss.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
+			this.ProgressBarCheckRss.TabIndex = 18;
+			this.ProgressBarCheckRss.Visible = false;
+			// 
+			// CheckBoxCheckRss
+			// 
+			this.CheckBoxCheckRss.Location = new System.Drawing.Point(16, 16);
+			this.CheckBoxCheckRss.Name = "CheckBoxCheckRss";
+			this.CheckBoxCheckRss.Size = new System.Drawing.Size(512, 16);
+			this.CheckBoxCheckRss.TabIndex = 17;
+			this.CheckBoxCheckRss.Text = "ゆかりすたーの最新情報・更新版を自動的に確認する (&L)";
+			this.CheckBoxCheckRss.UseVisualStyleBackColor = true;
+			this.CheckBoxCheckRss.CheckedChanged += new System.EventHandler(this.CheckBoxCheckRss_CheckedChanged);
+			// 
 			// FormYukaListerSettings
 			// 
 			this.AcceptButton = this.ButtonOK;
@@ -862,5 +898,8 @@
 		private System.Windows.Forms.TextBox TextBoxTargetExt;
 		private System.Windows.Forms.Label LabelTargetExt;
 		private System.Windows.Forms.Label label16;
+		private System.Windows.Forms.Button ButtonCheckRss;
+		private System.Windows.Forms.ProgressBar ProgressBarCheckRss;
+		private System.Windows.Forms.CheckBox CheckBoxCheckRss;
 	}
 }
