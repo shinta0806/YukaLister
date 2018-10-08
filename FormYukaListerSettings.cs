@@ -18,6 +18,7 @@ using System.Data.SQLite;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -1019,6 +1020,29 @@ namespace YukaLister
 			catch (Exception oExcep)
 			{
 				mLogWriter.ShowLogMessage(TraceEventType.Error, "最新情報確認時エラー：\n" + oExcep.Message);
+				mLogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+			}
+		}
+
+		private void ButtonLog_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				SaveFileDialogLog.FileName = "YukaListerLog_" + DateTime.Now.ToString("yyyy_MM_dd-HH_mm_ss");
+				if (SaveFileDialogLog.ShowDialog() != DialogResult.OK)
+				{
+					return;
+				}
+
+				// 環境情報保存
+				YlCommon.LogEnvironmentInfo();
+
+				ZipFile.CreateFromDirectory(YlCommon.SettingsPath(), SaveFileDialogLog.FileName, CompressionLevel.Optimal, true);
+				mLogWriter.ShowLogMessage(TraceEventType.Information, "ログ保存完了：\n" + SaveFileDialogLog.FileName);
+			}
+			catch (Exception oExcep)
+			{
+				mLogWriter.ShowLogMessage(TraceEventType.Error, "ログ保存時エラー：\n" + oExcep.Message);
 				mLogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}

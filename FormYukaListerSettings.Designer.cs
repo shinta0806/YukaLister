@@ -99,6 +99,9 @@
 			this.ButtonCheckRss = new System.Windows.Forms.Button();
 			this.ProgressBarCheckRss = new System.Windows.Forms.ProgressBar();
 			this.CheckBoxCheckRss = new System.Windows.Forms.CheckBox();
+			this.ButtonLog = new System.Windows.Forms.Button();
+			this.label17 = new System.Windows.Forms.Label();
+			this.SaveFileDialogLog = new System.Windows.Forms.SaveFileDialog();
 			this.TabControlYukaListerSettings.SuspendLayout();
 			this.TabPageSettings.SuspendLayout();
 			this.TabPageTarget.SuspendLayout();
@@ -432,6 +435,8 @@
 			// TabPageMaintenance
 			// 
 			this.TabPageMaintenance.BackColor = System.Drawing.SystemColors.Control;
+			this.TabPageMaintenance.Controls.Add(this.ButtonLog);
+			this.TabPageMaintenance.Controls.Add(this.label17);
 			this.TabPageMaintenance.Controls.Add(this.ButtonCheckRss);
 			this.TabPageMaintenance.Controls.Add(this.ProgressBarCheckRss);
 			this.TabPageMaintenance.Controls.Add(this.CheckBoxCheckRss);
@@ -451,7 +456,7 @@
 			// 
 			// TextBoxSyncPassword
 			// 
-			this.TextBoxSyncPassword.Location = new System.Drawing.Point(152, 264);
+			this.TextBoxSyncPassword.Location = new System.Drawing.Point(152, 228);
 			this.TextBoxSyncPassword.Name = "TextBoxSyncPassword";
 			this.TextBoxSyncPassword.Size = new System.Drawing.Size(376, 19);
 			this.TextBoxSyncPassword.TabIndex = 16;
@@ -459,7 +464,7 @@
 			// 
 			// label8
 			// 
-			this.label8.Location = new System.Drawing.Point(48, 264);
+			this.label8.Location = new System.Drawing.Point(48, 228);
 			this.label8.Name = "label8";
 			this.label8.Size = new System.Drawing.Size(104, 20);
 			this.label8.TabIndex = 15;
@@ -468,14 +473,14 @@
 			// 
 			// TextBoxSyncAccount
 			// 
-			this.TextBoxSyncAccount.Location = new System.Drawing.Point(152, 240);
+			this.TextBoxSyncAccount.Location = new System.Drawing.Point(152, 204);
 			this.TextBoxSyncAccount.Name = "TextBoxSyncAccount";
 			this.TextBoxSyncAccount.Size = new System.Drawing.Size(376, 19);
 			this.TextBoxSyncAccount.TabIndex = 14;
 			// 
 			// label7
 			// 
-			this.label7.Location = new System.Drawing.Point(48, 240);
+			this.label7.Location = new System.Drawing.Point(48, 204);
 			this.label7.Name = "label7";
 			this.label7.Size = new System.Drawing.Size(104, 20);
 			this.label7.TabIndex = 13;
@@ -484,14 +489,14 @@
 			// 
 			// TextBoxSyncServer
 			// 
-			this.TextBoxSyncServer.Location = new System.Drawing.Point(152, 216);
+			this.TextBoxSyncServer.Location = new System.Drawing.Point(152, 180);
 			this.TextBoxSyncServer.Name = "TextBoxSyncServer";
 			this.TextBoxSyncServer.Size = new System.Drawing.Size(376, 19);
 			this.TextBoxSyncServer.TabIndex = 12;
 			// 
 			// label6
 			// 
-			this.label6.Location = new System.Drawing.Point(48, 216);
+			this.label6.Location = new System.Drawing.Point(48, 180);
 			this.label6.Name = "label6";
 			this.label6.Size = new System.Drawing.Size(104, 20);
 			this.label6.TabIndex = 11;
@@ -500,7 +505,7 @@
 			// 
 			// CheckBoxSyncMusicInfoDb
 			// 
-			this.CheckBoxSyncMusicInfoDb.Location = new System.Drawing.Point(16, 188);
+			this.CheckBoxSyncMusicInfoDb.Location = new System.Drawing.Point(16, 152);
 			this.CheckBoxSyncMusicInfoDb.Name = "CheckBoxSyncMusicInfoDb";
 			this.CheckBoxSyncMusicInfoDb.Size = new System.Drawing.Size(512, 20);
 			this.CheckBoxSyncMusicInfoDb.TabIndex = 0;
@@ -794,6 +799,28 @@
 			this.CheckBoxCheckRss.UseVisualStyleBackColor = true;
 			this.CheckBoxCheckRss.CheckedChanged += new System.EventHandler(this.CheckBoxCheckRss_CheckedChanged);
 			// 
+			// ButtonLog
+			// 
+			this.ButtonLog.Location = new System.Drawing.Point(312, 108);
+			this.ButtonLog.Name = "ButtonLog";
+			this.ButtonLog.Size = new System.Drawing.Size(216, 28);
+			this.ButtonLog.TabIndex = 21;
+			this.ButtonLog.Text = "ログ保存(&X)";
+			this.ButtonLog.UseVisualStyleBackColor = true;
+			this.ButtonLog.Click += new System.EventHandler(this.ButtonLog_Click);
+			// 
+			// label17
+			// 
+			this.label17.Location = new System.Drawing.Point(16, 84);
+			this.label17.Name = "label17";
+			this.label17.Size = new System.Drawing.Size(512, 16);
+			this.label17.TabIndex = 20;
+			this.label17.Text = "ログを保存する";
+			// 
+			// SaveFileDialogLog
+			// 
+			this.SaveFileDialogLog.Filter = "ログファイル|*.lga";
+			// 
 			// FormYukaListerSettings
 			// 
 			this.AcceptButton = this.ButtonOK;
@@ -901,5 +928,8 @@
 		private System.Windows.Forms.Button ButtonCheckRss;
 		private System.Windows.Forms.ProgressBar ProgressBarCheckRss;
 		private System.Windows.Forms.CheckBox CheckBoxCheckRss;
+		private System.Windows.Forms.Button ButtonLog;
+		private System.Windows.Forms.Label label17;
+		private System.Windows.Forms.SaveFileDialog SaveFileDialogLog;
 	}
 }
