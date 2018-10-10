@@ -174,7 +174,7 @@ namespace YukaLister
 
 					if (YlCommon.SelectCategoriesByName(aConnection, "一般").Count == 0)
 					{
-						aTableCategory.InsertOnSubmit(CreateCategoryRecord(103, "一般", "イッパン"));
+						aTableCategory.InsertOnSubmit(YlCommon.CreateCategoryRecord(103, "一般", "イッパン"));
 					}
 
 					aContext.SubmitChanges();
@@ -458,138 +458,6 @@ namespace YukaLister
 				// のような例外が発生する
 				return 0;
 			}
-		}
-
-		// --------------------------------------------------------------------
-		// カテゴリーテーブルのレコードを作成
-		// --------------------------------------------------------------------
-		private TCategory CreateCategoryRecord(Int32 oIdNumber, String oName, String oRuby = null, String oKeyword = null)
-		{
-			oName = YlCommon.NormalizeDbString(oName);
-			if (String.IsNullOrEmpty(oRuby))
-			{
-				oRuby = oName;
-			}
-			oRuby = YlCommon.NormalizeDbRuby(oRuby);
-			oKeyword = YlCommon.NormalizeDbString(oKeyword);
-
-			return new TCategory
-			{
-				// TBase
-				Id = YlCommon.MUSIC_INFO_SYSTEM_ID_PREFIX + YlCommon.MUSIC_INFO_ID_SECOND_PREFIXES[(Int32)MusicInfoDbTables.TCategory] + oIdNumber.ToString("D3"),
-				Import = false,
-				Invalid = false,
-				UpdateTime = YlCommon.INVALID_MJD,
-				Dirty = true,
-
-				// TMaster
-				Name = oName,
-				Ruby = oRuby,
-				Keyword = oKeyword,
-			};
-		}
-
-		// --------------------------------------------------------------------
-		// 空の楽曲情報データベースを作成
-		// ユニーク制約のカラムにはインデックスが自動作成される（速度実験により確認済み）
-		// 主キーもユニーク制約がかかるのでインデックスは自動作成されると思われる（未確認）
-		// --------------------------------------------------------------------
-		private void CreateMusicInfoDb()
-		{
-			mLogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "楽曲情報データベースを新規作成します...");
-
-			Directory.CreateDirectory(Path.GetDirectoryName(YlCommon.MusicInfoDbPath()));
-
-			using (SQLiteConnection aConnection = YlCommon.CreateMusicInfoDbConnection())
-			{
-				// 既存テーブルがある場合は削除
-				LinqUtils.DropAllTables(aConnection);
-
-				using (SQLiteCommand aCmd = new SQLiteCommand(aConnection))
-				{
-					List<String> aIndices = new List<String>();
-
-					// マスターテーブル
-					aIndices.Clear();
-					aIndices.Add(TSong.FIELD_NAME_SONG_NAME);
-					aIndices.Add(TSong.FIELD_NAME_SONG_CATEGORY_ID);
-					aIndices.Add(TSong.FIELD_NAME_SONG_OP_ED);
-					CreateMusicInfoDbTable(aCmd, typeof(TSong), aIndices);
-
-					CreateMusicInfoDbTable(aCmd, typeof(TPerson), TPerson.FIELD_NAME_PERSON_NAME);
-
-					aIndices.Clear();
-					aIndices.Add(TTieUp.FIELD_NAME_TIE_UP_NAME);
-					aIndices.Add(TTieUp.FIELD_NAME_TIE_UP_CATEGORY_ID);
-					CreateMusicInfoDbTable(aCmd, typeof(TTieUp), aIndices);
-
-					CreateMusicInfoDbTable(aCmd, typeof(TCategory), TCategory.FIELD_NAME_CATEGORY_NAME);
-					InsertMusicInfoDbCategoryDefaultRecords(aConnection);
-
-					CreateMusicInfoDbTable(aCmd, typeof(TTieUpGroup), TTieUpGroup.FIELD_NAME_TIE_UP_GROUP_NAME);
-
-					CreateMusicInfoDbTable(aCmd, typeof(TMaker), TMaker.FIELD_NAME_MAKER_NAME);
-
-					// 別名テーブル
-					CreateMusicInfoDbTable(aCmd, typeof(TSongAlias), TSongAlias.FIELD_NAME_SONG_ALIAS_ALIAS);
-
-					CreateMusicInfoDbTable(aCmd, typeof(TPersonAlias), TPersonAlias.FIELD_NAME_PERSON_ALIAS_ALIAS);
-
-					CreateMusicInfoDbTable(aCmd, typeof(TTieUpAlias), TTieUpAlias.FIELD_NAME_TIE_UP_ALIAS_ALIAS);
-
-					CreateMusicInfoDbTable(aCmd, typeof(TCategoryAlias), TCategoryAlias.FIELD_NAME_CATEGORY_ALIAS_ALIAS);
-
-					CreateMusicInfoDbTable(aCmd, typeof(TTieUpGroupAlias), TTieUpGroupAlias.FIELD_NAME_TIE_UP_GROUP_ALIAS_ALIAS);
-
-					CreateMusicInfoDbTable(aCmd, typeof(TMakerAlias), TMakerAlias.FIELD_NAME_MAKER_ALIAS_ALIAS);
-
-					// 紐付テーブル
-					CreateMusicInfoDbTable(aCmd, typeof(TArtistSequence));
-
-					CreateMusicInfoDbTable(aCmd, typeof(TLyristSequence));
-
-					CreateMusicInfoDbTable(aCmd, typeof(TComposerSequence));
-
-					CreateMusicInfoDbTable(aCmd, typeof(TArrangerSequence));
-
-					CreateMusicInfoDbTable(aCmd, typeof(TTieUpGroupSequence));
-				}
-
-				// プロパティーテーブル
-				YlCommon.CreateDbPropertyTable(aConnection);
-			}
-
-			mClosingCancellationTokenSource.Token.ThrowIfCancellationRequested();
-		}
-
-		// --------------------------------------------------------------------
-		// DB の中にテーブルを作成（汎用関数）
-		// --------------------------------------------------------------------
-		private void CreateMusicInfoDbTable(SQLiteCommand oCmd, Type oTypeOfTable, String oIndexColumn = null)
-		{
-			List<String> aIndices;
-			if (String.IsNullOrEmpty(oIndexColumn))
-			{
-				aIndices = null;
-			}
-			else
-			{
-				aIndices = new List<String>();
-				aIndices.Add(oIndexColumn);
-			}
-			CreateMusicInfoDbTable(oCmd, oTypeOfTable, aIndices);
-		}
-
-		// --------------------------------------------------------------------
-		// DB の中にテーブルを作成（汎用関数）
-		// --------------------------------------------------------------------
-		private void CreateMusicInfoDbTable(SQLiteCommand oCmd, Type oTypeOfTable, List<String> oIndices)
-		{
-			// テーブル作成
-			LinqUtils.CreateTable(oCmd, oTypeOfTable);
-
-			// インデックス作成（JOIN および検索の高速化）
-			LinqUtils.CreateIndex(oCmd, LinqUtils.TableName(oTypeOfTable), oIndices);
 		}
 
 		// --------------------------------------------------------------------
@@ -1330,34 +1198,6 @@ namespace YukaLister
 		}
 
 		// --------------------------------------------------------------------
-		// カテゴリーマスターテーブルの既定レコードを挿入
-		// ニコニコ動画のカテゴリータグおよび anison.info のカテゴリーから主要な物を抽出
-		// --------------------------------------------------------------------
-		private void InsertMusicInfoDbCategoryDefaultRecords(SQLiteConnection oConnection)
-		{
-			using (DataContext aContext = new DataContext(oConnection))
-			{
-				Table<TCategory> aTableCategory = aContext.GetTable<TCategory>();
-
-				// 主にタイアップ用
-				aTableCategory.InsertOnSubmit(CreateCategoryRecord(1, "アニメ"));
-				aTableCategory.InsertOnSubmit(CreateCategoryRecord(2, "イベント/舞台/公演", "イベントブタイコウエン"));
-				aTableCategory.InsertOnSubmit(CreateCategoryRecord(3, "ゲーム"));
-				aTableCategory.InsertOnSubmit(CreateCategoryRecord(4, "時代劇", "ジダイゲキ"));
-				aTableCategory.InsertOnSubmit(CreateCategoryRecord(5, "特撮", "トクサツ"));
-				aTableCategory.InsertOnSubmit(CreateCategoryRecord(6, "ドラマ"));
-				aTableCategory.InsertOnSubmit(CreateCategoryRecord(7, "ラジオ"));
-
-				// 主にタイアップの無い楽曲用
-				aTableCategory.InsertOnSubmit(CreateCategoryRecord(101, "VOCALOID", "ボーカロイド"));
-				aTableCategory.InsertOnSubmit(CreateCategoryRecord(102, "歌ってみた", "ウタッテミタ"));
-				aTableCategory.InsertOnSubmit(CreateCategoryRecord(103, "一般", "イッパン"));
-
-				aContext.SubmitChanges();
-			}
-		}
-
-		// --------------------------------------------------------------------
 		// DGV の状態列の再描画を引き起こす
 		// --------------------------------------------------------------------
 		private void InvalidateDataGridViewTargetFoldersWithInvoke(String oPath)
@@ -1528,7 +1368,7 @@ namespace YukaLister
 			if (!File.Exists(YlCommon.MusicInfoDbPath()))
 			{
 				// 新規作成
-				CreateMusicInfoDb();
+				YlCommon.CreateMusicInfoDb();
 				return;
 			}
 
@@ -1538,8 +1378,7 @@ namespace YukaLister
 				if (aProperty.AppId != YlCommon.APP_ID)
 				{
 					// 何らかの原因（例えば前回データベース作成途中で異常終了したなど）でプロパティーが作成されていないので楽曲情報データベースを再作成
-					YlCommon.BackupMusicInfoDb();
-					CreateMusicInfoDb();
+					YlCommon.CreateMusicInfoDb();
 					return;
 				}
 			}
@@ -1693,14 +1532,14 @@ namespace YukaLister
 		// --------------------------------------------------------------------
 		// 同期設定が有効なら同期処理を開始
 		// --------------------------------------------------------------------
-		private void RunSyncClientIfNeeded()
+		private void RunSyncClientIfNeeded(Boolean oIsReget = false)
 		{
 			if (!mYukaListerSettings.SyncMusicInfoDb)
 			{
 				return;
 			}
 
-			SyncClient aSyncClient = new SyncClient(mYukaListerSettings, ToolStripStatusLabelBgStatus, mClosingCancellationTokenSource.Token);
+			SyncClient aSyncClient = new SyncClient(mYukaListerSettings, ToolStripStatusLabelBgStatus, mClosingCancellationTokenSource.Token, oIsReget);
 
 			// async を待機しない
 			Task aSuppressWarning = aSyncClient.RunAsync();
@@ -2790,10 +2629,12 @@ namespace YukaLister
 				String aSyncAccountBak = mYukaListerSettings.SyncAccount;
 				String aSyncPasswordBak = mYukaListerSettings.SyncPassword;
 				DateTime aMusicInfoDbTimeBak = new FileInfo(YlCommon.MusicInfoDbPath()).LastWriteTime;
+				Boolean aRegetSyncDataNeeded;
 
 				using (FormYukaListerSettings aFormYukaListerSettings = new FormYukaListerSettings(mYukaListerSettings, mLogWriter))
 				{
 					aFormYukaListerSettings.ShowDialog(this);
+					aRegetSyncDataNeeded = aFormYukaListerSettings.RegetSyncDataNeeded;
 				}
 
 				// ゆかり設定ファイルのフルパスが変更された場合は処理を行う
@@ -2819,15 +2660,23 @@ namespace YukaLister
 					}
 				}
 
-				// 同期設定が変更された場合・インポートで楽曲情報データベースが更新された場合は同期を行う
-				DateTime aMusicInfoDbTime = new FileInfo(YlCommon.MusicInfoDbPath()).LastWriteTime;
-				if (mYukaListerSettings.SyncMusicInfoDb != aSyncMusicInfoDbBak
-						|| mYukaListerSettings.SyncServer != aSyncServerBak
-						|| mYukaListerSettings.SyncAccount != aSyncAccountBak
-						|| mYukaListerSettings.SyncPassword != aSyncPasswordBak
-						|| aMusicInfoDbTime != aMusicInfoDbTimeBak)
+				if (aRegetSyncDataNeeded)
 				{
-					RunSyncClientIfNeeded();
+					// 再取得が指示された場合は再取得
+					RunSyncClientIfNeeded(true);
+				}
+				else
+				{
+					// 同期設定が変更された場合・インポートで楽曲情報データベースが更新された場合は同期を行う
+					DateTime aMusicInfoDbTime = new FileInfo(YlCommon.MusicInfoDbPath()).LastWriteTime;
+					if (mYukaListerSettings.SyncMusicInfoDb != aSyncMusicInfoDbBak
+							|| mYukaListerSettings.SyncServer != aSyncServerBak
+							|| mYukaListerSettings.SyncAccount != aSyncAccountBak
+							|| mYukaListerSettings.SyncPassword != aSyncPasswordBak
+							|| aMusicInfoDbTime != aMusicInfoDbTimeBak)
+					{
+						RunSyncClientIfNeeded();
+					}
 				}
 			}
 			catch (Exception oExcep)

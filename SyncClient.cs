@@ -34,11 +34,12 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		// コンストラクター
 		// --------------------------------------------------------------------
-		public SyncClient(YukaListerSettings oYukaListerSettings, ToolStripStatusLabel oStatusLabel, CancellationToken oCancellationToken)
+		public SyncClient(YukaListerSettings oYukaListerSettings, ToolStripStatusLabel oStatusLabel, CancellationToken oCancellationToken, Boolean oIsReget = false)
 		{
 			mYukaListerSettings = oYukaListerSettings;
 			mStatusLabel = oStatusLabel;
 			mCancellationToken = oCancellationToken;
+			mIsReget = oIsReget;
 
 			// ログ初期化
 			// さほど大量のログは発生しないため、世代等はデフォルトのまま
@@ -59,6 +60,19 @@ namespace YukaLister.Shared
 		// ====================================================================
 		// public メンバー関数
 		// ====================================================================
+
+		// --------------------------------------------------------------------
+		// 同期実行中のインスタンスがあるか
+		// --------------------------------------------------------------------
+		public static Boolean RunningInstanceExists()
+		{
+			Boolean aLockTaken = Monitor.TryEnter(mTaskLockSync, 0);
+			if (aLockTaken)
+			{
+				Monitor.Exit(mTaskLockSync);
+			}
+			return !aLockTaken;
+		}
 
 		// --------------------------------------------------------------------
 		// 非同期に実行開始
@@ -111,6 +125,9 @@ namespace YukaLister.Shared
 		// キャンセル用
 		private CancellationToken mCancellationToken;
 
+		// サーバーデータ再取得
+		private Boolean mIsReget;
+
 		// ログ（同期専用）
 		private LogWriter mLogWriterSync;
 
@@ -160,6 +177,17 @@ namespace YukaLister.Shared
 		}
 
 		// --------------------------------------------------------------------
+		// 再取得の場合は楽曲情報データベースを初期化
+		// --------------------------------------------------------------------
+		private void CreateMusicInfoDbIfNeeded()
+		{
+			if (mIsReget)
+			{
+				YlCommon.CreateMusicInfoDb();
+			}
+		}
+
+		// --------------------------------------------------------------------
 		// アップロードを拒否されたレコードの更新日をサーバーからダウンロード
 		// mYukaListerSettings.LastSyncDownloadDate を更新し、次回ダウンロード時に拒否レコードが上書きされるようにする
 		// --------------------------------------------------------------------
@@ -192,7 +220,7 @@ namespace YukaLister.Shared
 		// LastSyncDownloadDate も再度ダウンロードする（同日にデータが追加されている可能性があるため）
 		// ＜例外＞
 		// --------------------------------------------------------------------
-		private void DownloadSyncData()
+		private void DownloadSyncData(out Int32 oNumTotalDownloads, out Int32 oNumTotalImports)
 		{
 			// ダウンロード開始時刻の記録
 			DateTime aTaskBeginDateTime = DateTime.UtcNow;
@@ -202,8 +230,9 @@ namespace YukaLister.Shared
 				mYukaListerSettings.LastSyncDownloadDate = YlCommon.INVALID_MJD;
 			}
 			DateTime aTargetDate = JulianDay.ModifiedJulianDateToDateTime(mYukaListerSettings.LastSyncDownloadDate);
-			Int32 aNumTotalDownloads = 0;
-			Int32 aNumTotalImports = 0;
+			oNumTotalDownloads = 0;
+			oNumTotalImports = 0;
+			mLogWriterSyncDetail.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "ダウンロード中... ");
 			for (; ; )
 			{
 				mYukaListerSettings.LastSyncDownloadDate = JulianDay.DateTimeToModifiedJulianDate(aTargetDate);
@@ -238,14 +267,14 @@ namespace YukaLister.Shared
 					Int32 aNumDownloads;
 					Int32 aNumImports;
 					ImportSyncData(aCsv, out aNumDownloads, out aNumImports);
-					aNumTotalDownloads += aNumDownloads;
-					aNumTotalImports += aNumImports;
+					oNumTotalDownloads += aNumDownloads;
+					oNumTotalImports += aNumImports;
 					mCancellationToken.ThrowIfCancellationRequested();
 				}
 
 				// 状況
-				SetStatusLabelMessageWithInvoke(Common.TRACE_EVENT_TYPE_STATUS, "同期データをダウンロードしました（" + aSyncInfos[SYNC_INFO_PARAM_DATE] + "）：合計 "
-						+ aNumTotalDownloads.ToString("#,0") + " 件");
+				SetStatusLabelMessageWithInvoke(Common.TRACE_EVENT_TYPE_STATUS, "同期データをダウンロード中...（" + aSyncInfos[SYNC_INFO_PARAM_DATE] + "）：合計 "
+						+ oNumTotalDownloads.ToString("#,0") + " 件");
 
 				// 日付更新
 				aTargetDate = DateTime.ParseExact(aSyncInfos[SYNC_INFO_PARAM_DATE], SYNC_URL_DATE_FORMAT, null).AddDays(1);
@@ -259,8 +288,6 @@ namespace YukaLister.Shared
 				mCancellationToken.ThrowIfCancellationRequested();
 			}
 
-			SetStatusLabelMessageWithInvoke(Common.TRACE_EVENT_TYPE_STATUS, "楽曲情報データベース同期サーバーからのデータダウンロード完了（同期データ"
-					+ (aNumTotalDownloads == 0 ? "無" : " " + aNumTotalDownloads.ToString("#,0") + " 件、うち " + aNumTotalImports.ToString("#,0") + " 件インポート") + "）");
 			mYukaListerSettings.LastSyncDownloadDate = JulianDay.DateTimeToModifiedJulianDate(aTaskBeginDateTime.Date);
 		}
 
@@ -1222,7 +1249,7 @@ namespace YukaLister.Shared
 				throw new Exception("楽曲情報データベース同期サーバーにログインできませんでした。アカウント名およびパスワードを確認して下さい。");
 			}
 
-			SetStatusLabelMessageWithInvoke(Common.TRACE_EVENT_TYPE_STATUS, "楽曲情報データベース同期サーバーにログインしました。");
+			SetStatusLabelMessageWithInvoke(Common.TRACE_EVENT_TYPE_STATUS, "楽曲情報データベース同期サーバーにログインしました。同期処理中です...");
 			Thread.Sleep(SYNC_INTERVAL);
 			mCancellationToken.ThrowIfCancellationRequested();
 		}
@@ -1894,16 +1921,27 @@ namespace YukaLister.Shared
 				// ログイン
 				LoginToSyncServer();
 
+				// 再取得の場合は楽曲情報データベース初期化
+				CreateMusicInfoDbIfNeeded();
+
 				// ダウンロード
-				DownloadSyncData();
+				Int32 aNumTotalDownloads;
+				Int32 aNumTotalImports;
+				DownloadSyncData(out aNumTotalDownloads, out aNumTotalImports);
 
 				// アップロード
-				if (UploadSyncData() > 0)
+				Int32 aNumTotalUploads;
+				UploadSyncData(out aNumTotalUploads);
+				if (aNumTotalUploads > 0)
 				{
 					// アップロードを行った場合は、自身がアップロードしたデータの更新日・Dirty を更新するために再ダウンロードが必要
-					DownloadSyncData();
+					DownloadSyncData(out aNumTotalDownloads, out aNumTotalImports);
 				}
 
+				// 完了表示
+				SetStatusLabelMessageWithInvoke(Common.TRACE_EVENT_TYPE_STATUS, "楽曲情報データベース同期完了（ダウンロード"
+						+ (aNumTotalDownloads == 0 ? "無" : " " + aNumTotalDownloads.ToString("#,0") + " 件、うち " + aNumTotalImports.ToString("#,0") + " 件インポート")
+						+ "、アップロード" + (aNumTotalUploads == 0 ? "無" : " " + aNumTotalUploads.ToString("#,0") + " 件") + "）");
 			}
 			catch (OperationCanceledException)
 			{
@@ -1955,9 +1993,9 @@ namespace YukaLister.Shared
 		// 同期データをサーバーへアップロード
 		// ＜返値＞ アップロード件数合計
 		// --------------------------------------------------------------------
-		private Int32 UploadSyncData()
+		private void UploadSyncData(out Int32 oNumTotalUploads)
 		{
-			Int32 aNumRecords = 0;
+			oNumTotalUploads = 0;
 			for (MusicInfoDbTables i = 0; i < MusicInfoDbTables.__End__; i++)
 			{
 				// アップロードデータ準備
@@ -2041,16 +2079,14 @@ namespace YukaLister.Shared
 					}
 
 					// 状況
-					aNumRecords += aUploadContents.Count - 1;
-					SetStatusLabelMessageWithInvoke(Common.TRACE_EVENT_TYPE_STATUS, "同期データをアップロードしました "
-							+ aNumRecords.ToString("#,0") + " 件");
+					oNumTotalUploads += aUploadContents.Count - 1;
+					SetStatusLabelMessageWithInvoke(Common.TRACE_EVENT_TYPE_STATUS, "同期データをアップロード中... 合計 "
+							+ oNumTotalUploads.ToString("#,0") + " 件");
 					Thread.Sleep(SYNC_INTERVAL);
 					mCancellationToken.ThrowIfCancellationRequested();
 				}
 			}
 			DownloadRejectDate();
-
-			return aNumRecords;
 		}
 
 

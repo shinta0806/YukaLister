@@ -30,6 +30,13 @@ namespace YukaLister
 	public partial class FormYukaListerSettings : Form
 	{
 		// ====================================================================
+		// public プロパティー
+		// ====================================================================
+
+		// 強制再取得をユーザーから指示されたか
+		public Boolean RegetSyncDataNeeded;
+
+		// ====================================================================
 		// コンストラクター・デストラクター
 		// ====================================================================
 
@@ -427,6 +434,7 @@ namespace YukaLister
 			TextBoxSyncServer.Enabled = aEnabled;
 			TextBoxSyncAccount.Enabled = aEnabled;
 			TextBoxSyncPassword.Enabled = aEnabled;
+			ButtonReget.Enabled = aEnabled;
 		}
 
 		// --------------------------------------------------------------------
@@ -1043,6 +1051,33 @@ namespace YukaLister
 			catch (Exception oExcep)
 			{
 				mLogWriter.ShowLogMessage(TraceEventType.Error, "ログ保存時エラー：\n" + oExcep.Message);
+				mLogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+			}
+		}
+
+		private void ButtonReget_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				if (SyncClient.RunningInstanceExists())
+				{
+					throw new Exception("現在、同期処理を実行中のため、合わせられません。\n同期処理が終了してから合わせてください。");
+				}
+
+				if (MessageBox.Show("ローカルの楽曲情報データベースを全て削除してから、内容をサーバーに合わせます。\n"
+						+ "サーバーにアップロードしていないデータは全て失われます。\nよろしいですか？", "確認",
+						MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) == DialogResult.No)
+				{
+					return;
+				}
+
+				mYukaListerSettings.LastSyncDownloadDate = 0.0;
+				RegetSyncDataNeeded = true;
+				mLogWriter.ShowLogMessage(TraceEventType.Information, "環境設定ウィンドウを閉じると処理を開始します。");
+			}
+			catch (Exception oExcep)
+			{
+				mLogWriter.ShowLogMessage(TraceEventType.Error, "強制的に合わせる時エラー：\n" + oExcep.Message);
 				mLogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}

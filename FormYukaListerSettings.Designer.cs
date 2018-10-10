@@ -102,6 +102,8 @@
 			this.ButtonLog = new System.Windows.Forms.Button();
 			this.label17 = new System.Windows.Forms.Label();
 			this.SaveFileDialogLog = new System.Windows.Forms.SaveFileDialog();
+			this.ButtonReget = new System.Windows.Forms.Button();
+			this.label18 = new System.Windows.Forms.Label();
 			this.TabControlYukaListerSettings.SuspendLayout();
 			this.TabPageSettings.SuspendLayout();
 			this.TabPageTarget.SuspendLayout();
@@ -435,6 +437,8 @@
 			// TabPageMaintenance
 			// 
 			this.TabPageMaintenance.BackColor = System.Drawing.SystemColors.Control;
+			this.TabPageMaintenance.Controls.Add(this.label18);
+			this.TabPageMaintenance.Controls.Add(this.ButtonReget);
 			this.TabPageMaintenance.Controls.Add(this.ButtonLog);
 			this.TabPageMaintenance.Controls.Add(this.label17);
 			this.TabPageMaintenance.Controls.Add(this.ButtonCheckRss);
@@ -771,9 +775,9 @@
 			// 
 			// ButtonCheckRss
 			// 
-			this.ButtonCheckRss.Location = new System.Drawing.Point(312, 40);
+			this.ButtonCheckRss.Location = new System.Drawing.Point(320, 40);
 			this.ButtonCheckRss.Name = "ButtonCheckRss";
-			this.ButtonCheckRss.Size = new System.Drawing.Size(216, 28);
+			this.ButtonCheckRss.Size = new System.Drawing.Size(208, 28);
 			this.ButtonCheckRss.TabIndex = 19;
 			this.ButtonCheckRss.Text = "今すぐ最新情報を確認する (&A)";
 			this.ButtonCheckRss.UseVisualStyleBackColor = true;
@@ -784,7 +788,7 @@
 			this.ProgressBarCheckRss.Location = new System.Drawing.Point(16, 40);
 			this.ProgressBarCheckRss.MarqueeAnimationSpeed = 10;
 			this.ProgressBarCheckRss.Name = "ProgressBarCheckRss";
-			this.ProgressBarCheckRss.Size = new System.Drawing.Size(280, 28);
+			this.ProgressBarCheckRss.Size = new System.Drawing.Size(288, 28);
 			this.ProgressBarCheckRss.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
 			this.ProgressBarCheckRss.TabIndex = 18;
 			this.ProgressBarCheckRss.Visible = false;
@@ -801,9 +805,9 @@
 			// 
 			// ButtonLog
 			// 
-			this.ButtonLog.Location = new System.Drawing.Point(312, 108);
+			this.ButtonLog.Location = new System.Drawing.Point(320, 108);
 			this.ButtonLog.Name = "ButtonLog";
-			this.ButtonLog.Size = new System.Drawing.Size(216, 28);
+			this.ButtonLog.Size = new System.Drawing.Size(208, 28);
 			this.ButtonLog.TabIndex = 21;
 			this.ButtonLog.Text = "ログ保存(&X)";
 			this.ButtonLog.UseVisualStyleBackColor = true;
@@ -820,6 +824,24 @@
 			// SaveFileDialogLog
 			// 
 			this.SaveFileDialogLog.Filter = "ログファイル|*.lga";
+			// 
+			// ButtonReget
+			// 
+			this.ButtonReget.Location = new System.Drawing.Point(320, 288);
+			this.ButtonReget.Name = "ButtonReget";
+			this.ButtonReget.Size = new System.Drawing.Size(208, 28);
+			this.ButtonReget.TabIndex = 22;
+			this.ButtonReget.Text = "強制的に合わせる (&F)";
+			this.ButtonReget.UseVisualStyleBackColor = true;
+			this.ButtonReget.Click += new System.EventHandler(this.ButtonReget_Click);
+			// 
+			// label18
+			// 
+			this.label18.Location = new System.Drawing.Point(16, 264);
+			this.label18.Name = "label18";
+			this.label18.Size = new System.Drawing.Size(512, 16);
+			this.label18.TabIndex = 23;
+			this.label18.Text = "強制的に楽曲情報データベースの内容をサーバーに合わせる（ローカルデータは失われます）";
 			// 
 			// FormYukaListerSettings
 			// 
@@ -931,5 +953,7 @@
 		private System.Windows.Forms.Button ButtonLog;
 		private System.Windows.Forms.Label label17;
 		private System.Windows.Forms.SaveFileDialog SaveFileDialogLog;
+		private System.Windows.Forms.Button ButtonReget;
+		private System.Windows.Forms.Label label18;
 	}
 }
