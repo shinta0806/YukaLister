@@ -98,7 +98,7 @@ namespace YukaLister
 		//private readonly Color BACK_COLOR_NORMAL = Color.FromArgb(255, 255, 255);
 
 		// スマートトラック判定用の単語（小文字表記、両端を | で括る）
-		private const String OFF_VOCAL_WORDS = "|cho|cut|dam|guide|guidevocal|inst|inst+cho|joy|off|offvocal|vc|オフボ|オフボーカル|ボイキャン|ボーカルキャンセル|配信|";
+		private const String OFF_VOCAL_WORDS = "|cho|cut|dam|guide|guidevocal|inst|inst+cho|joy|off|off+cho|offcho|offvocal|offのみ|vc|オフボ|オフボーカル|ボイキャン|ボーカルキャンセル|配信|";
 		private const String BOTH_VOCAL_WORDS = "|2tr|2ch|onoff|offon|";
 
 		// 自動追加情報記録ファイル名
