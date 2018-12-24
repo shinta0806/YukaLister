@@ -436,6 +436,131 @@ namespace YukaLister
 		}
 
 		// --------------------------------------------------------------------
+		// DGV の Status 列の値
+		// --------------------------------------------------------------------
+		private void SetCellValueStatus(DataGridViewCellValueEventArgs oDataGridViewCellValueEventArgs, TargetFolderInfo oInfo)
+		{
+			DataGridViewRow aRow = DataGridViewTargetFolders.Rows[oDataGridViewCellValueEventArgs.RowIndex];
+
+			if (mYukaListerStatus == YukaListerStatus.Error)
+			{
+				oDataGridViewCellValueEventArgs.Value = "エラー解決待ち";
+				aRow.Cells[oDataGridViewCellValueEventArgs.ColumnIndex].Style = mCellStyles[(Int32)YukaListerStatus.Error];
+				return;
+			}
+
+			switch (oInfo.FolderTaskStatus)
+			{
+				case FolderTaskStatus.Queued:
+					switch (oInfo.FolderTask)
+					{
+						case FolderTask.AddFileName:
+							oDataGridViewCellValueEventArgs.Value = "追加予定";
+							break;
+						case FolderTask.AddInfo:
+							oDataGridViewCellValueEventArgs.Value = "ファイル名検索可";
+							break;
+						case FolderTask.Remove:
+							oDataGridViewCellValueEventArgs.Value = "削除予定";
+							break;
+						case FolderTask.Update:
+							oDataGridViewCellValueEventArgs.Value = "更新予定";
+							break;
+						default:
+							Debug.Assert(false, "SetCellValueStatus() bad oInfo.FolderTask in FolderTaskStatus.Queued");
+							break;
+					}
+					aRow.Cells[oDataGridViewCellValueEventArgs.ColumnIndex].Style = DataGridViewTargetFolders.DefaultCellStyle;
+					break;
+				case FolderTaskStatus.Running:
+					switch (oInfo.FolderTask)
+					{
+						case FolderTask.AddFileName:
+							oDataGridViewCellValueEventArgs.Value = "ファイル名確認中";
+							break;
+						case FolderTask.AddInfo:
+							oDataGridViewCellValueEventArgs.Value = "ファイル名検索可＋属性確認中";
+							break;
+						case FolderTask.Remove:
+							oDataGridViewCellValueEventArgs.Value = "削除中";
+							break;
+						case FolderTask.Update:
+							oDataGridViewCellValueEventArgs.Value = "更新中";
+							break;
+						default:
+							Debug.Assert(false, "SetCellValueStatus() bad oInfo.FolderTask in FolderTaskStatus.Running");
+							break;
+					}
+					aRow.Cells[oDataGridViewCellValueEventArgs.ColumnIndex].Style = mCellStyles[(Int32)YukaListerStatus.Running];
+					break;
+				case FolderTaskStatus.Error:
+					oDataGridViewCellValueEventArgs.Value = "エラー";
+					aRow.Cells[oDataGridViewCellValueEventArgs.ColumnIndex].Style = mCellStyles[(Int32)YukaListerStatus.Error];
+					break;
+				case FolderTaskStatus.DoneInMemory:
+					if (oInfo.IsParent && oInfo.IsChildRunning)
+					{
+						oDataGridViewCellValueEventArgs.Value = "サブフォルダー待ち";
+						aRow.Cells[oDataGridViewCellValueEventArgs.ColumnIndex].Style = mCellStyles[(Int32)YukaListerStatus.Running];
+					}
+					else
+					{
+						switch (oInfo.FolderTask)
+						{
+							case FolderTask.AddFileName:
+								oDataGridViewCellValueEventArgs.Value = "ファイル名確認済";
+								break;
+							case FolderTask.AddInfo:
+								oDataGridViewCellValueEventArgs.Value = "ファイル名検索可＋属性確認済";
+								break;
+							case FolderTask.Remove:
+								oDataGridViewCellValueEventArgs.Value = "削除準備完了";
+								break;
+							case FolderTask.Update:
+								oDataGridViewCellValueEventArgs.Value = "更新準備完了";
+								break;
+							default:
+								Debug.Assert(false, "SetCellValueStatus() bad oInfo.FolderTask in FolderTaskStatus.DoneInMemory");
+								break;
+						}
+						aRow.Cells[oDataGridViewCellValueEventArgs.ColumnIndex].Style = DataGridViewTargetFolders.DefaultCellStyle;
+					}
+					break;
+				case FolderTaskStatus.DoneInDisk:
+					switch (oInfo.FolderTask)
+					{
+						case FolderTask.AddFileName:
+							Debug.Assert(false, "SetCellValueStatus() bad oInfo.FolderTask in FolderTaskStatus.DoneInDisk - FolderTask.AddFileName");
+							break;
+						case FolderTask.AddInfo:
+							oDataGridViewCellValueEventArgs.Value = "追加完了";
+							break;
+						case FolderTask.Remove:
+							oDataGridViewCellValueEventArgs.Value = "削除完了";
+							break;
+						case FolderTask.Update:
+							oDataGridViewCellValueEventArgs.Value = "更新完了";
+							break;
+						default:
+							Debug.Assert(false, "SetCellValueStatus() bad oInfo.FolderTask in FolderTaskStatus.DoneInDisk");
+							break;
+					}
+					aRow.Cells[oDataGridViewCellValueEventArgs.ColumnIndex].Style = mCellStyles[(Int32)YukaListerStatus.Ready];
+					break;
+			}
+
+			if (oInfo.FolderExcludeSettingsStatus == FolderExcludeSettingsStatus.Unchecked)
+			{
+				FolderSettingsInDisk aFolderSettingsInDisk = YlCommon.LoadFolderSettings(oInfo.Path);
+				oInfo.FolderExcludeSettingsStatus = aFolderSettingsInDisk.IsExclude ? FolderExcludeSettingsStatus.True : FolderExcludeSettingsStatus.False;
+			}
+			if (oInfo.FolderExcludeSettingsStatus == FolderExcludeSettingsStatus.True)
+			{
+				oDataGridViewCellValueEventArgs.Value = "対象外";
+			}
+		}
+
+		// --------------------------------------------------------------------
 		// DGV 更新用フラグをクリア
 		// --------------------------------------------------------------------
 		private void ClearDirtyDgvLines()
@@ -509,6 +634,42 @@ namespace YukaLister
 		}
 
 		// --------------------------------------------------------------------
+		// ゆかり用データベースを作業用インメモリからディスクにコピー
+		// --------------------------------------------------------------------
+		private void CopyYukariDb()
+		{
+			// コピー
+			mLogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "ゆかり用データベースを出力");
+			using (SQLiteConnection aConnection = YlCommon.CreateYukariDbInDiskConnection(mYukaListerSettings))
+			{
+				YlCommon.YukariDbInMemoryConnection.BackupDatabase(aConnection, "main", "main", -1, null, 0);
+			}
+#if DEBUGz
+			LogWriter.ShowLogMessage(TraceEventType.Information, "CopyYukariDb() 出力完了");
+#endif
+
+			// FolderTaskStatus が DoneInMemory のものを更新
+			lock (mTargetFolderInfos)
+			{
+				foreach (TargetFolderInfo aTargetFolderInfo in mTargetFolderInfos)
+				{
+					if (aTargetFolderInfo.FolderTaskStatus == FolderTaskStatus.DoneInMemory)
+					{
+						if (aTargetFolderInfo.FolderTask == FolderTask.AddFileName)
+						{
+							aTargetFolderInfo.FolderTask = FolderTask.AddInfo;
+							aTargetFolderInfo.FolderTaskStatus = FolderTaskStatus.Queued;
+						}
+						else
+						{
+							aTargetFolderInfo.FolderTaskStatus = FolderTaskStatus.DoneInDisk;
+						}
+					}
+				}
+			}
+		}
+
+		// --------------------------------------------------------------------
 		// ゆかり用データベース（ディスク、メモリ両方）を作成
 		// --------------------------------------------------------------------
 		private void CreateYukariDb()
@@ -530,7 +691,7 @@ namespace YukaLister
 
 			// ディスクにコピー
 			Directory.CreateDirectory(Path.GetDirectoryName(mYukaListerSettings.YukariDbInDiskPath()));
-			YlCommon.CopyYukariDb(mYukaListerSettings);
+			CopyYukariDb();
 		}
 
 		// --------------------------------------------------------------------
@@ -643,9 +804,18 @@ namespace YukaLister
 					TargetFolderInfo aTargetFolderInfo;
 					Int32 aTargetFolderInfoIndex;
 					FindFolderTaskTarget(out aTargetFolderInfo, out aTargetFolderInfoIndex);
+					DoFolderTaskByWorkerPrevParentChangedIfNeededWithInvoke(aPrevParentTargetFolderInfo, aTargetFolderInfo);
+
+					// ファイル名追加が終わったらゆかり用データベースを一旦出力
+					if (aPrevFolderTask == FolderTask.AddFileName && (aTargetFolderInfo == null || aTargetFolderInfo.FolderTask != FolderTask.AddFileName))
+					{
+						CopyYukariDb();
+						aPrevFolderTask = FolderTask.__End__;
+						continue;
+					}
+
 					if (aTargetFolderInfo == null)
 					{
-						DoFolderTaskByWorkerPrevParentChangedIfNeededWithInvoke(aPrevParentTargetFolderInfo, aTargetFolderInfo);
 						mLogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "実行予定のフォルダータスクをすべて実行しました。");
 
 						// リストタスク実行
@@ -656,11 +826,6 @@ namespace YukaLister
 						break;
 					}
 
-					// ファイル名追加が終わったらゆかり用データベースを一旦出力
-					if (aPrevFolderTask == FolderTask.AddFileName && aTargetFolderInfo.FolderTask != FolderTask.AddFileName)
-					{
-						YlCommon.CopyYukariDb(mYukaListerSettings);
-					}
 					aPrevFolderTask = aTargetFolderInfo.FolderTask;
 
 					// 情報更新
@@ -681,7 +846,6 @@ namespace YukaLister
 						aParentTargetFolderInfoIndex = FindTargetFolderInfo(aTargetFolderInfo.ParentPath);
 						aParentTargetFolderInfo = mTargetFolderInfos[aParentTargetFolderInfoIndex];
 					}
-					DoFolderTaskByWorkerPrevParentChangedIfNeededWithInvoke(aPrevParentTargetFolderInfo, aTargetFolderInfo);
 					if (!aParentTargetFolderInfo.IsChildRunning)
 					{
 						aParentTargetFolderInfo.IsChildRunning = true;
@@ -754,8 +918,7 @@ namespace YukaLister
 				// 追加している間に環境設定が変わって待機中になった場合は新たな設定で追加が必要なので状態を更新しない
 				if (oTargetFolderInfo.FolderTask == FolderTask.AddFileName && oTargetFolderInfo.FolderTaskStatus == FolderTaskStatus.Running)
 				{
-					oTargetFolderInfo.FolderTask = FolderTask.AddInfo;
-					oTargetFolderInfo.FolderTaskStatus = FolderTaskStatus.Queued;
+					oTargetFolderInfo.FolderTaskStatus = FolderTaskStatus.DoneInMemory;
 				}
 			}
 		}
@@ -777,7 +940,7 @@ namespace YukaLister
 				// 追加している間に環境設定が変わって待機中になった場合は新たな設定で追加が必要なので状態を更新しない
 				if (oTargetFolderInfo.FolderTask == FolderTask.AddInfo && oTargetFolderInfo.FolderTaskStatus == FolderTaskStatus.Running)
 				{
-					oTargetFolderInfo.FolderTaskStatus = FolderTaskStatus.Done;
+					oTargetFolderInfo.FolderTaskStatus = FolderTaskStatus.DoneInMemory;
 				}
 			}
 		}
@@ -810,7 +973,7 @@ namespace YukaLister
 						Boolean aAllDone = true;
 						for (Int32 i = aPrevParentTargetFolderInfoIndex; i < aPrevParentTargetFolderInfoIndex + oPrevParentTargetFolderInfo.NumTotalFolders; i++)
 						{
-							if (mTargetFolderInfos[i].FolderTaskStatus != FolderTaskStatus.Done)
+							if (mTargetFolderInfos[i].FolderTaskStatus != FolderTaskStatus.DoneInMemory && mTargetFolderInfos[i].FolderTaskStatus != FolderTaskStatus.DoneInDisk)
 							{
 								aAllDone = false;
 								break;
@@ -865,43 +1028,11 @@ namespace YukaLister
 			// 削除
 			RemoveNicoKaraFiles(oTargetFolderInfo.Path);
 
-
-#if DEBUGz
-			Thread.Sleep(1000);
-#endif
-
 			// 状況更新
+			// mTargetFolderInfos にはアクセスしないが RemoveTargetFolderByWorker() の状況更新と競合しないようにロックした上で実行する
 			lock (mTargetFolderInfos)
 			{
-				oTargetFolderInfo.FolderTaskStatus = FolderTaskStatus.Done;
-#if false
-				if (oTargetFolderInfo.IsParent)
-				{
-					// 親フォルダーの場合
-					if (oTargetFolderInfo.NumTotalFolders == 1)
-					{
-						// 子供がいない場合は削除
-						mTargetFolderInfos.Remove(oTargetFolderInfo);
-					}
-					else
-					{
-						// 子供がいる場合は待機
-						oTargetFolderInfo.FolderTaskStatus = FolderTaskStatus.Done;
-					}
-				}
-				else
-				{
-					// 子フォルダーの場合は自身（子供）を削除
-					mTargetFolderInfos.Remove(oTargetFolderInfo);
-
-					// 親を操作
-					oParentTargetFolderInfo.NumTotalFolders--;
-					if (oParentTargetFolderInfo.NumTotalFolders == 1)
-					{
-						mTargetFolderInfos.Remove(oParentTargetFolderInfo);
-					}
-				}
-#endif
+				oTargetFolderInfo.FolderTaskStatus = FolderTaskStatus.DoneInMemory;
 			}
 		}
 
@@ -953,9 +1084,8 @@ namespace YukaLister
 				// ファイル名追加タスクがあれば優先的に実行する
 				for (Int32 i = 0; i < mTargetFolderInfos.Count; i++)
 				{
-					if (mTargetFolderInfos[i].FolderTask == FolderTask.AddFileName)
+					if (mTargetFolderInfos[i].FolderTaskStatus == FolderTaskStatus.Queued && mTargetFolderInfos[i].FolderTask == FolderTask.AddFileName)
 					{
-						Debug.Assert(mTargetFolderInfos[i].FolderTaskStatus == FolderTaskStatus.Queued, "FindFolderTaskTarget() Add_FileName bad FolderTaskStatus");
 						oTargetFolderInfo = mTargetFolderInfos[i];
 						oTargetFolderInfoIndex = i;
 						return;
@@ -1400,7 +1530,7 @@ namespace YukaLister
 				SetYukaListerStatusWithInvoke();
 
 				// ゆかり用データベース出力
-				YlCommon.CopyYukariDb(mYukaListerSettings);
+				CopyYukariDb();
 
 				// リスト出力
 				YukariOutputWriter aYukariOutputWriter = new YukariOutputWriter();
@@ -2841,91 +2971,7 @@ namespace YukaLister
 							e.Value = aInfo.IsParent ? "親" : null;
 							break;
 						case FolderColumns.Status:
-							DataGridViewRow aRow = DataGridViewTargetFolders.Rows[e.RowIndex];
-							switch (aInfo.FolderTaskStatus)
-							{
-								case FolderTaskStatus.Done:
-									if (aInfo.IsParent && aInfo.IsChildRunning)
-									{
-										e.Value = "サブフォルダー待ち";
-										aRow.Cells[e.ColumnIndex].Style = mCellStyles[(Int32)YukaListerStatus.Running];
-									}
-									else
-									{
-										if (aInfo.FolderTask == FolderTask.Remove)
-										{
-											e.Value = "削除済";
-										}
-										else
-										{
-											if (aInfo.FolderExcludeSettingsStatus == FolderExcludeSettingsStatus.Unchecked)
-											{
-												FolderSettingsInDisk aFolderSettingsInDisk = YlCommon.LoadFolderSettings(aInfo.Path);
-												aInfo.FolderExcludeSettingsStatus = aFolderSettingsInDisk.IsExclude ? FolderExcludeSettingsStatus.True : FolderExcludeSettingsStatus.False;
-											}
-											if (aInfo.FolderExcludeSettingsStatus == FolderExcludeSettingsStatus.True)
-											{
-												e.Value = "対象外";
-											}
-											else
-											{
-												e.Value = "済";
-											}
-										}
-										aRow.Cells[e.ColumnIndex].Style = mCellStyles[(Int32)YukaListerStatus.Ready];
-									}
-									break;
-								case FolderTaskStatus.Error:
-									e.Value = "エラー";
-									aRow.Cells[e.ColumnIndex].Style = mCellStyles[(Int32)YukaListerStatus.Error];
-									break;
-								default:
-									if (mYukaListerStatus == YukaListerStatus.Error)
-									{
-										e.Value = "エラー解決待ち";
-										aRow.Cells[e.ColumnIndex].Style = mCellStyles[(Int32)YukaListerStatus.Error];
-									}
-									else
-									{
-										String aLabel = null;
-										switch (aInfo.FolderTask)
-										{
-											case FolderTask.AddFileName:
-												aLabel = "追加";
-												break;
-											case FolderTask.AddInfo:
-												aLabel = "ファイル名検索可";
-												break;
-											case FolderTask.Remove:
-												aLabel = "削除";
-												break;
-											case FolderTask.Update:
-												aLabel = "更新";
-												break;
-											default:
-												Debug.Assert(false, "DataGridViewTargetFolders_CellValueNeeded() bad aInfo.FolderTask");
-												break;
-										}
-										if (aInfo.FolderTaskStatus == FolderTaskStatus.Queued)
-										{
-											if (aInfo.FolderTask != FolderTask.AddInfo)
-											{
-												aLabel += "予定";
-											}
-											aRow.Cells[e.ColumnIndex].Style = DataGridViewTargetFolders.DefaultCellStyle;
-										}
-										else
-										{
-											if (aInfo.FolderTask != FolderTask.AddInfo)
-											{
-												aLabel += "中";
-											}
-											aRow.Cells[e.ColumnIndex].Style = mCellStyles[(Int32)YukaListerStatus.Running];
-										}
-										e.Value = aLabel;
-									}
-									break;
-							}
+							SetCellValueStatus(e, aInfo);
 							break;
 						case FolderColumns.Folder:
 							e.Value = YlCommon.ShortenPath(aInfo.Path);

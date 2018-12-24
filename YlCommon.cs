@@ -85,10 +85,11 @@ namespace YukaLister.Shared
 	// --------------------------------------------------------------------
 	public enum FolderTaskStatus
 	{
-		Queued,     // 待機
-		Running,    // 実行中
-		Error,      // エラー
-		Done,       // 完了
+		Queued,			// 待機
+		Running,		// 実行中
+		Error,			// エラー
+		DoneInMemory,	// 完了（インメモリデータベースへの反映）
+		DoneInDisk,     // 完了（ゆかり用データベースへの反映）
 	}
 
 	// --------------------------------------------------------------------
@@ -602,21 +603,6 @@ namespace YukaLister.Shared
 			}
 
 			return oIdPrefix;
-		}
-
-		// --------------------------------------------------------------------
-		// ゆかり用データベースを作業用インメモリからディスクにコピー
-		// --------------------------------------------------------------------
-		public static void CopyYukariDb(YukaListerSettings oYukaListerSettings)
-		{
-			LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "ゆかり用データベースを出力");
-			using (SQLiteConnection aConnection = CreateYukariDbInDiskConnection(oYukaListerSettings))
-			{
-				YukariDbInMemoryConnection.BackupDatabase(aConnection, "main", "main", -1, null, 0);
-			}
-#if DEBUG
-			LogWriter.ShowLogMessage(TraceEventType.Information, "CopyYukariDb() 出力完了");
-#endif
 		}
 
 		// --------------------------------------------------------------------
