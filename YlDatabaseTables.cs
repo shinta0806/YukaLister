@@ -1226,11 +1226,11 @@ namespace YukaLister.Shared
 		[Column(Name = FIELD_NAME_FOUND_UID, DbType = LinqUtils.DB_TYPE_INT64, CanBeNull = false, IsPrimaryKey = true)]
 		public Int64 Uid { get; set; }
 
-		// フルパス
+		// フルパス（shorten 形式）
 		[Column(Name = FIELD_NAME_FOUND_PATH, DbType = LinqUtils.DB_TYPE_STRING, CanBeNull = false)]
 		public String Path { get; set; }
 
-		// フォルダー（項目削除用：小文字に変換して格納）
+		// フォルダー（項目削除用：小文字に変換して格納、shorten 形式）
 		[Column(Name = FIELD_NAME_FOUND_FOLDER, DbType = LinqUtils.DB_TYPE_STRING, CanBeNull = false)]
 		public String Folder { get; set; }
 

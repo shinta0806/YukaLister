@@ -183,6 +183,54 @@ namespace YukaLister
 		}
 
 		// --------------------------------------------------------------------
+		// ファイルの情報を検索してゆかり用データベースに追加
+		// FindNicoKaraFiles() で追加されない情報をすべて付与する
+		// ファイルは再帰検索しない
+		// --------------------------------------------------------------------
+		private void AddNicoKaraInfo(String oFolderPath)
+		{
+			// フォルダー設定を読み込む
+			FolderSettingsInDisk aFolderSettingsInDisk = YlCommon.LoadFolderSettings(oFolderPath);
+			FolderSettingsInMemory aFolderSettingsInMemory = YlCommon.CreateFolderSettingsInMemory(aFolderSettingsInDisk);
+			String aFolderPathLower = YlCommon.ShortenPath(oFolderPath).ToLower();
+
+			using (SQLiteConnection aMusicInfoDbConnection = YlCommon.CreateMusicInfoDbConnection())
+			{
+				using (SQLiteCommand aMusicInfoDbCmd = new SQLiteCommand(aMusicInfoDbConnection))
+				{
+					using (DataContext aMusicInfoDbContext = new DataContext(aMusicInfoDbConnection))
+					{
+						using (DataContext aYukariDbContext = new DataContext(YlCommon.YukariDbInMemoryConnection))
+						{
+							Table<TFound> aTableFound = aYukariDbContext.GetTable<TFound>();
+							IQueryable<TFound> aQueryResult =
+									from x in aTableFound
+									where x.Folder == aFolderPathLower
+									select x;
+
+							// カテゴリー正規化用
+							List<String> aCategoryNames = YlCommon.SelectCategoryNames(aMusicInfoDbConnection);
+
+							// 情報付与
+							foreach (TFound aRecord in aQueryResult)
+							{
+								FileInfo aFileInfo = new FileInfo(YlCommon.ExtendPath(aRecord.Path));
+								aRecord.LastWriteTime = JulianDay.DateTimeToModifiedJulianDate(aFileInfo.LastWriteTime);
+								aRecord.FileSize = aFileInfo.Length;
+								SetTFoundValue(aRecord, aFolderSettingsInMemory, aMusicInfoDbCmd, aMusicInfoDbContext, aCategoryNames);
+							}
+
+							// コミット
+							aYukariDbContext.SubmitChanges();
+
+							mClosingCancellationTokenSource.Token.ThrowIfCancellationRequested();
+						}
+					}
+				}
+			}
+		}
+
+		// --------------------------------------------------------------------
 		// フォルダー（サブフォルダー含む）を対象フォルダーに追加
 		// 汎用ワーカースレッドで実行されることが前提
 		// ＜引数＞ oParentFolder: （extended-length ではない）通常表記
@@ -265,7 +313,7 @@ namespace YukaLister
 							TargetFolderInfo aTargetFolderInfo = new TargetFolderInfo();
 							aTargetFolderInfo.Path = aFolder;
 							aTargetFolderInfo.ParentPath = aFolders[0];
-							aTargetFolderInfo.FolderTask = FolderTask.Add;
+							aTargetFolderInfo.FolderTask = FolderTask.AddFileName;
 							aTargetFolderInfo.FolderTaskStatus = FolderTaskStatus.Queued;
 							aTargetFolderInfo.FolderExcludeSettingsStatus = FolderExcludeSettingsStatus.Unchecked;
 							aTargetFolderInfo.FolderSettingsStatus = FolderSettingsStatus.Unchecked;
@@ -581,6 +629,7 @@ namespace YukaLister
 			{
 				ClearDirtyDgvLines();
 				TargetFolderInfo aPrevParentTargetFolderInfo = null;
+				FolderTask aPrevFolderTask = FolderTask.__End__;
 
 				for (; ; )
 				{
@@ -591,20 +640,9 @@ namespace YukaLister
 					}
 
 					// 実行すべきタスクを確認
-					TargetFolderInfo aTargetFolderInfo = null;
-					Int32 aTargetFolderInfoIndex = -1;
-					lock (mTargetFolderInfos)
-					{
-						for (Int32 i = 0; i < mTargetFolderInfos.Count; i++)
-						{
-							if (mTargetFolderInfos[i].FolderTaskStatus == FolderTaskStatus.Queued)
-							{
-								aTargetFolderInfo = mTargetFolderInfos[i];
-								aTargetFolderInfoIndex = i;
-								break;
-							}
-						}
-					}
+					TargetFolderInfo aTargetFolderInfo;
+					Int32 aTargetFolderInfoIndex;
+					FindFolderTaskTarget(out aTargetFolderInfo, out aTargetFolderInfoIndex);
 					if (aTargetFolderInfo == null)
 					{
 						DoFolderTaskByWorkerPrevParentChangedIfNeededWithInvoke(aPrevParentTargetFolderInfo, aTargetFolderInfo);
@@ -618,10 +656,16 @@ namespace YukaLister
 						break;
 					}
 
+					// ファイル名追加が終わったらゆかり用データベースを一旦出力
+					if (aPrevFolderTask == FolderTask.AddFileName && aTargetFolderInfo.FolderTask != FolderTask.AddFileName)
+					{
+						YlCommon.CopyYukariDb(mYukaListerSettings);
+					}
+					aPrevFolderTask = aTargetFolderInfo.FolderTask;
+
 					// 情報更新
 					aTargetFolderInfo.FolderTaskStatus = FolderTaskStatus.Running;
 					mLogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "対象：" + aTargetFolderInfo.FolderTaskStatus.ToString() + " / " + aTargetFolderInfo.Path);
-					//InvalidateDataGridViewTargetFoldersWithInvoke(aTargetFolderInfo.Path);
 					ExtendDirtyDgvLines(aTargetFolderInfoIndex);
 					if (!mEnabledYukaListerStatusRunningMessages[(Int32)YukaListerStatusRunningMessage.DoFolderTask])
 					{
@@ -641,15 +685,17 @@ namespace YukaLister
 					if (!aParentTargetFolderInfo.IsChildRunning)
 					{
 						aParentTargetFolderInfo.IsChildRunning = true;
-						//InvalidateDataGridViewTargetFoldersWithInvoke(aParentTargetFolderInfo.Path);
 						ExtendDirtyDgvLines(aParentTargetFolderInfoIndex);
 					}
 
 					// FolderTask ごとの処理
 					switch (aTargetFolderInfo.FolderTask)
 					{
-						case FolderTask.Add:
-							DoFolderTaskByWorkerAdd(aTargetFolderInfo, aParentTargetFolderInfo);
+						case FolderTask.AddFileName:
+							DoFolderTaskByWorkerAddFileName(aTargetFolderInfo, aParentTargetFolderInfo);
+							break;
+						case FolderTask.AddInfo:
+							DoFolderTaskByWorkerAddInfo(aTargetFolderInfo, aParentTargetFolderInfo);
 							break;
 						case FolderTask.Remove:
 							DoFolderTaskByWorkerRemove(aTargetFolderInfo, aParentTargetFolderInfo);
@@ -665,14 +711,6 @@ namespace YukaLister
 
 					// 次の準備
 					aPrevParentTargetFolderInfo = aParentTargetFolderInfo;
-
-#if false
-					// 次のフォルダータスク実行
-					Invoke(new Action(() =>
-					{
-						WindowsApi.PostMessage(Handle, YlCommon.WM_LAUNCH_FOLDER_TASK_REQUESTED, (IntPtr)0, (IntPtr)0);
-					}));
-#endif
 				}
 			}
 			catch (OperationCanceledException)
@@ -700,17 +738,13 @@ namespace YukaLister
 		}
 
 		// --------------------------------------------------------------------
-		// フォルダー追加タスク実行
+		// ファイル名追加タスク実行
 		// フォルダータスクワーカースレッドで実行されることが前提
 		// --------------------------------------------------------------------
-		private void DoFolderTaskByWorkerAdd(TargetFolderInfo oTargetFolderInfo, TargetFolderInfo oParentTargetFolderInfo)
+		private void DoFolderTaskByWorkerAddFileName(TargetFolderInfo oTargetFolderInfo, TargetFolderInfo oParentTargetFolderInfo)
 		{
 			// 検索
 			FindNicoKaraFiles(oTargetFolderInfo.Path);
-
-#if DEBUGz
-			Thread.Sleep(1000);
-#endif
 
 			// 状況更新
 			// mTargetFolderInfos にはアクセスしないが RemoveTargetFolderByWorker() の状況更新と競合しないようにロックした上で実行する
@@ -718,23 +752,34 @@ namespace YukaLister
 			{
 				// 追加している間にユーザーから削除指定された場合は削除を優先するので状態を更新しない
 				// 追加している間に環境設定が変わって待機中になった場合は新たな設定で追加が必要なので状態を更新しない
-				if (oTargetFolderInfo.FolderTask == FolderTask.Add && oTargetFolderInfo.FolderTaskStatus == FolderTaskStatus.Running)
+				if (oTargetFolderInfo.FolderTask == FolderTask.AddFileName && oTargetFolderInfo.FolderTaskStatus == FolderTaskStatus.Running)
+				{
+					oTargetFolderInfo.FolderTask = FolderTask.AddInfo;
+					oTargetFolderInfo.FolderTaskStatus = FolderTaskStatus.Queued;
+				}
+			}
+		}
+
+		// --------------------------------------------------------------------
+		// フォルダー追加タスク実行
+		// フォルダータスクワーカースレッドで実行されることが前提
+		// --------------------------------------------------------------------
+		private void DoFolderTaskByWorkerAddInfo(TargetFolderInfo oTargetFolderInfo, TargetFolderInfo oParentTargetFolderInfo)
+		{
+			// 情報追加
+			AddNicoKaraInfo(oTargetFolderInfo.Path);
+
+			// 状況更新
+			// mTargetFolderInfos にはアクセスしないが RemoveTargetFolderByWorker() の状況更新と競合しないようにロックした上で実行する
+			lock (mTargetFolderInfos)
+			{
+				// 追加している間にユーザーから削除指定された場合は削除を優先するので状態を更新しない
+				// 追加している間に環境設定が変わって待機中になった場合は新たな設定で追加が必要なので状態を更新しない
+				if (oTargetFolderInfo.FolderTask == FolderTask.AddInfo && oTargetFolderInfo.FolderTaskStatus == FolderTaskStatus.Running)
 				{
 					oTargetFolderInfo.FolderTaskStatus = FolderTaskStatus.Done;
 				}
 			}
-
-#if false
-			// 情報更新
-			InvalidateDataGridViewTargetFoldersWithInvoke(oTargetFolderInfo.Path);
-
-			// 親の情報更新
-			if (oParentTargetFolderInfo != null)
-			{
-				oParentTargetFolderInfo.IsChildRunning = false;
-				InvalidateDataGridViewTargetFoldersWithInvoke(oParentTargetFolderInfo.Path);
-			}
-#endif
 		}
 
 		// --------------------------------------------------------------------
@@ -780,7 +825,8 @@ namespace YukaLister
 						// 子供のタスクが完了しているので処理を実行
 						switch (oPrevParentTargetFolderInfo.FolderTask)
 						{
-							case FolderTask.Add:
+							case FolderTask.AddFileName:
+							case FolderTask.AddInfo:
 								DoFolderTaskByWorkerPrevParentChangedAdd(aPrevParentTargetFolderInfoIndex, oPrevParentTargetFolderInfo);
 								break;
 							case FolderTask.Remove:
@@ -895,7 +941,43 @@ namespace YukaLister
 		}
 
 		// --------------------------------------------------------------------
+		// 次に実行すべきフォルダータスクを検索
+		// --------------------------------------------------------------------
+		private void FindFolderTaskTarget(out TargetFolderInfo oTargetFolderInfo, out Int32 oTargetFolderInfoIndex)
+		{
+			oTargetFolderInfo = null;
+			oTargetFolderInfoIndex = -1;
+
+			lock (mTargetFolderInfos)
+			{
+				// ファイル名追加タスクがあれば優先的に実行する
+				for (Int32 i = 0; i < mTargetFolderInfos.Count; i++)
+				{
+					if (mTargetFolderInfos[i].FolderTask == FolderTask.AddFileName)
+					{
+						Debug.Assert(mTargetFolderInfos[i].FolderTaskStatus == FolderTaskStatus.Queued, "FindFolderTaskTarget() Add_FileName bad FolderTaskStatus");
+						oTargetFolderInfo = mTargetFolderInfos[i];
+						oTargetFolderInfoIndex = i;
+						return;
+					}
+				}
+
+				// その他の待ちタスクを検索
+				for (Int32 i = 0; i < mTargetFolderInfos.Count; i++)
+				{
+					if (mTargetFolderInfos[i].FolderTaskStatus == FolderTaskStatus.Queued)
+					{
+						oTargetFolderInfo = mTargetFolderInfos[i];
+						oTargetFolderInfoIndex = i;
+						return;
+					}
+				}
+			}
+		}
+
+		// --------------------------------------------------------------------
 		// 指定フォルダ内のファイルを検索してゆかり用データベースに追加
+		// ユニーク ID、フルパス、フォルダーのみ記入する
 		// ファイルは再帰検索しない
 		// --------------------------------------------------------------------
 		private void FindNicoKaraFiles(String oFolderPath)
@@ -907,65 +989,48 @@ namespace YukaLister
 				return;
 			}
 			FolderSettingsInMemory aFolderSettingsInMemory = YlCommon.CreateFolderSettingsInMemory(aFolderSettingsInDisk);
+			String aFolderPathLower = YlCommon.ShortenPath(oFolderPath).ToLower();
 
-			using (SQLiteConnection aMusicInfoDbConnection = YlCommon.CreateMusicInfoDbConnection())
+			using (DataContext aYukariDbContext = new DataContext(YlCommon.YukariDbInMemoryConnection))
 			{
-				using (SQLiteCommand aMusicInfoDbCmd = new SQLiteCommand(aMusicInfoDbConnection))
+				Table<TFound> aTableFound = aYukariDbContext.GetTable<TFound>();
+				IQueryable<Int64> aQueryResult =
+						from x in aTableFound
+						select x.Uid;
+				Int64 aUid = (aQueryResult.Count() == 0 ? 0 : aQueryResult.Max()) + 1;
+
+				// 検索
+				String[] aAllPathes;
+				try
 				{
-					using (DataContext aMusicInfoDbContext = new DataContext(aMusicInfoDbConnection))
-					{
-						using (DataContext aYukariDbContext = new DataContext(YlCommon.YukariDbInMemoryConnection))
-						{
-							Table<TFound> aTableFound = aYukariDbContext.GetTable<TFound>();
-							IQueryable<Int64> aQueryResult =
-									from x in aTableFound
-									select x.Uid;
-							Int64 aUid = (aQueryResult.Count() == 0 ? 0 : aQueryResult.Max()) + 1;
-
-							// 検索
-							String[] aAllPathes;
-							try
-							{
-								aAllPathes = Directory.GetFiles(oFolderPath);
-							}
-							catch (Exception)
-							{
-								return;
-							}
-
-							// カテゴリー正規化用
-							List<String> aCategoryNames = YlCommon.SelectCategoryNames(aMusicInfoDbConnection);
-
-							// 挿入
-							foreach (String aPath in aAllPathes)
-							{
-								if (!mYukaListerSettings.TargetExts.Contains(Path.GetExtension(aPath).ToLower()))
-								{
-									continue;
-								}
-
-								TFound aRecord = new TFound();
-								aRecord.Uid = aUid;
-								aRecord.Path = YlCommon.ShortenPath(aPath);
-								aRecord.Folder = Path.GetDirectoryName(aRecord.Path).ToLower();
-								FileInfo aFileInfo = new FileInfo(aPath);
-								aRecord.LastWriteTime = JulianDay.DateTimeToModifiedJulianDate(aFileInfo.LastWriteTime);
-								aRecord.FileSize = aFileInfo.Length;
-								SetTFoundValue(aRecord, aFolderSettingsInMemory, aMusicInfoDbCmd, aMusicInfoDbContext, aCategoryNames);
-								aTableFound.InsertOnSubmit(aRecord);
-
-								aUid++;
-							}
-
-							mClosingCancellationTokenSource.Token.ThrowIfCancellationRequested();
-
-							// コミット
-							aYukariDbContext.SubmitChanges();
-
-							mClosingCancellationTokenSource.Token.ThrowIfCancellationRequested();
-						}
-					}
+					aAllPathes = Directory.GetFiles(oFolderPath);
 				}
+				catch (Exception)
+				{
+					return;
+				}
+
+				// 挿入
+				foreach (String aPath in aAllPathes)
+				{
+					if (!mYukaListerSettings.TargetExts.Contains(Path.GetExtension(aPath).ToLower()))
+					{
+						continue;
+					}
+
+					TFound aRecord = new TFound();
+					aRecord.Uid = aUid;
+					aRecord.Path = YlCommon.ShortenPath(aPath);
+					aRecord.Folder = aFolderPathLower;
+					aTableFound.InsertOnSubmit(aRecord);
+
+					aUid++;
+				}
+
+				// コミット
+				aYukariDbContext.SubmitChanges();
+
+				mClosingCancellationTokenSource.Token.ThrowIfCancellationRequested();
 			}
 		}
 
@@ -1334,8 +1399,7 @@ namespace YukaLister
 				mEnabledYukaListerStatusRunningMessages[(Int32)YukaListerStatusRunningMessage.ListTask] = true;
 				SetYukaListerStatusWithInvoke();
 
-				// メモリからディスクへコピー
-				// ToDo: リストタスクから分離する
+				// ゆかり用データベース出力
 				YlCommon.CopyYukariDb(mYukaListerSettings);
 
 				// リスト出力
@@ -2826,8 +2890,11 @@ namespace YukaLister
 										String aLabel = null;
 										switch (aInfo.FolderTask)
 										{
-											case FolderTask.Add:
+											case FolderTask.AddFileName:
 												aLabel = "追加";
+												break;
+											case FolderTask.AddInfo:
+												aLabel = "ファイル名検索可";
 												break;
 											case FolderTask.Remove:
 												aLabel = "削除";
@@ -2841,14 +2908,21 @@ namespace YukaLister
 										}
 										if (aInfo.FolderTaskStatus == FolderTaskStatus.Queued)
 										{
-											e.Value = aLabel + "予定";
+											if (aInfo.FolderTask != FolderTask.AddInfo)
+											{
+												aLabel += "予定";
+											}
 											aRow.Cells[e.ColumnIndex].Style = DataGridViewTargetFolders.DefaultCellStyle;
 										}
 										else
 										{
-											e.Value = aLabel + "中";
+											if (aInfo.FolderTask != FolderTask.AddInfo)
+											{
+												aLabel += "中";
+											}
 											aRow.Cells[e.ColumnIndex].Style = mCellStyles[(Int32)YukaListerStatus.Running];
 										}
+										e.Value = aLabel;
 									}
 									break;
 							}

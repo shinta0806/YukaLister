@@ -73,9 +73,11 @@ namespace YukaLister.Shared
 	// --------------------------------------------------------------------
 	public enum FolderTask
 	{
-		Add,        // 追加
-		Remove,     // 削除
-		Update,     // 更新
+		AddFileName,    // 追加（ファイル名のみ）
+		AddInfo,        // 追加（ファイルが追加されたレコードに対してその他の情報を付与）
+		Remove,         // 削除
+		Update,         // 更新
+		__End__
 	}
 
 	// --------------------------------------------------------------------
@@ -275,7 +277,7 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		public const String APP_ID = "YukaLister";
 		public const String APP_NAME_J = "ゆかりすたー";
-		public const String APP_VER = "Ver 7.23 β";
+		public const String APP_VER = "Ver 7.30 β";
 		public const String COPYRIGHT_J = "Copyright (C) 2018 by SHINTA";
 
 		// --------------------------------------------------------------------
@@ -607,10 +609,14 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		public static void CopyYukariDb(YukaListerSettings oYukaListerSettings)
 		{
+			LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "ゆかり用データベースを出力");
 			using (SQLiteConnection aConnection = CreateYukariDbInDiskConnection(oYukaListerSettings))
 			{
 				YukariDbInMemoryConnection.BackupDatabase(aConnection, "main", "main", -1, null, 0);
 			}
+#if DEBUG
+			LogWriter.ShowLogMessage(TraceEventType.Information, "CopyYukariDb() 出力完了");
+#endif
 		}
 
 		// --------------------------------------------------------------------

@@ -785,15 +785,17 @@ namespace YukaLister.Shared
 							aPrevTFound.Head, OutputItems.TieUpName, oIsNewExists);
 				}
 
-				if (/*aPrevTFound == null*/aTieUpNamesAndTFounds.Count == 0
-						|| aPrevTFound != null && aTFound.TieUpName != aPrevTFound.TieUpName)
+				if (!String.IsNullOrEmpty(aTFound.TieUpName))
 				{
-					// 番組名が新しくなった
-					aTieUpNamesAndTFounds[aTFound.TieUpName] = new List<TFound>();
-				}
+					if (aTieUpNamesAndTFounds.Count == 0 || aPrevTFound != null && aTFound.TieUpName != aPrevTFound.TieUpName)
+					{
+						// 番組名が新しくなった
+						aTieUpNamesAndTFounds[aTFound.TieUpName] = new List<TFound>();
+					}
 
-				// 曲情報追加
-				aTieUpNamesAndTFounds[aTFound.TieUpName].Add(aTFound);
+					// 曲情報追加
+					aTieUpNamesAndTFounds[aTFound.TieUpName].Add(aTFound);
+				}
 
 				// ループ処理
 				aPrevTFound = aTFound;
