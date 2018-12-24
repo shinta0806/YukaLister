@@ -275,7 +275,7 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		public const String APP_ID = "YukaLister";
 		public const String APP_NAME_J = "ゆかりすたー";
-		public const String APP_VER = "Ver 7.21 β";
+		public const String APP_VER = "Ver 7.23 β";
 		public const String COPYRIGHT_J = "Copyright (C) 2018 by SHINTA";
 
 		// --------------------------------------------------------------------
@@ -518,6 +518,9 @@ namespace YukaLister.Shared
 		// extended-length なパス表記を使用するかどうか
 		public static Boolean IsExLenEnabled { get; set; }
 
+		// ゆかり用データベース（作業用インメモリ）；閉じると消滅するのでアプリ起動中ずっと開きっぱなし
+		public static SQLiteConnection YukariDbInMemoryConnection { get; set; }
+
 		// ログ
 		public static LogWriter LogWriter { get; set; }
 
@@ -597,6 +600,17 @@ namespace YukaLister.Shared
 			}
 
 			return oIdPrefix;
+		}
+
+		// --------------------------------------------------------------------
+		// ゆかり用データベースを作業用インメモリからディスクにコピー
+		// --------------------------------------------------------------------
+		public static void CopyYukariDb(YukaListerSettings oYukaListerSettings)
+		{
+			using (SQLiteConnection aConnection = CreateYukariDbInDiskConnection(oYukaListerSettings))
+			{
+				YukariDbInMemoryConnection.BackupDatabase(aConnection, "main", "main", -1, null, 0);
+			}
 		}
 
 		// --------------------------------------------------------------------
@@ -958,11 +972,11 @@ namespace YukaLister.Shared
 		}
 
 		// --------------------------------------------------------------------
-		// ゆかり用データベースに接続
+		// ゆかり用データベース（ディスク）に接続
 		// --------------------------------------------------------------------
-		public static SQLiteConnection CreateYukariDbConnection(YukaListerSettings oYukaListerSettings)
+		public static SQLiteConnection CreateYukariDbInDiskConnection(YukaListerSettings oYukaListerSettings)
 		{
-			return YlCommon.CreateDbConnection(oYukaListerSettings.YukariDbPath());
+			return YlCommon.CreateDbConnection(oYukaListerSettings.YukariDbInDiskPath());
 		}
 
 		// --------------------------------------------------------------------
@@ -1958,14 +1972,11 @@ namespace YukaLister.Shared
 		{
 			oOutputWriter.LogWriter = LogWriter;
 			oOutputWriter.OutputSettings.Load();
-			using (SQLiteConnection aYukariDbConnection = YlCommon.CreateYukariDbConnection(oYukaListerSettings))
+			using (DataContext aYukariDbContext = new DataContext(YlCommon.YukariDbInMemoryConnection))
 			{
-				using (DataContext aYukariDbContext = new DataContext(aYukariDbConnection))
-				{
-					Table<TFound> aTableFound = aYukariDbContext.GetTable<TFound>();
-					oOutputWriter.TableFound = aTableFound;
-					oOutputWriter.Output();
-				}
+				Table<TFound> aTableFound = aYukariDbContext.GetTable<TFound>();
+				oOutputWriter.TableFound = aTableFound;
+				oOutputWriter.Output();
 			}
 		}
 

@@ -461,7 +461,7 @@ namespace YukaLister
 		}
 
 		// --------------------------------------------------------------------
-		// ゆかり用データベースを作成
+		// ゆかり用データベース（ディスク、メモリ両方）を作成
 		// --------------------------------------------------------------------
 		private void CreateYukariDb()
 		{
@@ -469,22 +469,20 @@ namespace YukaLister
 			{
 				return;
 			}
-			Directory.CreateDirectory(Path.GetDirectoryName(mYukaListerSettings.YukariDbPath()));
+
 			mLogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "ゆかり用データベースを作成します...");
 
-			using (SQLiteConnection aConnection = YlCommon.CreateYukariDbConnection(mYukaListerSettings))
+			// 作業用インメモリデータベースを作成
+			YlCommon.YukariDbInMemoryConnection = YlCommon.CreateDbConnection(":memory:");
+			using (SQLiteCommand aCmd = new SQLiteCommand(YlCommon.YukariDbInMemoryConnection))
 			{
-				LinqUtils.DropAllTables(aConnection);
-
-				using (SQLiteCommand aCmd = new SQLiteCommand(aConnection))
-				{
-					using (DataContext aContext = new DataContext(aConnection))
-					{
-						CreateYukariDbFoundTable(aCmd);
-					}
-				}
-				YlCommon.CreateDbPropertyTable(aConnection);
+				CreateYukariDbFoundTable(aCmd);
 			}
+			YlCommon.CreateDbPropertyTable(YlCommon.YukariDbInMemoryConnection);
+
+			// ディスクにコピー
+			Directory.CreateDirectory(Path.GetDirectoryName(mYukaListerSettings.YukariDbInDiskPath()));
+			YlCommon.CopyYukariDb(mYukaListerSettings);
 		}
 
 		// --------------------------------------------------------------------
@@ -916,63 +914,57 @@ namespace YukaLister
 				{
 					using (DataContext aMusicInfoDbContext = new DataContext(aMusicInfoDbConnection))
 					{
-						using (SQLiteConnection aYukariDbConnection = YlCommon.CreateYukariDbConnection(mYukaListerSettings))
+						using (DataContext aYukariDbContext = new DataContext(YlCommon.YukariDbInMemoryConnection))
 						{
-							using (DataContext aYukariDbContext = new DataContext(aYukariDbConnection))
+							Table<TFound> aTableFound = aYukariDbContext.GetTable<TFound>();
+							IQueryable<Int64> aQueryResult =
+									from x in aTableFound
+									select x.Uid;
+							Int64 aUid = (aQueryResult.Count() == 0 ? 0 : aQueryResult.Max()) + 1;
+
+							// 検索
+							String[] aAllPathes;
+							try
 							{
-								Table<TFound> aTableFound = aYukariDbContext.GetTable<TFound>();
-								IQueryable<Int64> aQueryResult =
-										from x in aTableFound
-										select x.Uid;
-								Int64 aUid = (aQueryResult.Count() == 0 ? 0 : aQueryResult.Max()) + 1;
-
-								// 検索
-								String[] aAllPathes;
-								try
-								{
-									aAllPathes = Directory.GetFiles(oFolderPath);
-								}
-								catch (Exception)
-								{
-									return;
-								}
-
-								// カテゴリー正規化用
-								List<String> aCategoryNames = YlCommon.SelectCategoryNames(aMusicInfoDbConnection);
-
-								// 挿入
-								foreach (String aPath in aAllPathes)
-								{
-									if (!mYukaListerSettings.TargetExts.Contains(Path.GetExtension(aPath).ToLower()))
-									{
-										continue;
-									}
-
-									TFound aRecord = new TFound();
-									aRecord.Uid = aUid;
-									aRecord.Path = YlCommon.ShortenPath(aPath);
-									aRecord.Folder = Path.GetDirectoryName(aRecord.Path).ToLower();
-									FileInfo aFileInfo = new FileInfo(aPath);
-									aRecord.LastWriteTime = JulianDay.DateTimeToModifiedJulianDate(aFileInfo.LastWriteTime);
-									aRecord.FileSize = aFileInfo.Length;
-									SetTFoundValue(aRecord, aFolderSettingsInMemory, aMusicInfoDbCmd, aMusicInfoDbContext, aCategoryNames);
-									aTableFound.InsertOnSubmit(aRecord);
-
-									aUid++;
-								}
-
-								mClosingCancellationTokenSource.Token.ThrowIfCancellationRequested();
-
-								// コミット
-								aYukariDbContext.SubmitChanges();
-
-								mClosingCancellationTokenSource.Token.ThrowIfCancellationRequested();
+								aAllPathes = Directory.GetFiles(oFolderPath);
+							}
+							catch (Exception)
+							{
+								return;
 							}
 
+							// カテゴリー正規化用
+							List<String> aCategoryNames = YlCommon.SelectCategoryNames(aMusicInfoDbConnection);
+
+							// 挿入
+							foreach (String aPath in aAllPathes)
+							{
+								if (!mYukaListerSettings.TargetExts.Contains(Path.GetExtension(aPath).ToLower()))
+								{
+									continue;
+								}
+
+								TFound aRecord = new TFound();
+								aRecord.Uid = aUid;
+								aRecord.Path = YlCommon.ShortenPath(aPath);
+								aRecord.Folder = Path.GetDirectoryName(aRecord.Path).ToLower();
+								FileInfo aFileInfo = new FileInfo(aPath);
+								aRecord.LastWriteTime = JulianDay.DateTimeToModifiedJulianDate(aFileInfo.LastWriteTime);
+								aRecord.FileSize = aFileInfo.Length;
+								SetTFoundValue(aRecord, aFolderSettingsInMemory, aMusicInfoDbCmd, aMusicInfoDbContext, aCategoryNames);
+								aTableFound.InsertOnSubmit(aRecord);
+
+								aUid++;
+							}
+
+							mClosingCancellationTokenSource.Token.ThrowIfCancellationRequested();
+
+							// コミット
+							aYukariDbContext.SubmitChanges();
+
+							mClosingCancellationTokenSource.Token.ThrowIfCancellationRequested();
 						}
-
 					}
-
 				}
 			}
 		}
@@ -1342,8 +1334,13 @@ namespace YukaLister
 				mEnabledYukaListerStatusRunningMessages[(Int32)YukaListerStatusRunningMessage.ListTask] = true;
 				SetYukaListerStatusWithInvoke();
 
+				// メモリからディスクへコピー
+				// ToDo: リストタスクから分離する
+				YlCommon.CopyYukariDb(mYukaListerSettings);
+
+				// リスト出力
 				YukariOutputWriter aYukariOutputWriter = new YukariOutputWriter();
-				aYukariOutputWriter.FolderPath = Path.GetDirectoryName(mYukaListerSettings.YukariDbPath()) + "\\";
+				aYukariOutputWriter.FolderPath = Path.GetDirectoryName(mYukaListerSettings.YukariDbInDiskPath()) + "\\";
 				YlCommon.OutputList(aYukariOutputWriter, mYukaListerSettings);
 
 				mLogWriter.ShowLogMessage(TraceEventType.Information, "リスト出力が完了しました。", true);
@@ -1416,29 +1413,26 @@ namespace YukaLister
 		// --------------------------------------------------------------------
 		private void RemoveNicoKaraFiles(String oFolderPath)
 		{
-			using (SQLiteConnection aYukariDbConnection = YlCommon.CreateYukariDbConnection(mYukaListerSettings))
+			using (DataContext aYukariDbContext = new DataContext(YlCommon.YukariDbInMemoryConnection))
 			{
-				using (DataContext aYukariDbContext = new DataContext(aYukariDbConnection))
+				Table<TFound> aTableFound = aYukariDbContext.GetTable<TFound>();
+				IQueryable<TFound> aQueryResult =
+						from x in aTableFound
+						where x.Folder == YlCommon.ShortenPath(oFolderPath).ToLower()
+						select x;
+#if DEBUGz
+				mLogWriter.ShowLogMessage(TraceEventType.Verbose, "RemoveNicoKaraFiles() " + YlCommon.ShortenPath(oFolderPath).ToLower());
+				if (aQueryResult == null)
 				{
-					Table<TFound> aTableFound = aYukariDbContext.GetTable<TFound>();
-					IQueryable<TFound> aQueryResult =
-							from x in aTableFound
-							where x.Folder == YlCommon.ShortenPath(oFolderPath).ToLower()
-							select x;
-#if DEBUG
-					mLogWriter.ShowLogMessage(TraceEventType.Verbose, "RemoveNicoKaraFiles() " + YlCommon.ShortenPath(oFolderPath).ToLower());
-					if (aQueryResult == null)
-					{
-						mLogWriter.ShowLogMessage(TraceEventType.Verbose, "RemoveNicoKaraFiles() result null");
-					}
-					else
-					{
-						mLogWriter.ShowLogMessage(TraceEventType.Verbose, "RemoveNicoKaraFiles() del " + aQueryResult.Count() + " 件");
-					}
-#endif
-					aTableFound.DeleteAllOnSubmit(aQueryResult);
-					aYukariDbContext.SubmitChanges();
+					mLogWriter.ShowLogMessage(TraceEventType.Verbose, "RemoveNicoKaraFiles() result null");
 				}
+				else
+				{
+					mLogWriter.ShowLogMessage(TraceEventType.Verbose, "RemoveNicoKaraFiles() del " + aQueryResult.Count() + " 件");
+				}
+#endif
+				aTableFound.DeleteAllOnSubmit(aQueryResult);
+				aYukariDbContext.SubmitChanges();
 			}
 		}
 

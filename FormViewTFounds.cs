@@ -326,18 +326,15 @@ namespace YukaLister
 
 			// データベース読み込み
 			mTFounds = new List<TFound>();
-			using (SQLiteConnection aYukariDbConnection = YlCommon.CreateYukariDbConnection(mYukaListerSettings))
+			using (DataContext aYukariDbContext = new DataContext(YlCommon.YukariDbInMemoryConnection))
 			{
-				using (DataContext aYukariDbContext = new DataContext(aYukariDbConnection))
+				Table<TFound> aTableFound = aYukariDbContext.GetTable<TFound>();
+				IQueryable<TFound> aQueryResult =
+						from x in aTableFound
+						select x;
+				foreach (TFound aTFound in aQueryResult)
 				{
-					Table<TFound> aTableFound = aYukariDbContext.GetTable<TFound>();
-					IQueryable<TFound> aQueryResult =
-							from x in aTableFound
-							select x;
-					foreach (TFound aTFound in aQueryResult)
-					{
-						mTFounds.Add(aTFound);
-					}
+					mTFounds.Add(aTFound);
 				}
 			}
 

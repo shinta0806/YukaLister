@@ -430,9 +430,9 @@ namespace YukaLister.Shared
 		}
 
 		// --------------------------------------------------------------------
-		// ゆかり用データベースファイルのフルパス
+		// ゆかり用データベースファイル（ディスク）のフルパス
 		// --------------------------------------------------------------------
-		public String YukariDbPath()
+		public String YukariDbInDiskPath()
 		{
 			return Path.GetDirectoryName(YukariConfigPath()) + "\\" + FOLDER_NAME_LIST + FILE_NAME_YUKARI_DB;
 		}
