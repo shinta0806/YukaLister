@@ -374,16 +374,17 @@ namespace YukaLister
 				return;
 			}
 
-			String aDriveLetterExLen = oFolderExLen.Substring(0, YlCommon.EXTENDED_LENGTH_PATH_PREFIX.Length + 2);
+			String aDriveRoot = YlCommon.ShortenPath(oFolderExLen).Substring(0, 3);
+			String aDriveRootExLen = YlCommon.ExtendPath(aDriveRoot);
 			AutoTargetInfo aAutoTargetInfo = new AutoTargetInfo();
 			lock (mTargetFolderInfos)
 			{
 				for (Int32 i = 0; i < mTargetFolderInfos.Count; i++)
 				{
 					if (mTargetFolderInfos[i].IsParent && mTargetFolderInfos[i].FolderTask != FolderTask.Remove
-							&& mTargetFolderInfos[i].Path.StartsWith(aDriveLetterExLen, StringComparison.OrdinalIgnoreCase))
+							&& mTargetFolderInfos[i].Path.StartsWith(aDriveRootExLen, StringComparison.OrdinalIgnoreCase))
 					{
-						aAutoTargetInfo.Folders.Add(mTargetFolderInfos[i].Path.Substring(YlCommon.EXTENDED_LENGTH_PATH_PREFIX.Length + 2));
+						aAutoTargetInfo.Folders.Add(YlCommon.ShortenPath(mTargetFolderInfos[i].Path).Substring(2));
 					}
 				}
 			}
@@ -818,9 +819,9 @@ namespace YukaLister
 					{
 						mLogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "実行予定のフォルダータスクをすべて実行しました。");
 
-						// リストタスク実行
 						Invoke(new Action(() =>
 						{
+							// リストタスク実行
 							WindowsApi.PostMessage(Handle, YlCommon.WM_LAUNCH_LIST_TASK_REQUESTED, (IntPtr)0, (IntPtr)0);
 						}));
 						break;
@@ -1531,6 +1532,12 @@ namespace YukaLister
 
 				// ゆかり用データベース出力
 				CopyYukariDb();
+
+				// ゆかり用データベースを出力するとフォルダータスクの状態が更新されるため、再描画
+				Invoke(new Action(() =>
+				{
+					DataGridViewTargetFolders.Invalidate();
+				}));
 
 				// リスト出力
 				YukariOutputWriter aYukariOutputWriter = new YukariOutputWriter();
@@ -2933,6 +2940,7 @@ namespace YukaLister
 		{
 			try
 			{
+				//Debug.WriteLine("TimerUpdateStatus_Tick() " + Environment.TickCount);
 				UpdateYukaListerStatus();
 				if (mEnabledYukaListerStatusRunningMessages[(Int32)YukaListerStatusRunningMessage.DoFolderTask])
 				{
