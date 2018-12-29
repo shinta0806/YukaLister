@@ -807,6 +807,12 @@ namespace YukaLister
 					FindFolderTaskTarget(out aTargetFolderInfo, out aTargetFolderInfoIndex);
 					DoFolderTaskByWorkerPrevParentChangedIfNeededWithInvoke(aPrevParentTargetFolderInfo, aTargetFolderInfo);
 
+					// フォルダータスクが変更されたらログする
+					if (aTargetFolderInfo != null && aTargetFolderInfo.FolderTask != aPrevFolderTask)
+					{
+						mLogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "フォルダータスク遷移：" + aPrevFolderTask.ToString() + " → " + aTargetFolderInfo.FolderTask.ToString());
+					}
+
 					// ファイル名追加が終わったらゆかり用データベースを一旦出力
 					if (aPrevFolderTask == FolderTask.AddFileName && (aTargetFolderInfo == null || aTargetFolderInfo.FolderTask != FolderTask.AddFileName))
 					{
@@ -831,7 +837,6 @@ namespace YukaLister
 
 					// 情報更新
 					aTargetFolderInfo.FolderTaskStatus = FolderTaskStatus.Running;
-					mLogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "対象：" + aTargetFolderInfo.FolderTaskStatus.ToString() + " / " + aTargetFolderInfo.Path);
 					ExtendDirtyDgvLines(aTargetFolderInfoIndex);
 					if (!mEnabledYukaListerStatusRunningMessages[(Int32)YukaListerStatusRunningMessage.DoFolderTask])
 					{
@@ -930,6 +935,8 @@ namespace YukaLister
 		// --------------------------------------------------------------------
 		private void DoFolderTaskByWorkerAddInfo(TargetFolderInfo oTargetFolderInfo, TargetFolderInfo oParentTargetFolderInfo)
 		{
+			mLogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "属性確認対象：" + oTargetFolderInfo.Path);
+
 			// 情報追加
 			AddNicoKaraInfo(oTargetFolderInfo.Path);
 
@@ -982,7 +989,7 @@ namespace YukaLister
 						}
 						if (!aAllDone)
 						{
-							mLogWriter.ShowLogMessage(TraceEventType.Verbose, "DoFolderTaskByWorkerPrevParentChangedIfNeededWithInvoke() not all done");
+							//mLogWriter.ShowLogMessage(TraceEventType.Verbose, "DoFolderTaskByWorkerPrevParentChangedIfNeededWithInvoke() not all done");
 							return;
 						}
 
@@ -1595,7 +1602,8 @@ namespace YukaLister
 
 			oMusicInfoDbCmd.CommandText = "SELECT * FROM " + TTieUpAlias.TABLE_NAME_TIE_UP_ALIAS + " LEFT OUTER JOIN " + TTieUp.TABLE_NAME_TIE_UP
 					+ " ON " + TTieUpAlias.TABLE_NAME_TIE_UP_ALIAS + "." + TTieUpAlias.FIELD_NAME_TIE_UP_ALIAS_ORIGINAL_ID + " = " + TTieUp.TABLE_NAME_TIE_UP + "." + TTieUp.FIELD_NAME_TIE_UP_ID
-					+ " WHERE " + TTieUpAlias.TABLE_NAME_TIE_UP_ALIAS + "." + TTieUpAlias.FIELD_NAME_TIE_UP_ALIAS_ALIAS + " = @alias";
+					+ " WHERE " + TTieUpAlias.TABLE_NAME_TIE_UP_ALIAS + "." + TTieUpAlias.FIELD_NAME_TIE_UP_ALIAS_ALIAS + " = @alias"
+					+ " AND " + TTieUpAlias.TABLE_NAME_TIE_UP_ALIAS + "." + TTieUpAlias.FIELD_NAME_TIE_UP_ALIAS_INVALID + " = 0";
 			oMusicInfoDbCmd.Parameters.Add(new SQLiteParameter("@alias", oAlias));
 
 			using (SQLiteDataReader aReader = oMusicInfoDbCmd.ExecuteReader())
@@ -2179,7 +2187,8 @@ namespace YukaLister
 
 			oInfoDbCmd.CommandText = "SELECT * FROM " + TSongAlias.TABLE_NAME_SONG_ALIAS + " LEFT OUTER JOIN " + TSong.TABLE_NAME_SONG
 					+ " ON " + TSongAlias.TABLE_NAME_SONG_ALIAS + "." + TSongAlias.FIELD_NAME_SONG_ALIAS_ORIGINAL_ID + " = " + TSong.TABLE_NAME_SONG + "." + TSong.FIELD_NAME_SONG_ID
-					+ " WHERE " + TSongAlias.TABLE_NAME_SONG_ALIAS + "." + TSongAlias.FIELD_NAME_SONG_ALIAS_ALIAS + " = @alias";
+					+ " WHERE " + TSongAlias.TABLE_NAME_SONG_ALIAS + "." + TSongAlias.FIELD_NAME_SONG_ALIAS_ALIAS + " = @alias "
+					+ " AND " + TSongAlias.TABLE_NAME_SONG_ALIAS + "." + TSongAlias.FIELD_NAME_SONG_ALIAS_INVALID + " = 0";
 			oInfoDbCmd.Parameters.Add(new SQLiteParameter("@alias", oAlias));
 
 			using (SQLiteDataReader aReader = oInfoDbCmd.ExecuteReader())
