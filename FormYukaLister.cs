@@ -707,6 +707,8 @@ namespace YukaLister
 
 			// インデックス作成
 			List<String> aIndices = new List<String>();
+			aIndices.Add(TFound.FIELD_NAME_FOUND_PATH);
+			aIndices.Add(TFound.FIELD_NAME_FOUND_FOLDER);
 			aIndices.Add(TFound.FIELD_NAME_FOUND_HEAD);
 			aIndices.Add(TFound.FIELD_NAME_FOUND_LAST_WRITE_TIME);
 			aIndices.Add(TSong.FIELD_NAME_SONG_NAME);
