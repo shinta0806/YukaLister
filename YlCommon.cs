@@ -278,7 +278,7 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		public const String APP_ID = "YukaLister";
 		public const String APP_NAME_J = "ゆかりすたー";
-		public const String APP_VER = "Ver 7.32 β";
+		public const String APP_VER = "Ver 7.37 α";
 		public const String COPYRIGHT_J = "Copyright (C) 2018 by SHINTA";
 
 		// --------------------------------------------------------------------
