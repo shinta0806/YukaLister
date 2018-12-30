@@ -820,6 +820,9 @@ namespace YukaLister
 					{
 						CopyYukariDb();
 						aPrevFolderTask = FolderTask.__End__;
+#if DEBUGz
+						Thread.Sleep(3 * 1000);
+#endif
 						continue;
 					}
 

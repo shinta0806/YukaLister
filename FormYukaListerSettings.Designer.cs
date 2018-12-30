@@ -62,6 +62,13 @@
 			this.ComboBoxListFormat = new System.Windows.Forms.ComboBox();
 			this.label9 = new System.Windows.Forms.Label();
 			this.TabPageMaintenance = new System.Windows.Forms.TabPage();
+			this.label18 = new System.Windows.Forms.Label();
+			this.ButtonReget = new System.Windows.Forms.Button();
+			this.ButtonLog = new System.Windows.Forms.Button();
+			this.label17 = new System.Windows.Forms.Label();
+			this.ButtonCheckRss = new System.Windows.Forms.Button();
+			this.ProgressBarCheckRss = new System.Windows.Forms.ProgressBar();
+			this.CheckBoxCheckRss = new System.Windows.Forms.CheckBox();
 			this.TextBoxSyncPassword = new System.Windows.Forms.TextBox();
 			this.label8 = new System.Windows.Forms.Label();
 			this.TextBoxSyncAccount = new System.Windows.Forms.TextBox();
@@ -96,14 +103,7 @@
 			this.FolderBrowserDialogOutputList = new System.Windows.Forms.FolderBrowserDialog();
 			this.LabelDescription = new System.Windows.Forms.Label();
 			this.LinkLabelHelp = new System.Windows.Forms.LinkLabel();
-			this.ButtonCheckRss = new System.Windows.Forms.Button();
-			this.ProgressBarCheckRss = new System.Windows.Forms.ProgressBar();
-			this.CheckBoxCheckRss = new System.Windows.Forms.CheckBox();
-			this.ButtonLog = new System.Windows.Forms.Button();
-			this.label17 = new System.Windows.Forms.Label();
 			this.SaveFileDialogLog = new System.Windows.Forms.SaveFileDialog();
-			this.ButtonReget = new System.Windows.Forms.Button();
-			this.label18 = new System.Windows.Forms.Label();
 			this.TabControlYukaListerSettings.SuspendLayout();
 			this.TabPageSettings.SuspendLayout();
 			this.TabPageTarget.SuspendLayout();
@@ -152,6 +152,7 @@
 			// 
 			// TabPageSettings
 			// 
+			this.TabPageSettings.AllowDrop = true;
 			this.TabPageSettings.BackColor = System.Drawing.SystemColors.Control;
 			this.TabPageSettings.Controls.Add(this.ButtonBrowseYukariConfigPathSeed);
 			this.TabPageSettings.Controls.Add(this.TextBoxYukariConfigPathSeed);
@@ -162,6 +163,8 @@
 			this.TabPageSettings.Size = new System.Drawing.Size(544, 382);
 			this.TabPageSettings.TabIndex = 0;
 			this.TabPageSettings.Text = "設定";
+			this.TabPageSettings.DragDrop += new System.Windows.Forms.DragEventHandler(this.TabPageSettings_DragDrop);
+			this.TabPageSettings.DragEnter += new System.Windows.Forms.DragEventHandler(this.TabPageSettings_DragEnter);
 			// 
 			// ButtonBrowseYukariConfigPathSeed
 			// 
@@ -457,6 +460,72 @@
 			this.TabPageMaintenance.Size = new System.Drawing.Size(544, 382);
 			this.TabPageMaintenance.TabIndex = 1;
 			this.TabPageMaintenance.Text = "メンテナンス";
+			// 
+			// label18
+			// 
+			this.label18.Location = new System.Drawing.Point(16, 264);
+			this.label18.Name = "label18";
+			this.label18.Size = new System.Drawing.Size(512, 16);
+			this.label18.TabIndex = 23;
+			this.label18.Text = "強制的に楽曲情報データベースの内容をサーバーに合わせる（ローカルデータは失われます）";
+			// 
+			// ButtonReget
+			// 
+			this.ButtonReget.Location = new System.Drawing.Point(320, 288);
+			this.ButtonReget.Name = "ButtonReget";
+			this.ButtonReget.Size = new System.Drawing.Size(208, 28);
+			this.ButtonReget.TabIndex = 22;
+			this.ButtonReget.Text = "強制的に合わせる (&F)";
+			this.ButtonReget.UseVisualStyleBackColor = true;
+			this.ButtonReget.Click += new System.EventHandler(this.ButtonReget_Click);
+			// 
+			// ButtonLog
+			// 
+			this.ButtonLog.Location = new System.Drawing.Point(320, 108);
+			this.ButtonLog.Name = "ButtonLog";
+			this.ButtonLog.Size = new System.Drawing.Size(208, 28);
+			this.ButtonLog.TabIndex = 21;
+			this.ButtonLog.Text = "ログ保存(&X)";
+			this.ButtonLog.UseVisualStyleBackColor = true;
+			this.ButtonLog.Click += new System.EventHandler(this.ButtonLog_Click);
+			// 
+			// label17
+			// 
+			this.label17.Location = new System.Drawing.Point(16, 84);
+			this.label17.Name = "label17";
+			this.label17.Size = new System.Drawing.Size(512, 16);
+			this.label17.TabIndex = 20;
+			this.label17.Text = "ログを保存する";
+			// 
+			// ButtonCheckRss
+			// 
+			this.ButtonCheckRss.Location = new System.Drawing.Point(320, 40);
+			this.ButtonCheckRss.Name = "ButtonCheckRss";
+			this.ButtonCheckRss.Size = new System.Drawing.Size(208, 28);
+			this.ButtonCheckRss.TabIndex = 19;
+			this.ButtonCheckRss.Text = "今すぐ最新情報を確認する (&A)";
+			this.ButtonCheckRss.UseVisualStyleBackColor = true;
+			this.ButtonCheckRss.Click += new System.EventHandler(this.ButtonCheckRss_Click);
+			// 
+			// ProgressBarCheckRss
+			// 
+			this.ProgressBarCheckRss.Location = new System.Drawing.Point(16, 40);
+			this.ProgressBarCheckRss.MarqueeAnimationSpeed = 10;
+			this.ProgressBarCheckRss.Name = "ProgressBarCheckRss";
+			this.ProgressBarCheckRss.Size = new System.Drawing.Size(288, 28);
+			this.ProgressBarCheckRss.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
+			this.ProgressBarCheckRss.TabIndex = 18;
+			this.ProgressBarCheckRss.Visible = false;
+			// 
+			// CheckBoxCheckRss
+			// 
+			this.CheckBoxCheckRss.Location = new System.Drawing.Point(16, 16);
+			this.CheckBoxCheckRss.Name = "CheckBoxCheckRss";
+			this.CheckBoxCheckRss.Size = new System.Drawing.Size(512, 16);
+			this.CheckBoxCheckRss.TabIndex = 17;
+			this.CheckBoxCheckRss.Text = "ゆかりすたーの最新情報・更新版を自動的に確認する (&L)";
+			this.CheckBoxCheckRss.UseVisualStyleBackColor = true;
+			this.CheckBoxCheckRss.CheckedChanged += new System.EventHandler(this.CheckBoxCheckRss_CheckedChanged);
 			// 
 			// TextBoxSyncPassword
 			// 
@@ -773,75 +842,9 @@
 			this.LinkLabelHelp.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			this.LinkLabelHelp.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LinkLabelHelp_LinkClicked);
 			// 
-			// ButtonCheckRss
-			// 
-			this.ButtonCheckRss.Location = new System.Drawing.Point(320, 40);
-			this.ButtonCheckRss.Name = "ButtonCheckRss";
-			this.ButtonCheckRss.Size = new System.Drawing.Size(208, 28);
-			this.ButtonCheckRss.TabIndex = 19;
-			this.ButtonCheckRss.Text = "今すぐ最新情報を確認する (&A)";
-			this.ButtonCheckRss.UseVisualStyleBackColor = true;
-			this.ButtonCheckRss.Click += new System.EventHandler(this.ButtonCheckRss_Click);
-			// 
-			// ProgressBarCheckRss
-			// 
-			this.ProgressBarCheckRss.Location = new System.Drawing.Point(16, 40);
-			this.ProgressBarCheckRss.MarqueeAnimationSpeed = 10;
-			this.ProgressBarCheckRss.Name = "ProgressBarCheckRss";
-			this.ProgressBarCheckRss.Size = new System.Drawing.Size(288, 28);
-			this.ProgressBarCheckRss.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
-			this.ProgressBarCheckRss.TabIndex = 18;
-			this.ProgressBarCheckRss.Visible = false;
-			// 
-			// CheckBoxCheckRss
-			// 
-			this.CheckBoxCheckRss.Location = new System.Drawing.Point(16, 16);
-			this.CheckBoxCheckRss.Name = "CheckBoxCheckRss";
-			this.CheckBoxCheckRss.Size = new System.Drawing.Size(512, 16);
-			this.CheckBoxCheckRss.TabIndex = 17;
-			this.CheckBoxCheckRss.Text = "ゆかりすたーの最新情報・更新版を自動的に確認する (&L)";
-			this.CheckBoxCheckRss.UseVisualStyleBackColor = true;
-			this.CheckBoxCheckRss.CheckedChanged += new System.EventHandler(this.CheckBoxCheckRss_CheckedChanged);
-			// 
-			// ButtonLog
-			// 
-			this.ButtonLog.Location = new System.Drawing.Point(320, 108);
-			this.ButtonLog.Name = "ButtonLog";
-			this.ButtonLog.Size = new System.Drawing.Size(208, 28);
-			this.ButtonLog.TabIndex = 21;
-			this.ButtonLog.Text = "ログ保存(&X)";
-			this.ButtonLog.UseVisualStyleBackColor = true;
-			this.ButtonLog.Click += new System.EventHandler(this.ButtonLog_Click);
-			// 
-			// label17
-			// 
-			this.label17.Location = new System.Drawing.Point(16, 84);
-			this.label17.Name = "label17";
-			this.label17.Size = new System.Drawing.Size(512, 16);
-			this.label17.TabIndex = 20;
-			this.label17.Text = "ログを保存する";
-			// 
 			// SaveFileDialogLog
 			// 
 			this.SaveFileDialogLog.Filter = "ログファイル|*.lga";
-			// 
-			// ButtonReget
-			// 
-			this.ButtonReget.Location = new System.Drawing.Point(320, 288);
-			this.ButtonReget.Name = "ButtonReget";
-			this.ButtonReget.Size = new System.Drawing.Size(208, 28);
-			this.ButtonReget.TabIndex = 22;
-			this.ButtonReget.Text = "強制的に合わせる (&F)";
-			this.ButtonReget.UseVisualStyleBackColor = true;
-			this.ButtonReget.Click += new System.EventHandler(this.ButtonReget_Click);
-			// 
-			// label18
-			// 
-			this.label18.Location = new System.Drawing.Point(16, 264);
-			this.label18.Name = "label18";
-			this.label18.Size = new System.Drawing.Size(512, 16);
-			this.label18.TabIndex = 23;
-			this.label18.Text = "強制的に楽曲情報データベースの内容をサーバーに合わせる（ローカルデータは失われます）";
 			// 
 			// FormYukaListerSettings
 			// 

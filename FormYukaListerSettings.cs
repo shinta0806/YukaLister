@@ -95,6 +95,33 @@ namespace YukaLister
 		// ====================================================================
 
 		// --------------------------------------------------------------------
+		// ドラッグ中のデータがファイルならばドラッグを受け入れる
+		// --------------------------------------------------------------------
+		private void AcceptDragEnterIfFileExists(DragEventArgs oDragEventArgs)
+		{
+			oDragEventArgs.Effect = DragDropEffects.None;
+
+			// ファイル類のときのみ、受け付けるかどうかの判定をする
+			if (oDragEventArgs.Data.GetDataPresent(DataFormats.FileDrop))
+			{
+				String[] aDropFiles = (String[])oDragEventArgs.Data.GetData(DataFormats.FileDrop, false);
+				if (aDropFiles == null)
+				{
+					return;
+				}
+				foreach (String aDropFile in aDropFiles)
+				{
+					if (File.Exists(YlCommon.ExtendPath(aDropFile)))
+					{
+						// ファイルが含まれていたら受け付ける
+						oDragEventArgs.Effect = DragDropEffects.Copy;
+						return;
+					}
+				}
+			}
+		}
+
+		// --------------------------------------------------------------------
 		// 拡張子をリストボックスに追加
 		// ＜例外＞ Exception
 		// --------------------------------------------------------------------
@@ -819,26 +846,7 @@ namespace YukaLister
 		{
 			try
 			{
-				e.Effect = DragDropEffects.None;
-
-				// ファイル類のときのみ、受け付けるかどうかの判定をする
-				if (e.Data.GetDataPresent(DataFormats.FileDrop))
-				{
-					String[] aDropFiles = (String[])e.Data.GetData(DataFormats.FileDrop, false);
-					if (aDropFiles == null)
-					{
-						return;
-					}
-					foreach (String aDropFile in aDropFiles)
-					{
-						if (File.Exists(YlCommon.ExtendPath(aDropFile)))
-						{
-							// ファイルが含まれていたら受け付ける
-							e.Effect = DragDropEffects.Copy;
-							break;
-						}
-					}
-				}
+				AcceptDragEnterIfFileExists(e);
 			}
 			catch (Exception oExcep)
 			{
@@ -854,6 +862,7 @@ namespace YukaLister
 				Activate();
 
 				String[] aDropFiles = (String[])e.Data.GetData(DataFormats.FileDrop, false);
+				String aNotHandledFiles = null;
 				foreach (String aDropFile in aDropFiles)
 				{
 					if (!File.Exists(aDropFile))
@@ -861,7 +870,6 @@ namespace YukaLister
 						continue;
 					}
 
-					Boolean aNotHandled = false;
 					String aExt = Path.GetExtension(aDropFile).ToLower();
 					String aFileName = Path.GetFileName(aDropFile);
 					if (aExt == Common.FILE_EXT_CSV || aExt == Common.FILE_EXT_ZIP)
@@ -885,7 +893,7 @@ namespace YukaLister
 						}
 						else
 						{
-							aNotHandled = true;
+							aNotHandledFiles += Path.GetFileName(aDropFile) + "\n";
 						}
 						RadioButtonImportAnisonInfoCsv.Checked = true;
 					}
@@ -897,13 +905,13 @@ namespace YukaLister
 					}
 					else
 					{
-						aNotHandled = true;
+						aNotHandledFiles += Path.GetFileName(aDropFile) + "\n";
 					}
 
-					if (aNotHandled)
-					{
-						mLogWriter.ShowLogMessage(TraceEventType.Error, "ドロップされたファイルの種類を自動判定できませんでした。\n参照ボタンからファイルを指定して下さい。\n" + aDropFile);
-					}
+				}
+				if (!String.IsNullOrEmpty(aNotHandledFiles))
+				{
+					throw new Exception("ドロップされたファイルの種類を自動判定できませんでした。\n参照ボタンからファイルを指定して下さい。\n" + aNotHandledFiles);
 				}
 			}
 			catch (Exception oExcep)
@@ -1078,6 +1086,56 @@ namespace YukaLister
 			catch (Exception oExcep)
 			{
 				mLogWriter.ShowLogMessage(TraceEventType.Error, "強制的に合わせる時エラー：\n" + oExcep.Message);
+				mLogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+			}
+		}
+
+		private void TabPageSettings_DragEnter(object sender, DragEventArgs e)
+		{
+			try
+			{
+				AcceptDragEnterIfFileExists(e);
+			}
+			catch (Exception oExcep)
+			{
+				mLogWriter.ShowLogMessage(TraceEventType.Error, "設定タブドラッグエンター時エラー：\n" + oExcep.Message);
+				mLogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+			}
+		}
+
+		private void TabPageSettings_DragDrop(object sender, DragEventArgs e)
+		{
+			try
+			{
+				Activate();
+
+				String[] aDropFiles = (String[])e.Data.GetData(DataFormats.FileDrop, false);
+				String aNotHandledFiles = null;
+				foreach (String aDropFile in aDropFiles)
+				{
+					if (!File.Exists(aDropFile))
+					{
+						continue;
+					}
+
+					String aExt = Path.GetExtension(aDropFile).ToLower();
+					if (aExt == Common.FILE_EXT_INI)
+					{
+						TextBoxYukariConfigPathSeed.Text = aDropFile;
+					}
+					else
+					{
+						aNotHandledFiles += Path.GetFileName(aDropFile) + "\n";
+					}
+				}
+				if (!String.IsNullOrEmpty(aNotHandledFiles))
+				{
+					throw new Exception("ドロップされたファイルの種類を自動判定できませんでした。\n参照ボタンからファイルを指定して下さい。\n" + aNotHandledFiles);
+				}
+			}
+			catch (Exception oExcep)
+			{
+				mLogWriter.ShowLogMessage(TraceEventType.Error, "設定タブドラッグ＆ドロップ時エラー：\n" + oExcep.Message);
 				mLogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
