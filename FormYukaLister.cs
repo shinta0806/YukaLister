@@ -1232,26 +1232,54 @@ namespace YukaLister
 			return -1;
 		}
 
-#if false
 		// --------------------------------------------------------------------
-		// フォルダーの設定有無を表す文字列
+		// 選択されているフォルダーのフォルダー設定を行う
+		// ＜例外＞ Exception
 		// --------------------------------------------------------------------
-		private String FolderSettingsStatusString(FolderSettingsStatus oStatus)
+		private void FolderSettings()
 		{
-			switch (oStatus)
+			TargetFolderInfo aTargetFolderInfo = SelectedTargetFolderInfo();
+			if (aTargetFolderInfo == null)
 			{
-				case FolderSettingsStatus.None:
-					return "無";
-				case FolderSettingsStatus.Set:
-					return "有";
-				case FolderSettingsStatus.Inherit:
-					return "親に有";
-				default:
-					Debug.Assert(false, "FolderSettingsStatusString() bad FolderSettingsStatus");
-					return null;
+				return;
+			}
+
+			DateTime aMusicInfoDbTimeBak = new FileInfo(YlCommon.MusicInfoDbPath()).LastWriteTime;
+
+			using (FormFolderSettings aFormFolderSettings = new FormFolderSettings(aTargetFolderInfo.Path, mYukaListerSettings, mLogWriter))
+			{
+				aFormFolderSettings.ShowDialog(this);
+			}
+
+			// フォルダー設定の有無の表示を更新
+			// キャンセルでも実行（設定削除→キャンセルの場合はフォルダー設定の有無が変わる）
+			lock (mTargetFolderInfos)
+			{
+				Int32 aIndex = mTargetFolderInfos.IndexOf(aTargetFolderInfo);
+				if (aIndex < 0)
+				{
+					throw new Exception("フォルダー設定有無を更新する対象が見つかりません。");
+				}
+				while (aIndex < mTargetFolderInfos.Count)
+				{
+					if (!mTargetFolderInfos[aIndex].Path.StartsWith(aTargetFolderInfo.Path))
+					{
+						break;
+					}
+					mTargetFolderInfos[aIndex].FolderExcludeSettingsStatus = FolderExcludeSettingsStatus.Unchecked;
+					mTargetFolderInfos[aIndex].FolderSettingsStatus = FolderSettingsStatus.Unchecked;
+					aIndex++;
+				}
+			}
+			DataGridViewTargetFolders.Invalidate();
+
+			// 楽曲情報データベースが更新された場合は同期を行う
+			DateTime aMusicInfoDbTime = new FileInfo(YlCommon.MusicInfoDbPath()).LastWriteTime;
+			if (aMusicInfoDbTime != aMusicInfoDbTimeBak)
+			{
+				RunSyncClientIfNeeded();
 			}
 		}
-#endif
 
 		// --------------------------------------------------------------------
 		// 初期化
@@ -3019,48 +3047,7 @@ namespace YukaLister
 		{
 			try
 			{
-				TargetFolderInfo aTargetFolderInfo = SelectedTargetFolderInfo();
-				if (aTargetFolderInfo == null)
-				{
-					return;
-				}
-
-				DateTime aMusicInfoDbTimeBak = new FileInfo(YlCommon.MusicInfoDbPath()).LastWriteTime;
-
-				using (FormFolderSettings aFormFolderSettings = new FormFolderSettings(aTargetFolderInfo.Path, mYukaListerSettings, mLogWriter))
-				{
-					aFormFolderSettings.ShowDialog(this);
-				}
-
-				// フォルダー設定の有無の表示を更新
-				// キャンセルでも実行（設定削除→キャンセルの場合はフォルダー設定の有無が変わる）
-				lock (mTargetFolderInfos)
-				{
-					Int32 aIndex = mTargetFolderInfos.IndexOf(aTargetFolderInfo);
-					if (aIndex < 0)
-					{
-						throw new Exception("フォルダー設定有無を更新する対象が見つかりません。");
-					}
-					while (aIndex < mTargetFolderInfos.Count)
-					{
-						if (!mTargetFolderInfos[aIndex].Path.StartsWith(aTargetFolderInfo.Path))
-						{
-							break;
-						}
-						mTargetFolderInfos[aIndex].FolderExcludeSettingsStatus = FolderExcludeSettingsStatus.Unchecked;
-						mTargetFolderInfos[aIndex].FolderSettingsStatus = FolderSettingsStatus.Unchecked;
-						aIndex++;
-					}
-				}
-				DataGridViewTargetFolders.Invalidate();
-
-				// 楽曲情報データベースが更新された場合は同期を行う
-				DateTime aMusicInfoDbTime = new FileInfo(YlCommon.MusicInfoDbPath()).LastWriteTime;
-				if (aMusicInfoDbTime != aMusicInfoDbTimeBak)
-				{
-					RunSyncClientIfNeeded();
-				}
-
+				FolderSettings();
 			}
 			catch (Exception oExcep)
 			{
@@ -3090,6 +3077,19 @@ namespace YukaLister
 			catch (Exception oExcep)
 			{
 				mLogWriter.ShowLogMessage(TraceEventType.Error, "ファイル一覧ボタンクリック時エラー：\n" + oExcep.Message);
+				mLogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+			}
+		}
+
+		private void DataGridViewTargetFolders_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+		{
+			try
+			{
+				FolderSettings();
+			}
+			catch (Exception oExcep)
+			{
+				mLogWriter.ShowLogMessage(TraceEventType.Error, "セルダブルクリック時エラー：\n" + oExcep.Message);
 				mLogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}

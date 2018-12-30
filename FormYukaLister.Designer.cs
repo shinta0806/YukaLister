@@ -84,6 +84,7 @@
 			this.DataGridViewTargetFolders.TabIndex = 6;
 			this.DataGridViewTargetFolders.VirtualMode = true;
 			this.DataGridViewTargetFolders.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.DataGridViewTargetFolders_CellClick);
+			this.DataGridViewTargetFolders.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.DataGridViewTargetFolders_CellDoubleClick);
 			this.DataGridViewTargetFolders.CellValueNeeded += new System.Windows.Forms.DataGridViewCellValueEventHandler(this.DataGridViewTargetFolders_CellValueNeeded);
 			this.DataGridViewTargetFolders.SelectionChanged += new System.EventHandler(this.DataGridViewTargetFolders_SelectionChanged);
 			// 
