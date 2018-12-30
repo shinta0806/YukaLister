@@ -228,6 +228,7 @@ namespace YukaLister
 
 			// リスト出力タブ
 			mYukaListerSettings.ListOutputFolder = TextBoxListFolder.Text;
+			mYukaListerSettings.ClearPrevList = CheckBoxClearPrevList.Checked;
 
 			// メンテナンスタブ
 			mYukaListerSettings.CheckRss = CheckBoxCheckRss.Checked;
@@ -372,6 +373,7 @@ namespace YukaLister
 
 			// リスト出力タブ
 			TextBoxListFolder.Text = mYukaListerSettings.ListOutputFolder;
+			CheckBoxClearPrevList.Checked = mYukaListerSettings.ClearPrevList;
 
 			// メンテナンスタブ
 			CheckBoxCheckRss.Checked = mYukaListerSettings.CheckRss;
@@ -1136,6 +1138,28 @@ namespace YukaLister
 			catch (Exception oExcep)
 			{
 				mLogWriter.ShowLogMessage(TraceEventType.Error, "設定タブドラッグ＆ドロップ時エラー：\n" + oExcep.Message);
+				mLogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+			}
+		}
+
+		private void CheckBoxClearPrevList_CheckedChanged(object sender, EventArgs e)
+		{
+			try
+			{
+				if (CheckBoxClearPrevList.Checked)
+				{
+					return;
+				}
+				if (MessageBox.Show("前回のリストをクリアしないと、存在しないファイルがリストに残り齟齬が生じる可能性があります。\n"
+						+ "本当にクリアしなくてよろしいですか？", "警告", MessageBoxButtons.YesNo, MessageBoxIcon.Warning)
+						!= DialogResult.Yes)
+				{
+					CheckBoxClearPrevList.Checked = true;
+				}
+			}
+			catch (Exception oExcep)
+			{
+				mLogWriter.ShowLogMessage(TraceEventType.Error, "前回リストクリア変更時エラー：\n" + oExcep.Message);
 				mLogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}

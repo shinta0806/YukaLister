@@ -47,6 +47,22 @@ namespace YukaLister.Shared
 			}
 		}
 
+		// 起動時に前回のリストをクリアする
+		private const String KEY_NAME_CLEAR_PREV_LIST = "ClearPrevList";
+		[UserScopedSetting]
+		[DefaultSettingValue(Common.BOOLEAN_STRING_TRUE)]
+		public Boolean ClearPrevList
+		{
+			get
+			{
+				return (Boolean)this[KEY_NAME_CLEAR_PREV_LIST];
+			}
+			set
+			{
+				this[KEY_NAME_CLEAR_PREV_LIST] = value;
+			}
+		}
+
 		// リスト化対象ファイルの拡張子
 		private const String KEY_NAME_TARGET_EXTS = "TargetExts";
 		[UserScopedSetting]
@@ -335,23 +351,6 @@ namespace YukaLister.Shared
 				this[KEY_NAME_RSS_CHECK_DATE] = value;
 			}
 		}
-
-#if false
-		// 追加されているゆかり検索対象フォルダー（extended-length 表記）
-		private const String KEY_NAME_TARGET_FOLDERS_EX_LEN = "TargetFoldersExLen";
-		[UserScopedSetting]
-		public List<String> TargetFoldersExLen
-		{
-			get
-			{
-				return (List<String>)this[KEY_NAME_TARGET_FOLDERS_EX_LEN];
-			}
-			set
-			{
-				this[KEY_NAME_TARGET_FOLDERS_EX_LEN] = value;
-			}
-		}
-#endif
 
 		// 環境設定のリスト出力先フォルダー
 		private const String KEY_NAME_LIST_OUTPUT_FOLDER = "ListOutputFolder";

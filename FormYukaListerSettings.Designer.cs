@@ -45,6 +45,7 @@
 			this.TextBoxTargetExt = new System.Windows.Forms.TextBox();
 			this.LabelTargetExt = new System.Windows.Forms.Label();
 			this.TabPageOutput = new System.Windows.Forms.TabPage();
+			this.CheckBoxClearPrevList = new System.Windows.Forms.CheckBox();
 			this.label15 = new System.Windows.Forms.Label();
 			this.panel2 = new System.Windows.Forms.Panel();
 			this.label14 = new System.Windows.Forms.Label();
@@ -268,6 +269,7 @@
 			// TabPageOutput
 			// 
 			this.TabPageOutput.BackColor = System.Drawing.SystemColors.Control;
+			this.TabPageOutput.Controls.Add(this.CheckBoxClearPrevList);
 			this.TabPageOutput.Controls.Add(this.label15);
 			this.TabPageOutput.Controls.Add(this.panel2);
 			this.TabPageOutput.Controls.Add(this.label14);
@@ -290,10 +292,21 @@
 			this.TabPageOutput.TabIndex = 4;
 			this.TabPageOutput.Text = "リスト出力";
 			// 
+			// CheckBoxClearPrevList
+			// 
+			this.CheckBoxClearPrevList.AutoSize = true;
+			this.CheckBoxClearPrevList.Location = new System.Drawing.Point(16, 128);
+			this.CheckBoxClearPrevList.Name = "CheckBoxClearPrevList";
+			this.CheckBoxClearPrevList.Size = new System.Drawing.Size(280, 16);
+			this.CheckBoxClearPrevList.TabIndex = 40;
+			this.CheckBoxClearPrevList.Text = "起動時に前回のゆかりリクエスト用リストをクリアする (&C)";
+			this.CheckBoxClearPrevList.UseVisualStyleBackColor = true;
+			this.CheckBoxClearPrevList.CheckedChanged += new System.EventHandler(this.CheckBoxClearPrevList_CheckedChanged);
+			// 
 			// label15
 			// 
 			this.label15.AutoSize = true;
-			this.label15.Location = new System.Drawing.Point(16, 132);
+			this.label15.Location = new System.Drawing.Point(16, 172);
 			this.label15.Name = "label15";
 			this.label15.Size = new System.Drawing.Size(81, 12);
 			this.label15.TabIndex = 39;
@@ -304,7 +317,7 @@
 			this.panel2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
 			this.panel2.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.panel2.Location = new System.Drawing.Point(0, 136);
+			this.panel2.Location = new System.Drawing.Point(0, 176);
 			this.panel2.Name = "panel2";
 			this.panel2.Size = new System.Drawing.Size(850, 5);
 			this.panel2.TabIndex = 38;
@@ -375,7 +388,7 @@
 			// 
 			// ButtonOutputList
 			// 
-			this.ButtonOutputList.Location = new System.Drawing.Point(328, 232);
+			this.ButtonOutputList.Location = new System.Drawing.Point(328, 272);
 			this.ButtonOutputList.Name = "ButtonOutputList";
 			this.ButtonOutputList.Size = new System.Drawing.Size(200, 28);
 			this.ButtonOutputList.TabIndex = 30;
@@ -385,7 +398,7 @@
 			// 
 			// label10
 			// 
-			this.label10.Location = new System.Drawing.Point(16, 196);
+			this.label10.Location = new System.Drawing.Point(16, 236);
 			this.label10.Name = "label10";
 			this.label10.Size = new System.Drawing.Size(144, 20);
 			this.label10.TabIndex = 15;
@@ -394,14 +407,14 @@
 			// 
 			// TextBoxListFolder
 			// 
-			this.TextBoxListFolder.Location = new System.Drawing.Point(160, 196);
+			this.TextBoxListFolder.Location = new System.Drawing.Point(160, 236);
 			this.TextBoxListFolder.Name = "TextBoxListFolder";
 			this.TextBoxListFolder.Size = new System.Drawing.Size(264, 19);
 			this.TextBoxListFolder.TabIndex = 14;
 			// 
 			// ButtonBrowseListFolder
 			// 
-			this.ButtonBrowseListFolder.Location = new System.Drawing.Point(432, 192);
+			this.ButtonBrowseListFolder.Location = new System.Drawing.Point(432, 232);
 			this.ButtonBrowseListFolder.Name = "ButtonBrowseListFolder";
 			this.ButtonBrowseListFolder.Size = new System.Drawing.Size(96, 28);
 			this.ButtonBrowseListFolder.TabIndex = 13;
@@ -411,7 +424,7 @@
 			// 
 			// ButtonListSettings
 			// 
-			this.ButtonListSettings.Location = new System.Drawing.Point(432, 152);
+			this.ButtonListSettings.Location = new System.Drawing.Point(432, 192);
 			this.ButtonListSettings.Name = "ButtonListSettings";
 			this.ButtonListSettings.Size = new System.Drawing.Size(96, 28);
 			this.ButtonListSettings.TabIndex = 12;
@@ -423,14 +436,14 @@
 			// 
 			this.ComboBoxListFormat.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.ComboBoxListFormat.FormattingEnabled = true;
-			this.ComboBoxListFormat.Location = new System.Drawing.Point(160, 156);
+			this.ComboBoxListFormat.Location = new System.Drawing.Point(160, 196);
 			this.ComboBoxListFormat.Name = "ComboBoxListFormat";
 			this.ComboBoxListFormat.Size = new System.Drawing.Size(264, 20);
 			this.ComboBoxListFormat.TabIndex = 11;
 			// 
 			// label9
 			// 
-			this.label9.Location = new System.Drawing.Point(16, 156);
+			this.label9.Location = new System.Drawing.Point(16, 196);
 			this.label9.Name = "label9";
 			this.label9.Size = new System.Drawing.Size(144, 20);
 			this.label9.TabIndex = 10;
@@ -958,5 +971,6 @@
 		private System.Windows.Forms.SaveFileDialog SaveFileDialogLog;
 		private System.Windows.Forms.Button ButtonReget;
 		private System.Windows.Forms.Label label18;
+		private System.Windows.Forms.CheckBox CheckBoxClearPrevList;
 	}
 }

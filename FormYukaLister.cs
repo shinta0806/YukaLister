@@ -680,7 +680,7 @@ namespace YukaLister
 				return;
 			}
 
-			mLogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "ゆかり用データベースを作成します...");
+			mLogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "ゆかり用データベースを準備しています...");
 
 			// 作業用インメモリデータベースを作成
 			YlCommon.YukariDbInMemoryConnection = YlCommon.CreateDbConnection(":memory:");
@@ -692,7 +692,14 @@ namespace YukaLister
 
 			// ディスクにコピー
 			Directory.CreateDirectory(Path.GetDirectoryName(mYukaListerSettings.YukariDbInDiskPath()));
-			CopyYukariDb();
+			if (mYukaListerSettings.ClearPrevList || !File.Exists(mYukaListerSettings.YukariDbInDiskPath()))
+			{
+				CopyYukariDb();
+			}
+			else
+			{
+				mLogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "前回のゆかり用データベースをクリアしませんでした。");
+			}
 		}
 
 		// --------------------------------------------------------------------
@@ -1349,12 +1356,6 @@ namespace YukaLister
 				mYukaListerSettings.TargetExts.Add(Common.FILE_EXT_MPG);
 				mYukaListerSettings.TargetExts.Add(Common.FILE_EXT_WMV);
 			}
-#if false
-			if (mYukaListerSettings.TargetFoldersExLen == null)
-			{
-				mYukaListerSettings.TargetFoldersExLen = new List<String>();
-			}
-#endif
 			if (mYukaListerSettings.LastIdNumbers == null)
 			{
 				mYukaListerSettings.LastIdNumbers = new List<Int32>();
@@ -1367,6 +1368,9 @@ namespace YukaLister
 					mYukaListerSettings.LastIdNumbers.Add(0);
 				}
 			}
+#if DEBUGz
+			mYukaListerSettings.KeepPrevList = true;
+#endif
 
 			// extended-length なパス表記の設定（.NET 4.6.2 以降のみ有効とする）
 			SystemEnvironment aSystemEnvironment = new SystemEnvironment();
@@ -2607,10 +2611,14 @@ namespace YukaLister
 				UpdateButtonTFounds();
 
 				// 前回のリストが残っていてリクエストできない曲がリスト化されるのを防ぐために、前回のリストを削除
-				await YlCommon.LaunchTaskAsync<Object>(OutputYukariListByWorker, mListTaskLock, null);
-#if DEBUGz
-				Thread.Sleep(20 * 1000);
-#endif
+				if (!mYukaListerSettings.ClearPrevList)
+				{
+					mLogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "前回のゆかり用リストをクリアしませんでした。");
+				}
+				else
+				{
+					await YlCommon.LaunchTaskAsync<Object>(OutputYukariListByWorker, mListTaskLock, null);
+				}
 
 				// 終了時に追加されていたフォルダーを追加
 				String[] aDrives = Directory.GetLogicalDrives();
