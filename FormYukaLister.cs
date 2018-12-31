@@ -1172,8 +1172,12 @@ namespace YukaLister
 					aRecord.Uid = aUid;
 					aRecord.Path = YlCommon.ShortenPath(aPath);
 					aRecord.Folder = aFolderPathLower;
-					aTableFound.InsertOnSubmit(aRecord);
 
+					// 楽曲名とファイルサイズが両方とも初期値だと、ゆかりが検索結果をまとめてしまうため、ダミーのファイルサイズを入れる
+					// （文字列である楽曲名を入れると処理が遅くなるので処理が遅くなりにくい数字のファイルサイズをユニークにする）
+					aRecord.FileSize = -aUid;
+
+					aTableFound.InsertOnSubmit(aRecord);
 					aUid++;
 				}
 
