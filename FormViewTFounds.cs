@@ -342,10 +342,18 @@ namespace YukaLister
 			OutputSettings aOutputSettings = new OutputSettings();
 			aOutputSettings.Load();
 			mRuntimeOutputItems = aOutputSettings.RuntimeOutputItems();
-#if DEBUG
+#if DEBUGz
+			// デバッグ時の歌手フリガナ追加
 			if (mRuntimeOutputItems.IndexOf(OutputItems.ArtistRuby) < 0)
 			{
 				mRuntimeOutputItems.Insert(4, OutputItems.ArtistRuby);
+			}
+#endif
+#if DEBUG
+			// デバッグ時の作曲者追加
+			if (mRuntimeOutputItems.IndexOf(OutputItems.ComposerName) < 0)
+			{
+				mRuntimeOutputItems.Insert(5, OutputItems.ComposerName);
 			}
 #endif
 
