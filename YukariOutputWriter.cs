@@ -53,7 +53,7 @@ namespace YukaLister.Shared
 					+ "$yukarisearchlink = '';\n"
 					+ "if (array_key_exists('yukarihost', $_REQUEST)) {\n"
 					+ "    $yukarihost = $_REQUEST['yukarihost'];\n"
-					+ "    $yukarisearchlink = 'http://'.$yukarihost.'/search_listerdb_songlist.php?filename=';\n"
+					+ "    $yukarisearchlink = 'http://'.$yukarihost.'/search_listerdb_filelist.php?anyword=';\n"
 					+ "}\n"
 					+ "?>\n";
 			mListLinkArg = aListLinkArg;
