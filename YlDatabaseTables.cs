@@ -1369,6 +1369,30 @@ namespace YukaLister.Shared
 		// 制作会社フリガナ
 		[Column(Name = TMaker.FIELD_NAME_MAKER_RUBY, DbType = LinqUtils.DB_TYPE_STRING)]
 		public String MakerRuby { get; set; }
+
+		// --------------------------------------------------------------------
+		// ViewTFoundsWindow 表示用
+		// --------------------------------------------------------------------
+
+		// パス無しのファイル名
+		public String FileName
+		{
+			get
+			{
+				return System.IO.Path.GetFileName(Path);
+			}
+		}
+
+		// スマートトラック
+		public String SmartTrack
+		{
+			get
+			{
+				return (SmartTrackOnVocal ? YlCommon.SMART_TRACK_VALID_MARK : YlCommon.SMART_TRACK_INVALID_MARK) + "/"
+						+ (SmartTrackOffVocal ? YlCommon.SMART_TRACK_VALID_MARK : YlCommon.SMART_TRACK_INVALID_MARK);
+			}
+		}
+
 	}
 	// public class TFound ___END___
 }

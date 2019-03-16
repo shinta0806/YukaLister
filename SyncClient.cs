@@ -21,7 +21,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
+using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace YukaLister.Shared
 {
@@ -34,7 +35,7 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		// コンストラクター
 		// --------------------------------------------------------------------
-		public SyncClient(YukaListerSettings oYukaListerSettings, ToolStripStatusLabel oStatusLabel, CancellationToken oCancellationToken, Boolean oIsReget = false)
+		public SyncClient(YukaListerSettings oYukaListerSettings, Label oStatusLabel, CancellationToken oCancellationToken, Boolean oIsReget = false)
 		{
 			mYukaListerSettings = oYukaListerSettings;
 			mStatusLabel = oStatusLabel;
@@ -120,7 +121,7 @@ namespace YukaLister.Shared
 		private YukaListerSettings mYukaListerSettings;
 
 		// ステータスバー
-		private ToolStripStatusLabel mStatusLabel;
+		private Label mStatusLabel;
 
 		// キャンセル用
 		private CancellationToken mCancellationToken;
@@ -1860,16 +1861,16 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		private void SetStatusLabelMessageWithInvoke(TraceEventType oTraceEventType, String oMsg)
 		{
-			mStatusLabel.Owner.Invoke(new Action(() =>
+			mStatusLabel.Dispatcher.Invoke(new Action(() =>
 			{
-				mStatusLabel.Text = oMsg;
+				mStatusLabel.Content = oMsg;
 				if (oTraceEventType == TraceEventType.Error)
 				{
-					mStatusLabel.ForeColor = Color.Red;
+					mStatusLabel.Foreground = new SolidColorBrush(Colors.Red);
 				}
 				else
 				{
-					mStatusLabel.ForeColor = Color.Black;
+					mStatusLabel.Foreground = new SolidColorBrush(Colors.Black);
 				}
 			}));
 			mLogWriterSync.ShowLogMessage(oTraceEventType, oMsg, true);

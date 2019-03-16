@@ -8,6 +8,8 @@
 // 
 // ----------------------------------------------------------------------------
 
+using MaterialDesignColors;
+using MaterialDesignThemes.Wpf;
 using Shinta;
 using System;
 using System.Collections.Generic;
@@ -15,7 +17,12 @@ using System.Data.Linq;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Windows.Forms;
+using System.Reflection;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Documents;
+using System.Windows.Media;
+using System.Windows.Navigation;
 
 namespace YukaLister.Shared
 {
@@ -63,14 +70,14 @@ namespace YukaLister.Shared
 		// 検索結果テーブル
 		public Table<TFound> TableFound { get; set; }
 
-		// 環境設定
-		//public NicoKaraListerSettings NicoKaraListerSettings { get; set; }
-
 		// 出力設定
 		public OutputSettings OutputSettings { get; set; }
 
 		// ログ
 		public LogWriter LogWriter { get; set; }
+
+		// オーナーウィンドウ
+		public Window Owner { get; set; }
 
 		// ====================================================================
 		// public メンバー関数
@@ -90,7 +97,7 @@ namespace YukaLister.Shared
 		public virtual void ComposToSettings()
 		{
 			// 出力項目のタイプ
-			OutputSettings.OutputAllItems = RadioButtonOutputAllItems.Checked;
+			OutputSettings.OutputAllItems = (Boolean)RadioButtonOutputAllItems.IsChecked;
 
 			// 出力項目のリスト
 			OutputSettings.SelectedOutputItems.Clear();
@@ -108,128 +115,158 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		// 設定画面のタブページ
 		// --------------------------------------------------------------------
-		public virtual List<TabPage> DialogTabPages()
+		public virtual List<TabItem> DialogTabItems()
 		{
-			List<TabPage> aTabPages = new List<TabPage>();
+			List<TabItem> aTabItems = new List<TabItem>();
 
-			// TabPageOutputSettings
-			TabPageOutputSettings = new TabPage();
-			TabPageOutputSettings.BackColor = SystemColors.Control;
-			TabPageOutputSettings.Location = new Point(4, 22);
-			TabPageOutputSettings.Padding = new Padding(3);
-			TabPageOutputSettings.Size = new Size(456, 386);
-			TabPageOutputSettings.Text = "基本設定";
+			// TabItemOutputSettings
+			TabItemOutputSettings = new TabItem();
+			TabItemOutputSettings.Header = "基本設定";
 
-			// LabelOutputItem
-			LabelOutputItem = new Label();
-			LabelOutputItem.Location = new Point(16, 16);
-			LabelOutputItem.Size = new Size(72, 20);
-			LabelOutputItem.Text = "出力項目：";
-			LabelOutputItem.TextAlign = ContentAlignment.MiddleLeft;
-			TabPageOutputSettings.Controls.Add(LabelOutputItem);
+			// StackPanelOutputSettings
+			StackPanel aStackPanelOutputSettings = new StackPanel();
+			TabItemOutputSettings.Content = aStackPanelOutputSettings;
+			{
+				// StackPanelOutputItems
+				StackPanel aStackPanelOutputItems = new StackPanel();
+				aStackPanelOutputItems.Orientation = Orientation.Horizontal;
+				aStackPanelOutputItems.Margin = new Thickness(20, 20, 0, 0);
+				aStackPanelOutputSettings.Children.Add(aStackPanelOutputItems);
+				{
+					// LabelOutputItems
+					Label aLabelOutputItems = new Label();
+					aLabelOutputItems.Content = "出力項目：";
+					aStackPanelOutputItems.Children.Add(aLabelOutputItems);
 
-			// RadioButtonOutputAllItems
-			RadioButtonOutputAllItems = new RadioButton();
-			RadioButtonOutputAllItems.Location = new Point(88, 16);
-			RadioButtonOutputAllItems.Size = new Size(96, 20);
-			RadioButtonOutputAllItems.TabStop = true;
-			RadioButtonOutputAllItems.Text = "すべて (&L)";
-			RadioButtonOutputAllItems.UseVisualStyleBackColor = true;
-			RadioButtonOutputAllItems.CheckedChanged += new EventHandler(RadioButtonOutputItems_CheckedChanged);
-			TabPageOutputSettings.Controls.Add(RadioButtonOutputAllItems);
+					// RadioButtonOutputAllItems
+					RadioButtonOutputAllItems = new RadioButton();
+					RadioButtonOutputAllItems.Content = "すべて (_L)";
+					RadioButtonOutputAllItems.VerticalAlignment = VerticalAlignment.Center;
+					RadioButtonOutputAllItems.Checked += RadioButtonOutputItems_Checked;
+					aStackPanelOutputItems.Children.Add(RadioButtonOutputAllItems);
 
-			// RadioButtonOutputAddedItems
-			RadioButtonOutputAddedItems = new RadioButton();
-			RadioButtonOutputAddedItems.Location = new Point(184, 16);
-			RadioButtonOutputAddedItems.Size = new Size(168, 20);
-			RadioButtonOutputAddedItems.TabStop = true;
-			RadioButtonOutputAddedItems.Text = "以下で追加した項目のみ (&O)";
-			RadioButtonOutputAddedItems.UseVisualStyleBackColor = true;
-			RadioButtonOutputAddedItems.CheckedChanged += new EventHandler(RadioButtonOutputItems_CheckedChanged);
-			TabPageOutputSettings.Controls.Add(RadioButtonOutputAddedItems);
+					// RadioButtonOutputAddedItems
+					RadioButtonOutputAddedItems = new RadioButton();
+					RadioButtonOutputAddedItems.Content = "以下で追加した項目のみ (_O)";
+					RadioButtonOutputAddedItems.VerticalAlignment = VerticalAlignment.Center;
+					RadioButtonOutputAddedItems.Margin = new Thickness(20, 0, 0, 0);
+					RadioButtonOutputAddedItems.Checked += RadioButtonOutputItems_Checked;
+					aStackPanelOutputItems.Children.Add(RadioButtonOutputAddedItems);
 
-			// LinkLabelHelp
-			LinkLabelHelp = new LinkLabel();
-			LinkLabelHelp.Location = new Point(384, 16);
-			LinkLabelHelp.Size = new Size(64, 20);
-			LinkLabelHelp.TabStop = true;
-			LinkLabelHelp.Text = "詳細情報";
-			LinkLabelHelp.TextAlign = ContentAlignment.MiddleRight;
-			LinkLabelHelp.LinkClicked += new LinkLabelLinkClickedEventHandler(LinkLabelHelp_LinkClicked);
+					// LabelHelp
+					Label aLabelHelp = new Label();
+					aLabelHelp.Margin = new Thickness(20, 0, 0, 0);
+					aStackPanelOutputItems.Children.Add(aLabelHelp);
+					{
+						// Hyperlink
+						Hyperlink aHyperlink = new Hyperlink();
+						aHyperlink.NavigateUri = new Uri("Kihonsetteitab", UriKind.Relative);
+						aHyperlink.RequestNavigate += HyperlinkHelp_RequestNavigate;
+						aLabelHelp.Content = aHyperlink;
+						{
+							// TextBlock
+							TextBlock aTextBlock = new TextBlock();
+							aTextBlock.Text = "詳細情報";
+							aHyperlink.Inlines.Add(aTextBlock);
+						}
+					}
+				}
 
-			// LabelRemovedItems
-			LabelRemovedItems = new Label();
-			LabelRemovedItems.Location = new Point(32, 44);
-			LabelRemovedItems.Size = new Size(152, 20);
-			LabelRemovedItems.Text = "（出力されない項目）";
-			LabelRemovedItems.TextAlign = ContentAlignment.MiddleLeft;
-			TabPageOutputSettings.Controls.Add(LabelRemovedItems);
+				// StackPanelListBoxCaption
+				StackPanel aStackPanelListBoxCaption = new StackPanel();
+				aStackPanelListBoxCaption.Orientation = Orientation.Horizontal;
+				aStackPanelListBoxCaption.Margin = new Thickness(20, 10, 0, 0);
+				aStackPanelOutputSettings.Children.Add(aStackPanelListBoxCaption);
+				{
+					// LabelRemovedItems
+					LabelRemovedItems = new Label();
+					LabelRemovedItems.Content = "（出力されない項目）";
+					LabelRemovedItems.Width = 270;
+					aStackPanelListBoxCaption.Children.Add(LabelRemovedItems);
 
-			// ListBoxRemovedItems
-			ListBoxRemovedItems = new ListBox();
-			ListBoxRemovedItems.FormattingEnabled = true;
-			ListBoxRemovedItems.ItemHeight = 12;
-			ListBoxRemovedItems.Location = new Point(32, 64);
-			ListBoxRemovedItems.Size = new Size(152, 160);
-			ListBoxRemovedItems.SelectedIndexChanged += new EventHandler(ListBoxRemovedItems_SelectedIndexChanged);
-			TabPageOutputSettings.Controls.Add(ListBoxRemovedItems);
+					// LabelAddedItems
+					LabelAddedItems = new Label();
+					LabelAddedItems.Content = "（出力される項目）";
+					aStackPanelListBoxCaption.Children.Add(LabelAddedItems);
+				}
 
-			// ButtonAddItem
-			ButtonAddItem = new Button();
-			ButtonAddItem.Location = new Point(192, 72);
-			ButtonAddItem.Size = new Size(96, 28);
-			ButtonAddItem.Text = "→ 追加 (&D)";
-			ButtonAddItem.UseVisualStyleBackColor = true;
-			ButtonAddItem.Click += new EventHandler(ButtonAddItem_Click);
-			TabPageOutputSettings.Controls.Add(ButtonAddItem);
+				// StackPanelListBox
+				StackPanel aStackPanelListBox = new StackPanel();
+				aStackPanelListBox.Orientation = Orientation.Horizontal;
+				aStackPanelListBox.Margin = new Thickness(20, 0, 20, 20);
+				aStackPanelOutputSettings.Children.Add(aStackPanelListBox);
+				{
+					// ListBoxRemovedItems
+					ListBoxRemovedItems = new ListBox();
+					ListBoxRemovedItems.Width = 150;
+					ListBoxRemovedItems.Height = 180;
+					ListBoxRemovedItems.SelectionChanged += ListBoxRemovedItems_SelectionChanged;
+					ScrollViewer.SetVerticalScrollBarVisibility(ListBoxRemovedItems, ScrollBarVisibility.Visible);
+					aStackPanelListBox.Children.Add(ListBoxRemovedItems);
 
-			// ButtonRemoveItem
-			ButtonRemoveItem = new Button();
-			ButtonRemoveItem.Location = new Point(192, 108);
-			ButtonRemoveItem.Size = new Size(96, 28);
-			ButtonRemoveItem.Text = "× 削除 (&M)";
-			ButtonRemoveItem.UseVisualStyleBackColor = true;
-			ButtonRemoveItem.Click += new EventHandler(ButtonRemoveItem_Click);
-			TabPageOutputSettings.Controls.Add(ButtonRemoveItem);
+					// StackPanelMoveButtons
+					StackPanel aStackPanelMoveButtons = new StackPanel();
+					aStackPanelMoveButtons.Margin = new Thickness(10, 0, 10, 0);
+					aStackPanelMoveButtons.VerticalAlignment = VerticalAlignment.Center;
+					aStackPanelListBox.Children.Add(aStackPanelMoveButtons);
+					{
+						Style aLightStyle = (Style)Owner.FindResource(YlCommon.RSRC_NAME_RAISED_LIGHT_BUTTON);
 
-			// ButtonUpItem
-			ButtonUpItem = new Button();
-			ButtonUpItem.Location = new Point(192, 152);
-			ButtonUpItem.Size = new Size(96, 28);
-			ButtonUpItem.Text = "↑ 上へ (&U)";
-			ButtonUpItem.UseVisualStyleBackColor = true;
-			ButtonUpItem.Click += new EventHandler(ButtonUpItem_Click);
-			TabPageOutputSettings.Controls.Add(ButtonUpItem);
+						// ButtonAddItem
+						ButtonAddItem = new Button();
+						ButtonAddItem.Height = Double.NaN;
+						ButtonAddItem.Content = "→ 追加 (_D)";
+						ButtonAddItem.Style = aLightStyle;
+						ButtonAddItem.Margin = new Thickness(0, 0, 0, 0);
+						ButtonAddItem.Width = 100;
+						ButtonAddItem.Padding = new Thickness(0, 4, 0, 4);
+						ButtonAddItem.Click += ButtonAddItem_Click;
+						aStackPanelMoveButtons.Children.Add(ButtonAddItem);
 
-			// ButtonDownItem
-			ButtonDownItem = new Button();
-			ButtonDownItem.Location = new Point(192, 188);
-			ButtonDownItem.Size = new Size(96, 28);
-			ButtonDownItem.Text = "↓ 下へ (&W)";
-			ButtonDownItem.UseVisualStyleBackColor = true;
-			ButtonDownItem.Click += new EventHandler(ButtonDownItem_Click);
-			TabPageOutputSettings.Controls.Add(ButtonDownItem);
+						// ButtonRemoveItem
+						ButtonRemoveItem = new Button();
+						ButtonRemoveItem.Height = Double.NaN;
+						ButtonRemoveItem.Content = "× 削除 (_M)";
+						ButtonRemoveItem.Style = aLightStyle;
+						ButtonRemoveItem.Margin = new Thickness(0, 10, 0, 0);
+						ButtonRemoveItem.Padding = new Thickness(0, 4, 0, 4);
+						ButtonRemoveItem.Click += ButtonRemoveItem_Click;
+						aStackPanelMoveButtons.Children.Add(ButtonRemoveItem);
 
-			// LabelAddedItems
-			LabelAddedItems = new Label();
-			LabelAddedItems.Location = new Point(296, 44);
-			LabelAddedItems.Size = new Size(152, 20);
-			LabelAddedItems.Text = "（出力される項目）";
-			LabelAddedItems.TextAlign = ContentAlignment.MiddleLeft;
-			TabPageOutputSettings.Controls.Add(LabelAddedItems);
+						// ButtonUpItem
+						ButtonUpItem = new Button();
+						ButtonUpItem.Height = Double.NaN;
+						ButtonUpItem.Content = "↑ 上へ (_U)";
+						ButtonUpItem.Style = aLightStyle;
+						ButtonUpItem.Margin = new Thickness(0, 20, 0, 0);
+						ButtonUpItem.Padding = new Thickness(0, 4, 0, 4);
+						ButtonUpItem.Click += ButtonUpItem_Click;
+						aStackPanelMoveButtons.Children.Add(ButtonUpItem);
 
-			// ListBoxAddedItems
-			ListBoxAddedItems = new ListBox();
-			ListBoxAddedItems.FormattingEnabled = true;
-			ListBoxAddedItems.ItemHeight = 12;
-			ListBoxAddedItems.Location = new Point(296, 64);
-			ListBoxAddedItems.Size = new Size(152, 160);
-			ListBoxAddedItems.SelectedIndexChanged += new EventHandler(ListBoxAddedItems_SelectedIndexChanged);
-			TabPageOutputSettings.Controls.Add(ListBoxAddedItems);
+						// ButtonDownItem
+						ButtonDownItem = new Button();
+						ButtonDownItem.Height = Double.NaN;
+						ButtonDownItem.Content = "↓ 下へ (_W)";
+						ButtonDownItem.Style = aLightStyle;
+						ButtonDownItem.Margin = new Thickness(0, 10, 0, 0);
+						ButtonDownItem.Padding = new Thickness(0, 4, 0, 4);
+						ButtonDownItem.Click += ButtonDownItem_Click;
+						aStackPanelMoveButtons.Children.Add(ButtonDownItem);
+					}
 
-			aTabPages.Add(TabPageOutputSettings);
+					// ListBoxAddedItems
+					ListBoxAddedItems = new ListBox();
+					ListBoxAddedItems.Width = 150;
+					ListBoxAddedItems.Height = 180;
+					ListBoxAddedItems.SelectionChanged += ListBoxAddedItems_SelectionChanged;
+					ScrollViewer.SetVerticalScrollBarVisibility(ListBoxAddedItems, ScrollBarVisibility.Visible);
+					aStackPanelListBox.Children.Add(ListBoxAddedItems);
+				}
+			}
 
-			return aTabPages;
+			aTabItems.Add(TabItemOutputSettings);
+
+			return aTabItems;
 		}
 
 		// --------------------------------------------------------------------
@@ -248,8 +285,8 @@ namespace YukaLister.Shared
 		public virtual void SettingsToCompos()
 		{
 			// 出力項目
-			RadioButtonOutputAllItems.Checked = OutputSettings.OutputAllItems;
-			RadioButtonOutputAddedItems.Checked = !OutputSettings.OutputAllItems;
+			RadioButtonOutputAllItems.IsChecked = OutputSettings.OutputAllItems;
+			RadioButtonOutputAddedItems.IsChecked = !OutputSettings.OutputAllItems;
 			UpdateOutputItemListBoxes();
 
 			// 出力しない項目
@@ -272,17 +309,16 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		// 設定画面表示
 		// --------------------------------------------------------------------
-		public DialogResult ShowDialog(IWin32Window oWindow)
+		public Nullable<Boolean> ShowDialog()
 		{
 			if (!IsDialogEnabled())
 			{
-				return DialogResult.Cancel;
+				return false;
 			}
-			
-			using (FormOutputSettings aFormOutputSettings = new FormOutputSettings(this, LogWriter))
-			{
-				return aFormOutputSettings.ShowDialog(oWindow);
-			}
+
+			OutputSettingsWindow aOutputSettingsWindow = new OutputSettingsWindow(this, LogWriter);
+			aOutputSettingsWindow.Owner = Owner;
+			return aOutputSettingsWindow.ShowDialog();
 		}
 
 		// ====================================================================
@@ -297,11 +333,9 @@ namespace YukaLister.Shared
 		protected List<OutputItems> mRuntimeOutputItems;
 
 		// コンポーネント
-		protected TabPage TabPageOutputSettings;
-		protected Label LabelOutputItem;
+		protected TabItem TabItemOutputSettings;
 		protected RadioButton RadioButtonOutputAllItems;
 		protected RadioButton RadioButtonOutputAddedItems;
-		protected LinkLabel LinkLabelHelp;
 		protected Label LabelRemovedItems;
 		protected ListBox ListBoxRemovedItems;
 		protected Button ButtonAddItem;
@@ -320,7 +354,7 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		protected String LoadTemplate(String oFileNameBody)
 		{
-			return File.ReadAllText(Path.GetDirectoryName(Application.ExecutablePath) + "\\" + YlCommon.FOLDER_NAME_TEMPLATES
+			return File.ReadAllText(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + "\\" + YlCommon.FOLDER_NAME_TEMPLATES
 					+ oFileNameBody + Common.FILE_EXT_TPL);
 		}
 
@@ -344,7 +378,7 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		// イベントハンドラー
 		// --------------------------------------------------------------------
-		private void ButtonAddItem_Click(Object oSender, EventArgs oEventArgs)
+		private void ButtonAddItem_Click(Object oSender, RoutedEventArgs oRoutedEventArgs)
 		{
 			try
 			{
@@ -368,7 +402,7 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		// イベントハンドラー
 		// --------------------------------------------------------------------
-		private void ButtonDownItem_Click(Object oSender, EventArgs oEventArgs)
+		private void ButtonDownItem_Click(Object oSender, RoutedEventArgs oRoutedEventArgs)
 		{
 			try
 			{
@@ -392,7 +426,7 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		// イベントハンドラー
 		// --------------------------------------------------------------------
-		private void ButtonRemoveItem_Click(Object oSender, EventArgs oEventArgs)
+		private void ButtonRemoveItem_Click(Object oSender, RoutedEventArgs oRoutedEventArgs)
 		{
 			try
 			{
@@ -416,7 +450,7 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		// イベントハンドラー
 		// --------------------------------------------------------------------
-		private void ButtonUpItem_Click(Object oSender, EventArgs oEventArgs)
+		private void ButtonUpItem_Click(Object oSender, RoutedEventArgs oRoutedEventArgs)
 		{
 			try
 			{
@@ -440,11 +474,11 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		// イベントハンドラー
 		// --------------------------------------------------------------------
-		private void LinkLabelHelp_LinkClicked(Object oSender, LinkLabelLinkClickedEventArgs oEventArgs)
+		private void HyperlinkHelp_RequestNavigate(Object oSender, RequestNavigateEventArgs oRequestNavigateEventArgs)
 		{
 			try
 			{
-				YlCommon.ShowHelp("Kihonsetteitab");
+				YlCommon.ShowHelp(oRequestNavigateEventArgs.Uri.OriginalString);
 			}
 			catch (Exception oExcep)
 			{
@@ -456,7 +490,7 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		// イベントハンドラー
 		// --------------------------------------------------------------------
-		private void ListBoxAddedItems_SelectedIndexChanged(Object oSender, EventArgs oEventArgs)
+		private void ListBoxAddedItems_SelectionChanged(Object oSender, SelectionChangedEventArgs oSelectionChangedEventArgs)
 		{
 			try
 			{
@@ -472,7 +506,7 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		// イベントハンドラー
 		// --------------------------------------------------------------------
-		private void ListBoxRemovedItems_SelectedIndexChanged(Object oSender, EventArgs oEventArgs)
+		private void ListBoxRemovedItems_SelectionChanged(Object oSender, SelectionChangedEventArgs oSelectionChangedEventArgs)
 		{
 			try
 			{
@@ -488,7 +522,7 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		// イベントハンドラー
 		// --------------------------------------------------------------------
-		private void RadioButtonOutputItems_CheckedChanged(Object oSender, EventArgs oEventArgs)
+		private void RadioButtonOutputItems_Checked(Object oSender, RoutedEventArgs oRoutedEventArgs)
 		{
 			try
 			{
@@ -508,7 +542,7 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		private void UpdateButtonAddItem()
 		{
-			ButtonAddItem.Enabled = RadioButtonOutputAddedItems.Checked && (ListBoxRemovedItems.SelectedIndex >= 0);
+			ButtonAddItem.IsEnabled = (Boolean)RadioButtonOutputAddedItems.IsChecked && (ListBoxRemovedItems.SelectedIndex >= 0);
 		}
 
 		// --------------------------------------------------------------------
@@ -516,9 +550,9 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		private void UpdateOutputItemButtons()
 		{
-			ButtonRemoveItem.Enabled = RadioButtonOutputAddedItems.Checked && (ListBoxAddedItems.SelectedIndex >= 0);
-			ButtonUpItem.Enabled = RadioButtonOutputAddedItems.Checked && ListBoxAddedItems.SelectedIndex > 0;
-			ButtonDownItem.Enabled = RadioButtonOutputAddedItems.Checked
+			ButtonRemoveItem.IsEnabled = (Boolean)RadioButtonOutputAddedItems.IsChecked && (ListBoxAddedItems.SelectedIndex >= 0);
+			ButtonUpItem.IsEnabled = (Boolean)RadioButtonOutputAddedItems.IsChecked && ListBoxAddedItems.SelectedIndex > 0;
+			ButtonDownItem.IsEnabled = (Boolean)RadioButtonOutputAddedItems.IsChecked
 					&& 0 <= ListBoxAddedItems.SelectedIndex && ListBoxAddedItems.SelectedIndex < ListBoxAddedItems.Items.Count - 1;
 		}
 
@@ -527,10 +561,10 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		private void UpdateOutputItemListBoxes()
 		{
-			LabelRemovedItems.Enabled = RadioButtonOutputAddedItems.Checked;
-			ListBoxRemovedItems.Enabled = RadioButtonOutputAddedItems.Checked;
-			LabelAddedItems.Enabled = RadioButtonOutputAddedItems.Checked;
-			ListBoxAddedItems.Enabled = RadioButtonOutputAddedItems.Checked;
+			LabelRemovedItems.IsEnabled = (Boolean)RadioButtonOutputAddedItems.IsChecked;
+			ListBoxRemovedItems.IsEnabled = (Boolean)RadioButtonOutputAddedItems.IsChecked;
+			LabelAddedItems.IsEnabled = (Boolean)RadioButtonOutputAddedItems.IsChecked;
+			ListBoxAddedItems.IsEnabled = (Boolean)RadioButtonOutputAddedItems.IsChecked;
 		}
 
 

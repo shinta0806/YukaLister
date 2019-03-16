@@ -17,12 +17,14 @@ using System.Data.SQLite;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace YukaLister.Shared
 {
@@ -73,6 +75,7 @@ namespace YukaLister.Shared
 	// --------------------------------------------------------------------
 	public enum FolderTask
 	{
+		FindSubFolders, // サブフォルダーの検索（親の場合のみ）
 		AddFileName,    // 追加（ファイル名のみ）
 		AddInfo,        // 追加（ファイルが追加されたレコードに対してその他の情報を付与）
 		Remove,         // 削除
@@ -85,10 +88,10 @@ namespace YukaLister.Shared
 	// --------------------------------------------------------------------
 	public enum FolderTaskStatus
 	{
-		Queued,			// 待機
-		Running,		// 実行中
-		Error,			// エラー
-		DoneInMemory,	// 完了（インメモリデータベースへの反映）
+		Queued,         // 待機
+		Running,        // 実行中
+		Error,          // エラー
+		DoneInMemory,   // 完了（インメモリデータベースへの反映）
 		DoneInDisk,     // 完了（ゆかり用データベースへの反映）
 	}
 
@@ -236,6 +239,24 @@ namespace YukaLister.Shared
 	}
 
 	// --------------------------------------------------------------------
+	// メッセージ定数
+	// --------------------------------------------------------------------
+	public enum Wm : UInt32
+	{
+		// タスク系
+		LaunchFolderTaskRequested = WindowsApi.WM_APP,
+		LaunchListTaskRequested,
+
+		// メインウィンドウ
+		UpdateYukaListerStatusRequested,
+		UpdateDataGridItemSourceRequested,
+
+		// 一覧ウィンドウ
+		FindKeywordRequested,
+		FindCellRequested,
+	}
+
+	// --------------------------------------------------------------------
 	// ゆかりすたーの動作状況
 	// --------------------------------------------------------------------
 	public enum YukaListerStatus
@@ -262,6 +283,7 @@ namespace YukaLister.Shared
 	// public デリゲート
 	// ====================================================================
 	public delegate void TaskAsyncDelegate<T>(T oVar);
+	public delegate YukaListerStatus YukaListerStatusDelegate();
 
 	// ====================================================================
 	// ゆかりすたー共通
@@ -277,17 +299,10 @@ namespace YukaLister.Shared
 		// アプリの基本情報
 		// --------------------------------------------------------------------
 		public const String APP_ID = "YukaLister";
-		public const String APP_NAME_J = "ゆかりすたー";
-		public const String APP_VER = "Ver 7.51 β";
-		public const String COPYRIGHT_J = "Copyright (C) 2018 by SHINTA";
-
-		// --------------------------------------------------------------------
-		// メッセージ定数
-		// --------------------------------------------------------------------
-		public const UInt32 WM_LAUNCH_FOLDER_TASK_REQUESTED = WindowsApi.WM_APP;
-		public const UInt32 WM_LAUNCH_LIST_TASK_REQUESTED = WindowsApi.WM_APP + 1;
-		public const UInt32 WM_FIND_KEYWORD_NEXT_REQUESTED = WindowsApi.WM_APP + 5;
-		public const UInt32 WM_FIND_KEYWORD_PREV_REQUESTED = WindowsApi.WM_APP + 6;
+		public const String APP_GENERATION = "METEOR";
+		public const String APP_NAME_J = "ゆかりすたー " + APP_GENERATION + " ";
+		public const String APP_VER = "Ver 1.00 α";
+		public const String COPYRIGHT_J = "Copyright (C) 2019 by SHINTA";
 
 		// --------------------------------------------------------------------
 		// フォルダー名
@@ -313,6 +328,7 @@ namespace YukaLister.Shared
 		public const String FILE_NAME_NICO_KARA_LISTER_CONFIG = "NicoKaraLister" + Common.FILE_EXT_CONFIG;
 		public const String FILE_NAME_YUKARI_CONFIG = "config" + Common.FILE_EXT_INI;
 		public const String FILE_NAME_YUKA_LISTER_CONFIG = APP_ID + Common.FILE_EXT_CONFIG;
+		public const String FILE_NAME_YUKA_LISTER_EXCLUDE_CONFIG = APP_ID + "Exclude" + Common.FILE_EXT_CONFIG;
 		public const String FILE_PREFIX_INFO = "Info";
 
 		// --------------------------------------------------------------------
@@ -454,6 +470,12 @@ namespace YukaLister.Shared
 		public const Int32 AGE_LIMIT_CERO_Z = 18;
 
 		// --------------------------------------------------------------------
+		// リソース名
+		// --------------------------------------------------------------------
+
+		public const String RSRC_NAME_RAISED_LIGHT_BUTTON = "MaterialDesignRaisedLightButton";
+
+		// --------------------------------------------------------------------
 		// その他
 		// --------------------------------------------------------------------
 
@@ -514,6 +536,9 @@ namespace YukaLister.Shared
 		// TCP リトライ回数
 		public const Int32 TCP_NUM_RETRIES = 5;
 
+		// ツールチップの長めの表示時間 [ms]
+		public const Int32 TOOL_TIP_LONG_INTERVAL = 10 * 1000;
+
 		// ====================================================================
 		// public プロパティー
 		// ====================================================================
@@ -530,6 +555,17 @@ namespace YukaLister.Shared
 		// ====================================================================
 		// public メンバー関数
 		// ====================================================================
+
+		// --------------------------------------------------------------------
+		// コンテキストメニューにアイテムを追加
+		// --------------------------------------------------------------------
+		public static void AddContextMenuItem(FrameworkElement oElement, String oLabel, RoutedEventHandler oClick)
+		{
+			MenuItem aMenuItem = new MenuItem();
+			aMenuItem.Header = oLabel;
+			aMenuItem.Click += oClick;
+			oElement.ContextMenu.Items.Add(aMenuItem);
+		}
 
 		// --------------------------------------------------------------------
 		// 楽曲情報データベースのバックアップを作成する
@@ -1004,16 +1040,32 @@ namespace YukaLister.Shared
 		}
 
 		// --------------------------------------------------------------------
+		// 指定されたフォルダーの除外設定有無
+		// --------------------------------------------------------------------
+		public static FolderExcludeSettingsStatus DetectFolderExcludeSettingsStatus(String oFolderExLen)
+		{
+			String aFolderExcludeSettingsFolder = FindExcludeSettingsFolder2Ex(oFolderExLen);
+			if (String.IsNullOrEmpty(aFolderExcludeSettingsFolder))
+			{
+				return FolderExcludeSettingsStatus.False;
+			}
+			else
+			{
+				return FolderExcludeSettingsStatus.True;
+			}
+		}
+
+		// --------------------------------------------------------------------
 		// 指定されたフォルダーの設定有無
 		// --------------------------------------------------------------------
-		public static FolderSettingsStatus DetectFolderSettingsStatus(String oFolder)
+		public static FolderSettingsStatus DetectFolderSettingsStatus2Ex(String oFolderExLen)
 		{
-			String aFolderSettingsFolder = FindSettingsFolder(oFolder);
+			String aFolderSettingsFolder = FindSettingsFolder2Ex(oFolderExLen);
 			if (String.IsNullOrEmpty(aFolderSettingsFolder))
 			{
 				return FolderSettingsStatus.None;
 			}
-			else if (IsSamePath(oFolder, aFolderSettingsFolder))
+			else if (IsSamePath(oFolderExLen, aFolderSettingsFolder))
 			{
 				return FolderSettingsStatus.Set;
 			}
@@ -1106,22 +1158,38 @@ namespace YukaLister.Shared
 		}
 
 		// --------------------------------------------------------------------
+		// 指定されたフォルダーのフォルダー除外設定ファイルがあるフォルダーを返す
+		// --------------------------------------------------------------------
+		public static String FindExcludeSettingsFolder2Ex(String oFolderExLen)
+		{
+			while (!String.IsNullOrEmpty(oFolderExLen))
+			{
+				if (File.Exists(oFolderExLen + "\\" + FILE_NAME_YUKA_LISTER_EXCLUDE_CONFIG))
+				{
+					return oFolderExLen;
+				}
+				oFolderExLen = Path.GetDirectoryName(oFolderExLen);
+			}
+			return null;
+		}
+
+		// --------------------------------------------------------------------
 		// 指定されたフォルダーのフォルダー設定ファイルがあるフォルダーを返す
 		// 互換性維持のため、ニコカラりすたーの設定ファイルも扱う
 		// --------------------------------------------------------------------
-		public static String FindSettingsFolder(String oFolder)
+		public static String FindSettingsFolder2Ex(String oFolderExLen)
 		{
-			while (!String.IsNullOrEmpty(oFolder))
+			while (!String.IsNullOrEmpty(oFolderExLen))
 			{
-				if (File.Exists(oFolder + "\\" + FILE_NAME_YUKA_LISTER_CONFIG))
+				if (File.Exists(oFolderExLen + "\\" + FILE_NAME_YUKA_LISTER_CONFIG))
 				{
-					return oFolder;
+					return oFolderExLen;
 				}
-				if (File.Exists(oFolder + "\\" + FILE_NAME_NICO_KARA_LISTER_CONFIG))
+				if (File.Exists(oFolderExLen + "\\" + FILE_NAME_NICO_KARA_LISTER_CONFIG))
 				{
-					return oFolder;
+					return oFolderExLen;
 				}
-				oFolder = Path.GetDirectoryName(oFolder);
+				oFolderExLen = Path.GetDirectoryName(oFolderExLen);
 			}
 			return null;
 		}
@@ -1192,30 +1260,30 @@ namespace YukaLister.Shared
 		// ID 接頭辞が未設定ならばユーザーに入力してもらう
 		// ＜例外＞ OperationCanceledException
 		// --------------------------------------------------------------------
-		public static void InputIdPrefixIfNeededWithInvoke(Form oOwner, YukaListerSettings oYukaListerSettings)
+		public static void InputIdPrefixIfNeededWithInvoke(Window oOwner, YukaListerSettings oYukaListerSettings)
 		{
 			if (!String.IsNullOrEmpty(oYukaListerSettings.IdPrefix))
 			{
 				return;
 			}
 
-			using (FormInputIdPrefix aFormInputIdPrefix = new FormInputIdPrefix(LogWriter))
+			InputIdPrefixWindow aInputIdPrefixWindow = new InputIdPrefixWindow(LogWriter);
+			oOwner.Dispatcher.Invoke(new Action(() =>
 			{
-				oOwner.Invoke(new Action(() =>
+				aInputIdPrefixWindow.Owner = oOwner;
+				if (!(Boolean)aInputIdPrefixWindow.ShowDialog())
 				{
-					if (aFormInputIdPrefix.ShowDialog(oOwner) != DialogResult.OK)
-					{
-						throw new OperationCanceledException();
-					}
-					oYukaListerSettings.IdPrefix = aFormInputIdPrefix.IdPrefix;
-				}));
-			}
+					throw new OperationCanceledException();
+				}
+				oYukaListerSettings.IdPrefix = aInputIdPrefixWindow.IdPrefix;
+			}));
 		}
 
 		// --------------------------------------------------------------------
 		// 同一のファイル・フォルダーかどうか
 		// 末尾の '\\' 有無や大文字小文字にかかわらず比較する
 		// いずれかが null の場合は false とする
+		// パスは extended-length でもそうでなくても可
 		// --------------------------------------------------------------------
 		public static Boolean IsSamePath(String oPath1, String oPath2)
 		{
@@ -1609,13 +1677,13 @@ namespace YukaLister.Shared
 			aUpdaterLauncher.ID = APP_ID;
 			aUpdaterLauncher.Name = APP_NAME_J;
 			aUpdaterLauncher.Wait = 3;
-			aUpdaterLauncher.UpdateRss = "http://shinta.coresv.com/soft/YukaLister_AutoUpdate.xml";
+			aUpdaterLauncher.UpdateRss = "http://shinta.coresv.com/soft/YukaListerMeteor_AutoUpdate.xml";
 			aUpdaterLauncher.CurrentVer = APP_VER;
 
 			// 変動部分
 			if (oCheckLatest)
 			{
-				aUpdaterLauncher.LatestRss = "http://shinta.coresv.com/soft/YukaLister_JPN.xml";
+				aUpdaterLauncher.LatestRss = "http://shinta.coresv.com/soft/YukaListerMeteor_JPN.xml";
 			}
 			aUpdaterLauncher.LogWriter = LogWriter;
 			aUpdaterLauncher.ForceShow = oForceShow;
@@ -1692,12 +1760,12 @@ namespace YukaLister.Shared
 		// FILE_NAME_YUKA_LISTER_CONFIG 優先、無い場合は FILE_NAME_NICO_KARA_LISTER_CONFIG
 		// 見つからない場合は null ではなく空のインスタンスを返す
 		// --------------------------------------------------------------------
-		public static FolderSettingsInDisk LoadFolderSettings(String oFolder)
+		public static FolderSettingsInDisk LoadFolderSettings2Ex(String oFolderExLen)
 		{
 			FolderSettingsInDisk aFolderSettings = new FolderSettingsInDisk();
 			try
 			{
-				String aFolderSettingsFolder = FindSettingsFolder(oFolder);
+				String aFolderSettingsFolder = FindSettingsFolder2Ex(oFolderExLen);
 				if (!String.IsNullOrEmpty(aFolderSettingsFolder))
 				{
 					if (File.Exists(aFolderSettingsFolder + "\\" + FILE_NAME_YUKA_LISTER_CONFIG))
@@ -1839,7 +1907,7 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		public static String MusicInfoDbPath()
 		{
-			return Path.GetDirectoryName(Application.ExecutablePath) + "\\" + FOLDER_NAME_DATABASE + FILE_NAME_MUSIC_INFO;
+			return Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + "\\" + FOLDER_NAME_DATABASE + FILE_NAME_MUSIC_INFO;
 		}
 
 		// --------------------------------------------------------------------
@@ -2217,19 +2285,6 @@ namespace YukaLister.Shared
 						LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "タイアップグループ紐付テーブル更新：" + oTieUpId + " / " + i.ToString());
 					}
 				}
-			}
-		}
-
-		// --------------------------------------------------------------------
-		// 指定された行が表示されていない場合はスクロールさせて表示させる
-		// --------------------------------------------------------------------
-		public static void ScrollDataGridViewIfNeeded(DataGridView oDataGridView, Int32 oRowIndex)
-		{
-			Int32 aBeforeRowIndex = oRowIndex > 0 ? oRowIndex - 1 : oRowIndex;
-			Int32 aAfterRowIndex = oRowIndex < oDataGridView.RowCount - 1 ? oRowIndex + 1 : oRowIndex;
-			if (!oDataGridView.Rows[aBeforeRowIndex].Displayed || !oDataGridView.Rows[aAfterRowIndex].Displayed)
-			{
-				oDataGridView.FirstDisplayedScrollingRowIndex = oRowIndex;
 			}
 		}
 
@@ -2955,7 +3010,7 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		// カテゴリーメニューに値を設定
 		// --------------------------------------------------------------------
-		public static void SetContextMenuStripCategories(ContextMenuStrip oContextMenuStripCategories, EventHandler oEventHandler)
+		public static void SetContextMenuItemCategories(FrameworkElement oElement, RoutedEventHandler oClick)
 		{
 			using (SQLiteConnection aConnection = CreateMusicInfoDbConnection())
 			{
@@ -2967,7 +3022,7 @@ namespace YukaLister.Shared
 							select x;
 					foreach (TCategory aCategory in aQueryResult)
 					{
-						oContextMenuStripCategories.Items.Add(aCategory.Name, null, oEventHandler);
+						AddContextMenuItem(oElement, aCategory.Name, oClick);
 					}
 				}
 			}
@@ -2975,11 +3030,18 @@ namespace YukaLister.Shared
 
 		// --------------------------------------------------------------------
 		// 設定保存フォルダのパス（末尾 '\\'）
-		// 存在しない場合は作成される
+		// 存在しない場合は作成する
 		// --------------------------------------------------------------------
 		public static String SettingsPath()
 		{
-			return Path.GetDirectoryName(Application.UserAppDataPath) + "\\";
+			String aPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData, Environment.SpecialFolderOption.DoNotVerify)
+					+ "\\" + Common.FOLDER_NAME_SHINTA + YlCommon.FOLDER_NAME_YUKA_LISTER;
+
+			if (!Directory.Exists(aPath))
+			{
+				Directory.CreateDirectory(aPath);
+			}
+			return aPath;
 		}
 
 		// --------------------------------------------------------------------
@@ -3005,7 +3067,7 @@ namespace YukaLister.Shared
 
 			try
 			{
-				String aHelpPathBase = Path.GetDirectoryName(Application.ExecutablePath) + "\\";
+				String aHelpPathBase = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + "\\";
 
 				// アンカーが指定されている場合は状況依存型ヘルプを表示
 				if (!String.IsNullOrEmpty(oAnchor))
@@ -3224,7 +3286,7 @@ namespace YukaLister.Shared
 			{
 				if (MessageBox.Show("フリガナはカタカナのみ登録可能のため、カタカナ以外は削除されます。\n"
 						+ oOriginalRuby + " → " + oNormalizedRuby + "\nよろしいですか？", "確認",
-						MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) == DialogResult.No)
+						MessageBoxButton.YesNo, MessageBoxImage.Exclamation) == MessageBoxResult.No)
 				{
 					throw new OperationCanceledException();
 				}
@@ -3434,44 +3496,6 @@ namespace YukaLister.Shared
 			}
 			return -1;
 		}
-
-#if false
-		// --------------------------------------------------------------------
-		// 楽曲情報データベースから楽曲に紐付く歌手などを検索
-		// --------------------------------------------------------------------
-		private static List<TPerson> SelectMusiciansBySongId(SQLiteConnection oConnection, String oSongId, Boolean oIncludesInvalid,
-				String oTableNameSequence, String oColumnNameSongId, String oColumnNamePersonId)
-		{
-			List<TPerson> aMusicians = new List<TPerson>();
-
-			if (!String.IsNullOrEmpty(oSongId))
-			{
-				using (SQLiteCommand aCmd = new SQLiteCommand(oConnection))
-				{
-					aCmd.CommandText = "SELECT * FROM " + TSong.TABLE_NAME_SONG
-							+ " INNER JOIN " + oTableNameSequence
-							+ " ON " + TSong.TABLE_NAME_SONG + "." + TSong.FIELD_NAME_SONG_ID + " = " + oTableNameSequence + "." + oColumnNameSongId
-							+ " WHERE " + TSong.TABLE_NAME_SONG + "." + TSong.FIELD_NAME_SONG_ID + " = @song_id";
-					aCmd.Parameters.Add(new SQLiteParameter("@song_id", oSongId));
-
-					using (SQLiteDataReader aReader = aCmd.ExecuteReader())
-					{
-						while (aReader.Read())
-						{
-							TPerson aPerson = SelectPersonById(oConnection, aReader[oColumnNamePersonId].ToString());
-							if (aPerson != null)
-							{
-								aMusicians.Add(aPerson);
-							}
-						}
-					}
-				}
-			}
-			return aMusicians;
-		}
-#endif
-
-
 	}
 	// public class YlCommon ___END___
 
@@ -3499,6 +3523,23 @@ namespace YukaLister.Shared
 		// 前回接続時に追加されていたフォルダー群（ドライブレターを除き '\\' から始まる）
 		public List<String> Folders { get; set; }
 	}
+
+	// ====================================================================
+	// フォルダー設定ウィンドウでのプレビュー情報
+	// ====================================================================
+	public class PreviewInfo
+	{
+		// ====================================================================
+		// public プロパティー
+		// ====================================================================
+
+		// ファイル名（パス無、ShLen 形式）
+		public String FileName { get; set; }
+
+		// 取得項目
+		public String Items { get; set; }
+
+	} // public class PreviewInfo ___END___
 
 	// ====================================================================
 	// ゆかり検索対象フォルダーの情報
@@ -3535,10 +3576,124 @@ namespace YukaLister.Shared
 		public FolderTaskStatus FolderTaskStatus { get; set; }
 
 		// フォルダー除外設定の状態
-		public FolderExcludeSettingsStatus FolderExcludeSettingsStatus { get; set; }
+		public FolderExcludeSettingsStatus FolderExcludeSettingsStatus
+		{
+			get
+			{
+				if (mFolderExcludeSettingsStatus == FolderExcludeSettingsStatus.Unchecked)
+				{
+					mFolderExcludeSettingsStatus = YlCommon.DetectFolderExcludeSettingsStatus(Path);
+				}
+				return mFolderExcludeSettingsStatus;
+			}
+			set
+			{
+				mFolderExcludeSettingsStatus = value;
+			}
+		}
 
 		// フォルダー設定の状態
-		public FolderSettingsStatus FolderSettingsStatus { get; set; }
+		public FolderSettingsStatus FolderSettingsStatus
+		{
+			get
+			{
+				if (mFolderSettingsStatus == FolderSettingsStatus.Unchecked)
+				{
+					mFolderSettingsStatus = YlCommon.DetectFolderSettingsStatus2Ex(Path);
+				}
+				return mFolderSettingsStatus;
+			}
+			set
+			{
+				mFolderSettingsStatus = value;
+			}
+		}
+
+		// UI に表示するかどうか
+		public Boolean Visible { get; set; }
+
+		// 表示用：アコーディオン
+		public String AccLabel
+		{
+			get
+			{
+				if (IsParent)
+				{
+					return IsOpen ? "∨" : "＞";
+				}
+				else
+				{
+					return null;
+				}
+			}
+		}
+
+		// 表示用：状態
+		public String FolderTaskStatusLabel
+		{
+			get
+			{
+				String aLabel;
+				FolderTaskStatus aStatusForLabelColor;
+				GetFolderTaskStatus(out aLabel, out aStatusForLabelColor);
+				return aLabel;
+			}
+		}
+
+		// 表示用：パス
+		public String PathLabel
+		{
+			get
+			{
+				return YlCommon.ShortenPath(Path);
+			}
+		}
+
+		// 表示用：設定有無
+		public String FolderSettingsStatusLabel
+		{
+			get
+			{
+				return YlCommon.FOLDER_SETTINGS_STATUS_TEXTS[(Int32)FolderSettingsStatus];
+			}
+		}
+
+		// 表示用：色分け
+		public FolderTaskStatus StatusForLabelColor
+		{
+			get
+			{
+				String aLabel;
+				FolderTaskStatus aStatusForLabelColor;
+				GetFolderTaskStatus(out aLabel, out aStatusForLabelColor);
+				return aStatusForLabelColor;
+			}
+		}
+
+		// ゆかりすたーステータス取得
+		public static YukaListerStatusDelegate MainWindowYukaListerStatus { get; set; }
+
+		// ====================================================================
+		// コンストラクター・デストラクター
+		// ====================================================================
+
+		// --------------------------------------------------------------------
+		// コンストラクター
+		// --------------------------------------------------------------------
+		public TargetFolderInfo(String oParentPathExLen, String oPathExLen)
+		{
+			IsParent = false;
+			IsOpen = false;
+			IsChildRunning = false;
+			NumTotalFolders = 0;
+			Path = oPathExLen;
+			ParentPath = oParentPathExLen;
+			FolderTask = FolderTask.AddFileName;
+			FolderTaskStatus = FolderTaskStatus.Queued;
+			FolderExcludeSettingsStatus = FolderExcludeSettingsStatus.Unchecked;
+			FolderSettingsStatus = FolderSettingsStatus.Unchecked;
+			Visible = false;
+		}
 
 		// ====================================================================
 		// public メンバー関数
@@ -3556,6 +3711,153 @@ namespace YukaLister.Shared
 			}
 			return String.Compare(oLhs.Path, oRhs.Path);
 		}
+
+		// ====================================================================
+		// private メンバー変数
+		// ====================================================================
+
+		// プロパティー FolderSettingsStatus の実体
+		private FolderSettingsStatus mFolderSettingsStatus;
+
+		// プロパティー FolderExcludeSettingsStatus の実体
+		private FolderExcludeSettingsStatus mFolderExcludeSettingsStatus;
+
+		// ====================================================================
+		// private メンバー関数
+		// ====================================================================
+
+		// --------------------------------------------------------------------
+		// 状態
+		// --------------------------------------------------------------------
+		private void GetFolderTaskStatus(out String oLabel, out FolderTaskStatus oStatusForLabelColor)
+		{
+			if (MainWindowYukaListerStatus() == YukaListerStatus.Error)
+			{
+				oLabel = "エラー解決待ち";
+				oStatusForLabelColor = FolderTaskStatus.Error;
+				return;
+			}
+
+			switch (FolderTaskStatus)
+			{
+				case FolderTaskStatus.Queued:
+					switch (FolderTask)
+					{
+						case FolderTask.AddFileName:
+							oLabel = "追加予定";
+							break;
+						case FolderTask.AddInfo:
+							oLabel = "ファイル名検索可";
+							break;
+						case FolderTask.Remove:
+							oLabel = "削除予定";
+							break;
+						case FolderTask.Update:
+							oLabel = "更新予定";
+							break;
+						default:
+							Debug.Assert(false, "GetFolderTaskStatus() bad FolderTask in FolderTaskStatus.Queued");
+							oLabel = null;
+							break;
+					}
+					oStatusForLabelColor = FolderTaskStatus.Queued;
+					break;
+				case FolderTaskStatus.Running:
+					switch (FolderTask)
+					{
+						case FolderTask.AddFileName:
+							oLabel = "ファイル名確認中";
+							break;
+						case FolderTask.AddInfo:
+							oLabel = "ファイル名検索可＋属性確認中";
+							break;
+						case FolderTask.FindSubFolders:
+							oLabel = "サブフォルダー検索中";
+							break;
+						case FolderTask.Remove:
+							oLabel = "削除中";
+							break;
+						case FolderTask.Update:
+							oLabel = "更新中";
+							break;
+						default:
+							Debug.Assert(false, "GetFolderTaskStatus() bad FolderTask in FolderTaskStatus.Running");
+							oLabel = null;
+							break;
+					}
+					oStatusForLabelColor = FolderTaskStatus.Running;
+					break;
+				case FolderTaskStatus.Error:
+					oLabel = "エラー";
+					oStatusForLabelColor = FolderTaskStatus.Error;
+					break;
+				case FolderTaskStatus.DoneInMemory:
+					if (IsParent && IsChildRunning)
+					{
+						oLabel = "サブフォルダー待ち";
+						oStatusForLabelColor = FolderTaskStatus.Running;
+					}
+					else
+					{
+						switch (FolderTask)
+						{
+							case FolderTask.AddFileName:
+								oLabel = "ファイル名確認済";
+								break;
+							case FolderTask.AddInfo:
+								oLabel = "ファイル名検索可＋属性確認済";
+								break;
+							case FolderTask.Remove:
+								oLabel = "削除準備完了";
+								break;
+							case FolderTask.Update:
+								oLabel = "更新準備完了";
+								break;
+							default:
+								Debug.Assert(false, "GetFolderTaskStatus() bad FolderTask in FolderTaskStatus.DoneInMemory");
+								oLabel = null;
+								break;
+						}
+						oStatusForLabelColor = FolderTaskStatus.Queued;
+					}
+					break;
+				case FolderTaskStatus.DoneInDisk:
+					switch (FolderTask)
+					{
+						case FolderTask.AddFileName:
+							Debug.Assert(false, "GetFolderTaskStatus() bad FolderTask in FolderTaskStatus.DoneInDisk - FolderTask.AddFileName");
+							oLabel = null;
+							break;
+						case FolderTask.AddInfo:
+							oLabel = "追加完了";
+							break;
+						case FolderTask.Remove:
+							oLabel = "削除完了";
+							break;
+						case FolderTask.Update:
+							oLabel = "更新完了";
+							break;
+						default:
+							Debug.Assert(false, "GetFolderTaskStatus() bad oInfo.FolderTask in FolderTaskStatus.DoneInDisk");
+							oLabel = null;
+							break;
+					}
+					oStatusForLabelColor = FolderTaskStatus.DoneInDisk;
+					break;
+				default:
+					Debug.Assert(false, "GetFolderTaskStatus() bad FolderTaskStatus");
+					oLabel = null;
+					oStatusForLabelColor = FolderTaskStatus.Error;
+					break;
+			}
+
+			if (FolderExcludeSettingsStatus == FolderExcludeSettingsStatus.True)
+			{
+				oLabel = "対象外";
+				oStatusForLabelColor = FolderTaskStatus.Queued;
+			}
+		}
+
 	}
 	// public class TargetFolderInfo ___END___
 

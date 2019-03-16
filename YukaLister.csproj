@@ -4,13 +4,30 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{9779AF39-C35A-4161-9BCA-AB69CBC30481}</ProjectGuid>
+    <ProjectGuid>{8BBAA61F-5B5D-49AF-AE18-50C0EAEDE84B}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>YukaLister</RootNamespace>
     <AssemblyName>YukaLister</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <WarningLevel>4</WarningLevel>
+    <Deterministic>true</Deterministic>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -18,7 +35,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>.\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;USE_WPF</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -27,7 +44,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>.\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;USE_WPF</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -39,27 +56,43 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>.\Hnx8.ReadJEnc.dll</HintPath>
     </Reference>
+    <Reference Include="MaterialDesignColors">
+      <HintPath>..\..\..\ThirdParty\MaterialDesignInXamlToolkit\packages\MaterialDesignColors.1.1.1\lib\net45\MaterialDesignColors.dll</HintPath>
+    </Reference>
+    <Reference Include="MaterialDesignThemes.Wpf">
+      <HintPath>..\..\..\ThirdParty\MaterialDesignInXamlToolkit\packages\MaterialDesignThemes.2.5.0.1205\lib\net45\MaterialDesignThemes.Wpf.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.WindowsAPICodePack">
+      <HintPath>..\..\..\ThirdParty\Windows-API-Code-Pack-1.1\source\WindowsAPICodePack\bin\Release\Microsoft.WindowsAPICodePack.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.WindowsAPICodePack.Shell">
+      <HintPath>..\..\..\ThirdParty\Windows-API-Code-Pack-1.1\source\WindowsAPICodePack\bin\Release\Microsoft.WindowsAPICodePack.Shell.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
-    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Data.Linq" />
     <Reference Include="System.Data.SQLite, Version=1.0.108.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>.\System.Data.SQLite.dll</HintPath>
     </Reference>
+    <Reference Include="System.Drawing" />
     <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Management" />
     <Reference Include="System.Net.Http.WebRequest" />
     <Reference Include="System.Web" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Deployment" />
-    <Reference Include="System.Drawing" />
     <Reference Include="System.Net.Http" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
+    <Reference Include="System.Xaml">
+      <RequiredTargetFramework>4.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="WindowsBase" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\_Common\ApplicationNameSettingsProvider.cs">
@@ -101,185 +134,175 @@
     <Compile Include="CsvOutputSettings.cs" />
     <Compile Include="CsvOutputWriter.cs" />
     <Compile Include="EditMasterAdapter.cs" />
+    <Compile Include="EditMasterWindow.xaml.cs">
+      <DependentUpon>EditMasterWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="EditMusicInfoWindow.xaml.cs">
+      <DependentUpon>EditMusicInfoWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="EditPeopleWindow.xaml.cs">
+      <DependentUpon>EditPeopleWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="EditSongWindow.xaml.cs">
+      <DependentUpon>EditSongWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="EditTieUpWindow.xaml.cs">
+      <DependentUpon>EditTieUpWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="FindKeywordWindow.xaml.cs">
+      <DependentUpon>FindKeywordWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="FolderSettings.cs" />
-    <Compile Include="FormAbout.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormAbout.Designer.cs">
-      <DependentUpon>FormAbout.cs</DependentUpon>
-    </Compile>
-    <Compile Include="FormEditMaster.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormEditMaster.Designer.cs">
-      <DependentUpon>FormEditMaster.cs</DependentUpon>
-    </Compile>
-    <Compile Include="FormEditMusicInfo.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormEditMusicInfo.Designer.cs">
-      <DependentUpon>FormEditMusicInfo.cs</DependentUpon>
-    </Compile>
-    <Compile Include="FormEditPeople.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormEditPeople.Designer.cs">
-      <DependentUpon>FormEditPeople.cs</DependentUpon>
-    </Compile>
-    <Compile Include="FormEditSong.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormEditSong.Designer.cs">
-      <DependentUpon>FormEditSong.cs</DependentUpon>
-    </Compile>
-    <Compile Include="FormEditTieUp.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormEditTieUp.Designer.cs">
-      <DependentUpon>FormEditTieUp.cs</DependentUpon>
-    </Compile>
-    <Compile Include="FormFindKeyword.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormFindKeyword.Designer.cs">
-      <DependentUpon>FormFindKeyword.cs</DependentUpon>
-    </Compile>
-    <Compile Include="FormFolderSettings.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormFolderSettings.Designer.cs">
-      <DependentUpon>FormFolderSettings.cs</DependentUpon>
-    </Compile>
-    <Compile Include="FormImport.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormImport.Designer.cs">
-      <DependentUpon>FormImport.cs</DependentUpon>
-    </Compile>
-    <Compile Include="FormInputIdPrefix.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormInputIdPrefix.designer.cs">
-      <DependentUpon>FormInputIdPrefix.cs</DependentUpon>
-    </Compile>
-    <Compile Include="FormOutputSettings.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormOutputSettings.designer.cs">
-      <DependentUpon>FormOutputSettings.cs</DependentUpon>
-    </Compile>
-    <Compile Include="FormSearchMusicInfo.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormSearchMusicInfo.designer.cs">
-      <DependentUpon>FormSearchMusicInfo.cs</DependentUpon>
-    </Compile>
-    <Compile Include="FormViewTFounds.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormViewTFounds.Designer.cs">
-      <DependentUpon>FormViewTFounds.cs</DependentUpon>
-    </Compile>
-    <Compile Include="FormYukaLister.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormYukaLister.Designer.cs">
-      <DependentUpon>FormYukaLister.cs</DependentUpon>
-    </Compile>
-    <Compile Include="FormYukaListerSettings.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormYukaListerSettings.Designer.cs">
-      <DependentUpon>FormYukaListerSettings.cs</DependentUpon>
+    <Compile Include="FolderSettingsWindow.xaml.cs">
+      <DependentUpon>FolderSettingsWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="HtmlOutputSettings.cs" />
     <Compile Include="HtmlOutputWriter.cs" />
+    <Compile Include="ImportWindow.xaml.cs">
+      <DependentUpon>ImportWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="InputIdPrefixWindow.xaml.cs">
+      <DependentUpon>InputIdPrefixWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="OutputSettings.cs" />
+    <Compile Include="OutputSettingsWindow.xaml.cs">
+      <DependentUpon>OutputSettingsWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="OutputWriter.cs" />
     <Compile Include="PreviewServer.cs" />
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SearchMusicInfoWindow.xaml.cs">
+      <DependentUpon>SearchMusicInfoWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="SyncClient.cs" />
+    <Compile Include="ViewTFoundsWindow.xaml.cs">
+      <DependentUpon>ViewTFoundsWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="WebOutputSettings.cs" />
     <Compile Include="WebOutputWriter.cs" />
+    <Compile Include="AboutWindow.xaml.cs">
+      <DependentUpon>AboutWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="YlCommon.cs" />
     <Compile Include="YlDatabaseTables.cs" />
     <Compile Include="YukaListerSettings.cs" />
+    <Compile Include="YukaListerSettingsWindow.xaml.cs">
+      <DependentUpon>YukaListerSettingsWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="YukariOutputSettings.cs" />
     <Compile Include="YukariOutputWriter.cs" />
-    <EmbeddedResource Include="FormAbout.resx">
-      <DependentUpon>FormAbout.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FormEditMaster.resx">
-      <DependentUpon>FormEditMaster.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FormEditMusicInfo.resx">
-      <DependentUpon>FormEditMusicInfo.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FormEditPeople.resx">
-      <DependentUpon>FormEditPeople.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FormEditSong.resx">
-      <DependentUpon>FormEditSong.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FormEditTieUp.resx">
-      <DependentUpon>FormEditTieUp.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FormFindKeyword.resx">
-      <DependentUpon>FormFindKeyword.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FormFolderSettings.resx">
-      <DependentUpon>FormFolderSettings.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FormImport.resx">
-      <DependentUpon>FormImport.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FormInputIdPrefix.resx">
-      <DependentUpon>FormInputIdPrefix.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FormOutputSettings.resx">
-      <DependentUpon>FormOutputSettings.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FormSearchMusicInfo.resx">
-      <DependentUpon>FormSearchMusicInfo.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FormViewTFounds.resx">
-      <DependentUpon>FormViewTFounds.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FormYukaLister.resx">
-      <DependentUpon>FormYukaLister.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FormYukaListerSettings.resx">
-      <DependentUpon>FormYukaListerSettings.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    <Page Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </EmbeddedResource>
+    </Page>
+    <Page Include="EditMasterWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="EditMusicInfoWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="EditPeopleWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="EditSongWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="EditTieUpWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="FindKeywordWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="FolderSettingsWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ImportWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="InputIdPrefixWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="MainWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Page Include="AboutWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="OutputSettingsWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SearchMusicInfoWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ViewTFoundsWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="YukaListerSettingsWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="アイコン\ButtonFindEmptyCell.png" />
-    <None Include="アイコン\ButtonFindNormalCell.png" />
-    <Content Include="アイコン\YukaListerアイコン.png" />
-    <Content Include="アイコン\YukaListerアイコン_1.ico" />
+    <None Include="アイコン\YukaListerアイコン.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="アイコン\YukaListerアイコン_1.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

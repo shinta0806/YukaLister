@@ -16,6 +16,7 @@ using System.Data.SQLite;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Windows;
 
 namespace YukaLister.Shared
 {
@@ -273,6 +274,22 @@ namespace YukaLister.Shared
 			}
 		}
 
+		// 前回起動時の世代
+		private const String KEY_NAME_PREV_LAUNCH_GENERATION = "PrevLaunchGeneration";
+		[UserScopedSetting]
+		[DefaultSettingValue("")]
+		public String PrevLaunchGeneration
+		{
+			get
+			{
+				return (String)this[KEY_NAME_PREV_LAUNCH_GENERATION];
+			}
+			set
+			{
+				this[KEY_NAME_PREV_LAUNCH_GENERATION] = value;
+			}
+		}
+
 		// 前回起動時のバージョン
 		private const String KEY_NAME_PREV_LAUNCH_VER = "PrevLaunchVer";
 		[UserScopedSetting]
@@ -306,33 +323,33 @@ namespace YukaLister.Shared
 		}
 
 		// ウィンドウ位置
-		private const String KEY_NAME_BOUNDS = "Bounds";
+		private const String KEY_NAME_RESTORE_BOUNDS = "RestoreBounds";
 		[UserScopedSetting]
 		[DefaultSettingValue("")]
-		public Rectangle Bounds
+		public Rect RestoreBounds
 		{
 			get
 			{
-				return (Rectangle)this[KEY_NAME_BOUNDS];
+				return (Rect)this[KEY_NAME_RESTORE_BOUNDS];
 			}
 			set
 			{
-				this[KEY_NAME_BOUNDS] = value;
+				this[KEY_NAME_RESTORE_BOUNDS] = value;
 			}
 		}
 
-		// ウィンドウ最大化
-		private const String KEY_NAME_WINDOW_MAXIMIZED = "WindowMaximized";
+		// ウィンドウ状態
+		private const String KEY_NAME_WINDOW_STATE = "WindowState";
 		[UserScopedSetting]
-		public Boolean WindowMaximized
+		public WindowState WindowState
 		{
 			get
 			{
-				return (Boolean)this[KEY_NAME_WINDOW_MAXIMIZED];
+				return (WindowState)this[KEY_NAME_WINDOW_STATE];
 			}
 			set
 			{
-				this[KEY_NAME_WINDOW_MAXIMIZED] = value;
+				this[KEY_NAME_WINDOW_STATE] = value;
 			}
 		}
 

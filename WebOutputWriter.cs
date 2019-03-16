@@ -22,7 +22,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Windows.Forms;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace YukaLister.Shared
 {
@@ -56,7 +57,7 @@ namespace YukaLister.Shared
 			base.CheckInput();
 
 			// 新着の日数
-			if (CheckBoxEnableNew.Checked)
+			if ((Boolean)CheckBoxEnableNew.IsChecked)
 			{
 				Int32 aNewDays;
 				Int32.TryParse(TextBoxNewDays.Text, out aNewDays);
@@ -77,7 +78,7 @@ namespace YukaLister.Shared
 			WebOutputSettings aWebOutputSettings = (WebOutputSettings)OutputSettings;
 
 			// 新着
-			aWebOutputSettings.EnableNew = CheckBoxEnableNew.Checked;
+			aWebOutputSettings.EnableNew = (Boolean)CheckBoxEnableNew.IsChecked;
 			Int32 aNewDays;
 			Int32.TryParse(TextBoxNewDays.Text, out aNewDays);
 			aWebOutputSettings.NewDays = aNewDays;
@@ -86,43 +87,48 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		// 設定画面のタブページ
 		// --------------------------------------------------------------------
-		public override List<TabPage> DialogTabPages()
+		public override List<TabItem> DialogTabItems()
 		{
-			List<TabPage> aTabPages = base.DialogTabPages();
+			List<TabItem> aTabItems = base.DialogTabItems();
 
-			// TabPageWebOutputSettings
-			TabPageWebOutputSettings = new TabPage();
-			TabPageWebOutputSettings.BackColor = SystemColors.Control;
-			TabPageWebOutputSettings.Location = new Point(4, 22);
-			TabPageWebOutputSettings.Padding = new Padding(3);
-			TabPageWebOutputSettings.Size = new Size(456, 386);
-			TabPageWebOutputSettings.Text = "HTML";
+			// TabItemWebOutputSettings
+			TabItemWebOutputSettings = new TabItem();
+			TabItemWebOutputSettings.Header = "HTML";
 
-			// CheckBoxEnableNew
-			CheckBoxEnableNew = new CheckBox();
-			CheckBoxEnableNew.Location = new Point(16, 16);
-			CheckBoxEnableNew.Size = new Size(24, 20);
-			CheckBoxEnableNew.UseVisualStyleBackColor = true;
-			CheckBoxEnableNew.CheckedChanged += new EventHandler(this.CheckBoxEnableNew_CheckedChanged);
-			TabPageWebOutputSettings.Controls.Add(CheckBoxEnableNew);
+			// StackPanelWebOutputSettings
+			StackPanel aStackPanelWebOutputSettings = new StackPanel();
+			TabItemWebOutputSettings.Content = aStackPanelWebOutputSettings;
+			{
+				// StackPanelNew
+				StackPanel aStackPanelNew = new StackPanel();
+				aStackPanelNew.Orientation = Orientation.Horizontal;
+				aStackPanelNew.Margin = new Thickness(20, 20, 0, 0);
+				aStackPanelWebOutputSettings.Children.Add(aStackPanelNew);
+				{
+					// CheckBoxEnableNew
+					CheckBoxEnableNew = new CheckBox();
+					CheckBoxEnableNew.Checked += CheckBoxEnableNew_Checked;
+					CheckBoxEnableNew.Unchecked += CheckBoxEnableNew_Checked;
+					aStackPanelNew.Children.Add(CheckBoxEnableNew);
 
-			// TextBoxNewDays
-			TextBoxNewDays = new TextBox();
-			TextBoxNewDays.Location = new Point(40, 16);
-			TextBoxNewDays.Size = new Size(40, 19);
-			TabPageWebOutputSettings.Controls.Add(TextBoxNewDays);
+					// TextBoxNewDays
+					TextBoxNewDays = new TextBox();
+					TextBoxNewDays.Width = 40;
+					TextBoxNewDays.Margin = new Thickness(10, 0, 10, 0);
+					TextBoxNewDays.VerticalAlignment = VerticalAlignment.Center;
+					TextBoxNewDays.HorizontalContentAlignment = HorizontalAlignment.Right;
+					aStackPanelNew.Children.Add(TextBoxNewDays);
 
-			// LabelNewDays
-			LabelNewDays = new Label();
-			LabelNewDays.Location = new Point(88, 16);
-			LabelNewDays.Size = new Size(352, 20);
-			LabelNewDays.Text = "日以内に更新されたファイルを NEW （新着）に記載する";
-			LabelNewDays.TextAlign = ContentAlignment.MiddleLeft;
-			TabPageWebOutputSettings.Controls.Add(LabelNewDays);
+					// LabelNewDays
+					LabelNewDays = new Label();
+					LabelNewDays.Content = "日以内に更新されたファイルを NEW （新着）に記載する";
+					aStackPanelNew.Children.Add(LabelNewDays);
+				}
+			}
 
-			aTabPages.Add(TabPageWebOutputSettings);
+			aTabItems.Add(TabItemWebOutputSettings);
 
-			return aTabPages;
+			return aTabItems;
 		}
 
 		// --------------------------------------------------------------------
@@ -172,7 +178,7 @@ namespace YukaLister.Shared
 			WebOutputSettings aWebOutputSettings = (WebOutputSettings)OutputSettings;
 
 			// 新着
-			CheckBoxEnableNew.Checked = aWebOutputSettings.EnableNew;
+			CheckBoxEnableNew.IsChecked = aWebOutputSettings.EnableNew;
 			TextBoxNewDays.Text = aWebOutputSettings.NewDays.ToString();
 			UpdateTextBoxNewDays();
 		}
@@ -200,7 +206,7 @@ namespace YukaLister.Shared
 		protected String mListLinkArg;
 
 		// コンポーネント
-		protected TabPage TabPageWebOutputSettings;
+		protected TabItem TabItemWebOutputSettings;
 		protected CheckBox CheckBoxEnableNew;
 		protected TextBox TextBoxNewDays;
 		protected Label LabelNewDays;
@@ -474,7 +480,7 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		// イベントハンドラー
 		// --------------------------------------------------------------------
-		private void CheckBoxEnableNew_CheckedChanged(Object oSender, EventArgs oEventArgs)
+		private void CheckBoxEnableNew_Checked(object oSender, RoutedEventArgs oRoutedEventArgs)
 		{
 			try
 			{
@@ -1444,7 +1450,7 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		private void UpdateTextBoxNewDays()
 		{
-			TextBoxNewDays.Enabled = CheckBoxEnableNew.Checked;
+			TextBoxNewDays.IsEnabled = (Boolean)CheckBoxEnableNew.IsChecked;
 		}
 
 

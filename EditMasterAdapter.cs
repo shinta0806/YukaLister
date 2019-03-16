@@ -8,6 +8,7 @@
 // TMaster テーブルからイメージ上派生している各種テーブルを統一的に扱うためのクラス
 // ----------------------------------------------------------------------------
 
+using MaterialDesignThemes.Wpf;
 using Shinta;
 using System;
 using System.Collections.Generic;
@@ -15,7 +16,9 @@ using System.Data.Linq;
 using System.Data.SQLite;
 using System.Diagnostics;
 using System.Drawing;
-using System.Windows.Forms;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
 using YukaLister.Shared;
 
 namespace YukaLister
@@ -59,7 +62,12 @@ namespace YukaLister
 		// --------------------------------------------------------------------
 		// コンポーネント初期化
 		// --------------------------------------------------------------------
-		public abstract void Init();
+		public virtual void Init()
+		{
+			mTextBoxKeyword.ToolTip = "キーワード、コメントなど。複数入力する際は、半角カンマ「 , 」で区切って下さい。";
+			HintAssist.SetHint(mTextBoxKeyword, mTextBoxKeyword.ToolTip);
+			ToolTipService.SetShowDuration(mTextBoxKeyword, YlCommon.TOOL_TIP_LONG_INTERVAL);
+		}
 
 		// --------------------------------------------------------------------
 		// 表示用新規 ID
@@ -137,7 +145,7 @@ namespace YukaLister
 						// ユーザーに確認
 						if (MessageBox.Show(Caption + "名を「" + oInitialName + "」から「" + aNormalizedName
 								+ "」に変更しようとしていますが、変更後の名前は既に登録されています。\nこのまま登録してよろしいですか？", "確認",
-								MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) == DialogResult.No)
+								MessageBoxButton.YesNo, MessageBoxImage.Exclamation) == MessageBoxResult.No)
 						{
 							mTextBoxName.Text = oInitialName;
 							throw new OperationCanceledException();
@@ -149,7 +157,7 @@ namespace YukaLister
 					// ユーザーに確認
 					if (MessageBox.Show(Caption + "名を「" + oInitialName + "」から「" + aNormalizedName
 							+ "」に変更しようとしています。\nこのまま登録してよろしいですか？", "確認",
-							MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) == DialogResult.No)
+							MessageBoxButton.YesNo, MessageBoxImage.Exclamation) == MessageBoxResult.No)
 					{
 						mTextBoxName.Text = oInitialName;
 						throw new OperationCanceledException();
@@ -172,7 +180,7 @@ namespace YukaLister
 					// ユーザーに確認
 					if (MessageBox.Show("登録しようとしている" + Caption + "「" + aNormalizedName + "」は既に登録されています。\n"
 							+ "このまま登録すると同じ名前で複数の登録となりますが、よろしいですか？", "確認",
-							MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) == DialogResult.No)
+							MessageBoxButton.YesNo, MessageBoxImage.Exclamation) == MessageBoxResult.No)
 					{
 						throw new OperationCanceledException();
 					}
@@ -193,24 +201,24 @@ namespace YukaLister
 		{
 			if (mComboBoxId.Items.Count <= 1)
 			{
-				mLabelIdInfo.Text = null;
+				mLabelIdInfo.Content = null;
 			}
 			else if (mComboBoxId.Items.Count == 2)
 			{
 				if ((String)mComboBoxId.SelectedItem == NewIdForDisplay())
 				{
-					mLabelIdInfo.Text = "（同名の登録が既にあります）";
+					mLabelIdInfo.Content = "（同名の登録が既にあります）";
 				}
 				else
 				{
-					mLabelIdInfo.Text = null;
+					mLabelIdInfo.Content = null;
 				}
 			}
 			else
 			{
-				mLabelIdInfo.Text = "（同名の登録が複数あります）";
+				mLabelIdInfo.Content = "（同名の登録が複数あります）";
 			}
-			mLabelIdInfo.ForeColor = Color.Red;
+			mLabelIdInfo.Foreground = new SolidColorBrush(Colors.Red);
 		}
 
 		// --------------------------------------------------------------------
@@ -255,7 +263,7 @@ namespace YukaLister
 		// --------------------------------------------------------------------
 		// コンストラクター
 		// --------------------------------------------------------------------
-		public EditMasterAdapterTMaker(FormEditMaster oOwner, List<TMaker> oInitialMakers, YukaListerSettings oYukaListerSettings)
+		public EditMasterAdapterTMaker(EditMasterWindow oOwner, List<TMaker> oInitialMakers, YukaListerSettings oYukaListerSettings)
 		{
 			// 変数初期化
 			mOwner = oOwner;
@@ -361,9 +369,13 @@ namespace YukaLister
 			mLogWriter = mOwner.mLogWriter;
 
 			// ラベル
-			mOwner.LabelId.Text = "制作会社" + mOwner.LabelId.Text;
-			mOwner.LabelName.Text = "制作会社" + mOwner.LabelName.Text;
-			mOwner.LabelNote.Text = "株式会社・有限会社などの法人格は入力しないで下さい。";
+			mOwner.LabelId.Content = "制作会社 " + mOwner.LabelId.Content;
+			mOwner.LabelName.Content = "制作会社" + mOwner.LabelName.Content;
+
+			// ヒント
+			mTextBoxName.ToolTip = "株式会社・有限会社などの法人格は入力しないで下さい。";
+			HintAssist.SetHint(mTextBoxName, mTextBoxName.ToolTip);
+			ToolTipService.SetShowDuration(mTextBoxName, YlCommon.TOOL_TIP_LONG_INTERVAL);
 
 			// ID コンボボックス設定
 			foreach (TMaker aMaker in mInitialMakers)
@@ -376,6 +388,8 @@ namespace YukaLister
 				mOwner.ComboBoxId.Items.Add(aMaker.Id);
 			}
 			UpdateLabelInfo();
+
+			base.Init();
 		}
 
 		// --------------------------------------------------------------------
@@ -433,7 +447,7 @@ namespace YukaLister
 		// ====================================================================
 
 		// オーナー
-		private FormEditMaster mOwner;
+		private EditMasterWindow mOwner;
 
 		// 各レコードの初期値
 		private List<TMaker> mInitialMakers;
@@ -453,7 +467,7 @@ namespace YukaLister
 		// --------------------------------------------------------------------
 		// コンストラクター
 		// --------------------------------------------------------------------
-		public EditMasterAdapterTSong(FormEditSong oOwner, List<TSong> oInitialSongs, YukaListerSettings oYukaListerSettings)
+		public EditMasterAdapterTSong(EditSongWindow oOwner, List<TSong> oInitialSongs, YukaListerSettings oYukaListerSettings)
 		{
 			// 変数初期化
 			mOwner = oOwner;
@@ -499,27 +513,27 @@ namespace YukaLister
 				CheckInput(aInitialSong.Name, aSongs.Count);
 
 				// チェックされているのに指定されていない項目を確認
-				if (mOwner.CheckBoxTieUp.Checked && String.IsNullOrEmpty(aTieUpId))
+				if ((Boolean)mOwner.CheckBoxTieUp.IsChecked && String.IsNullOrEmpty(aTieUpId))
 				{
 					throw new Exception("タイアップが「あり」になっていますが指定されていません。");
 				}
-				if (mOwner.CheckBoxCategory.Checked && String.IsNullOrEmpty(aCategoryId))
+				if ((Boolean)mOwner.CheckBoxCategory.IsChecked && String.IsNullOrEmpty(aCategoryId))
 				{
 					throw new Exception("カテゴリーが「あり」になっていますが指定されていません。");
 				}
-				if (mOwner.CheckBoxArtist.Checked && aArtistIds.Count == 0)
+				if ((Boolean)mOwner.CheckBoxArtist.IsChecked && aArtistIds.Count == 0)
 				{
 					throw new Exception("歌手が「あり」になっていますが指定されていません。");
 				}
-				if (mOwner.CheckBoxLyrist.Checked && aLyristIds.Count == 0)
+				if ((Boolean)mOwner.CheckBoxLyrist.IsChecked && aLyristIds.Count == 0)
 				{
 					throw new Exception("作詞者が「あり」になっていますが指定されていません。");
 				}
-				if (mOwner.CheckBoxComposer.Checked && aComposerIds.Count == 0)
+				if ((Boolean)mOwner.CheckBoxComposer.IsChecked && aComposerIds.Count == 0)
 				{
 					throw new Exception("作曲者が「あり」になっていますが指定されていません。");
 				}
-				if (mOwner.CheckBoxArranger.Checked && aArrangerIds.Count == 0)
+				if ((Boolean)mOwner.CheckBoxArranger.IsChecked && aArrangerIds.Count == 0)
 				{
 					throw new Exception("編曲者が「あり」になっていますが指定されていません。");
 				}
@@ -635,6 +649,8 @@ namespace YukaLister
 				mOwner.ComboBoxId.Items.Add(aSong.Id);
 			}
 			UpdateLabelInfo();
+
+			base.Init();
 		}
 
 		// --------------------------------------------------------------------
@@ -656,41 +672,41 @@ namespace YukaLister
 				// タイアップ関係
 				if (String.IsNullOrEmpty(aSong.TieUpId))
 				{
-					mOwner.CheckBoxTieUp.Checked = false;
+					mOwner.CheckBoxTieUp.IsChecked = false;
 				}
 				else
 				{
-					mOwner.CheckBoxTieUp.Checked = true;
+					mOwner.CheckBoxTieUp.IsChecked = true;
 					TTieUp aTieUp = YlCommon.SelectTieUpById(aConnection, aSong.TieUpId);
 					if (aTieUp != null)
 					{
 						mOwner.LabelTieUp.Tag = aTieUp.Id;
-						mOwner.LabelTieUp.Text = YlCommon.TieUpNameAvoidingSameName(aConnection, aTieUp);
+						mOwner.LabelTieUp.Content = YlCommon.TieUpNameAvoidingSameName(aConnection, aTieUp);
 					}
 					else
 					{
 						mOwner.LabelTieUp.Tag = null;
-						mOwner.LabelTieUp.Text = null;
+						mOwner.LabelTieUp.Content = null;
 					}
 				}
 				mOwner.TextBoxOpEd.Text = aSong.OpEd;
 				if (String.IsNullOrEmpty(aSong.CategoryId))
 				{
-					mOwner.CheckBoxCategory.Checked = false;
+					mOwner.CheckBoxCategory.IsChecked = false;
 				}
 				else
 				{
-					mOwner.CheckBoxCategory.Checked = true;
+					mOwner.CheckBoxCategory.IsChecked = true;
 					TCategory aCategory = YlCommon.SelectCategoryById(aConnection, aSong.CategoryId);
 					if (aCategory != null)
 					{
 						mOwner.LabelCategory.Tag = aCategory.Id;
-						mOwner.LabelCategory.Text = aCategory.Name;
+						mOwner.LabelCategory.Content = aCategory.Name;
 					}
 					else
 					{
 						mOwner.LabelCategory.Tag = null;
-						mOwner.LabelCategory.Text = null;
+						mOwner.LabelCategory.Content = null;
 					}
 				}
 
@@ -746,7 +762,7 @@ namespace YukaLister
 		// ====================================================================
 
 		// オーナー
-		private FormEditSong mOwner;
+		private EditSongWindow mOwner;
 
 		// 各レコードの初期値
 		private List<TSong> mInitialSongs;
@@ -762,22 +778,22 @@ namespace YukaLister
 		{
 			if (oPeople.Count == 0)
 			{
-				oCheckBox.Checked = false;
+				oCheckBox.IsChecked = false;
 			}
 			else
 			{
-				oCheckBox.Checked = true;
+				oCheckBox.IsChecked = true;
 				for (Int32 i = 0; i < oPeople.Count; i++)
 				{
 					if (i == 0)
 					{
 						oLabel.Tag = oPeople[i].Id;
-						oLabel.Text = oPeople[i].Name;
+						oLabel.Content = oPeople[i].Name;
 					}
 					else
 					{
 						oLabel.Tag += "," + oPeople[i].Id;
-						oLabel.Text += "," + oPeople[i].Name;
+						oLabel.Content += "," + oPeople[i].Name;
 					}
 				}
 			}
@@ -800,7 +816,7 @@ namespace YukaLister
 		// --------------------------------------------------------------------
 		// コンストラクター
 		// --------------------------------------------------------------------
-		public EditMasterAdapterTPerson(FormEditMaster oOwner, List<TPerson> oInitialPeople, YukaListerSettings oYukaListerSettings, String oCaption)
+		public EditMasterAdapterTPerson(EditMasterWindow oOwner, List<TPerson> oInitialPeople, YukaListerSettings oYukaListerSettings, String oCaption)
 		{
 			// 変数初期化
 			mOwner = oOwner;
@@ -906,9 +922,13 @@ namespace YukaLister
 			mLogWriter = mOwner.mLogWriter;
 
 			// ラベル
-			mOwner.LabelId.Text = "人物" + mOwner.LabelId.Text;
-			mOwner.LabelName.Text = "人物" + mOwner.LabelName.Text;
-			mOwner.LabelNote.Text = "一人分の人物名のみを入力して下さい（複数名をまとめないで下さい）。";
+			mOwner.LabelId.Content = "人物 " + mOwner.LabelId.Content;
+			mOwner.LabelName.Content = "人物" + mOwner.LabelName.Content;
+
+			// ヒント
+			mTextBoxName.ToolTip = "一人分の人物名のみを入力して下さい（複数名をまとめないで下さい）。";
+			HintAssist.SetHint(mTextBoxName, mTextBoxName.ToolTip);
+			ToolTipService.SetShowDuration(mTextBoxName, YlCommon.TOOL_TIP_LONG_INTERVAL);
 
 			// ID コンボボックス設定
 			foreach (TPerson aPerson in mInitialPeople)
@@ -921,6 +941,8 @@ namespace YukaLister
 				mOwner.ComboBoxId.Items.Add(aPerson.Id);
 			}
 			UpdateLabelInfo();
+
+			base.Init();
 		}
 
 		// --------------------------------------------------------------------
@@ -978,7 +1000,7 @@ namespace YukaLister
 		// ====================================================================
 
 		// オーナー
-		private FormEditMaster mOwner;
+		private EditMasterWindow mOwner;
 
 		// 各レコードの初期値
 		private List<TPerson> mInitialPeople;
@@ -998,7 +1020,7 @@ namespace YukaLister
 		// --------------------------------------------------------------------
 		// コンストラクター
 		// --------------------------------------------------------------------
-		public EditMasterAdapterTTieUp(FormEditTieUp oOwner, List<TTieUp> oInitialTieUps, YukaListerSettings oYukaListerSettings)
+		public EditMasterAdapterTTieUp(EditTieUpWindow oOwner, List<TTieUp> oInitialTieUps, YukaListerSettings oYukaListerSettings)
 		{
 			// 変数初期化
 			mOwner = oOwner;
@@ -1041,15 +1063,15 @@ namespace YukaLister
 				CheckInput(aInitialTieUp.Name, aTieUps.Count);
 
 				// チェックされているのに指定されていない項目を確認
-				if (mOwner.CheckBoxCategory.Checked && String.IsNullOrEmpty(aCategoryId))
+				if ((Boolean)mOwner.CheckBoxCategory.IsChecked && String.IsNullOrEmpty(aCategoryId))
 				{
 					throw new Exception("カテゴリーが「あり」になっていますが指定されていません。");
 				}
-				if (mOwner.CheckBoxMaker.Checked && String.IsNullOrEmpty(aMakerId))
+				if ((Boolean)mOwner.CheckBoxMaker.IsChecked && String.IsNullOrEmpty(aMakerId))
 				{
 					throw new Exception("制作会社が「あり」になっていますが指定されていません。");
 				}
-				if (mOwner.CheckBoxTieUpGroup.Checked && aTieUpGroupIds.Count == 0)
+				if ((Boolean)mOwner.CheckBoxTieUpGroup.IsChecked && aTieUpGroupIds.Count == 0)
 				{
 					throw new Exception("シリーズが「あり」になっていますが指定されていません。");
 				}
@@ -1135,6 +1157,8 @@ namespace YukaLister
 				mOwner.ComboBoxId.Items.Add(aTieUp.Id);
 			}
 			UpdateLabelInfo();
+
+			base.Init();
 		}
 
 		// --------------------------------------------------------------------
@@ -1156,21 +1180,21 @@ namespace YukaLister
 				// カテゴリー関係
 				if (String.IsNullOrEmpty(aTieUp.CategoryId))
 				{
-					mOwner.CheckBoxCategory.Checked = false;
+					mOwner.CheckBoxCategory.IsChecked = false;
 				}
 				else
 				{
-					mOwner.CheckBoxCategory.Checked = true;
+					mOwner.CheckBoxCategory.IsChecked = true;
 					TCategory aCategory = YlCommon.SelectCategoryById(aConnection, aTieUp.CategoryId);
 					if (aCategory != null)
 					{
 						mOwner.LabelCategory.Tag = aCategory.Id;
-						mOwner.LabelCategory.Text = aCategory.Name;
+						mOwner.LabelCategory.Content = aCategory.Name;
 					}
 					else
 					{
 						mOwner.LabelCategory.Tag = null;
-						mOwner.LabelCategory.Text = null;
+						mOwner.LabelCategory.Content = null;
 					}
 				}
 				if (aTieUp.AgeLimit == 0)
@@ -1185,21 +1209,21 @@ namespace YukaLister
 				// 制作会社
 				if (String.IsNullOrEmpty(aTieUp.MakerId))
 				{
-					mOwner.CheckBoxMaker.Checked = false;
+					mOwner.CheckBoxMaker.IsChecked = false;
 				}
 				else
 				{
-					mOwner.CheckBoxMaker.Checked = true;
+					mOwner.CheckBoxMaker.IsChecked = true;
 					TMaker aMaker = YlCommon.SelectMakerById(aConnection, aTieUp.MakerId);
 					if (aMaker != null)
 					{
 						mOwner.LabelMaker.Tag = aMaker.Id;
-						mOwner.LabelMaker.Text = aMaker.Name;
+						mOwner.LabelMaker.Content = aMaker.Name;
 					}
 					else
 					{
 						mOwner.LabelMaker.Tag = null;
-						mOwner.LabelMaker.Text = null;
+						mOwner.LabelMaker.Content = null;
 					}
 				}
 
@@ -1211,22 +1235,22 @@ namespace YukaLister
 				}
 				if (aTieUpGroups.Count == 0)
 				{
-					mOwner.CheckBoxTieUpGroup.Checked = false;
+					mOwner.CheckBoxTieUpGroup.IsChecked = false;
 				}
 				else
 				{
-					mOwner.CheckBoxTieUpGroup.Checked = true;
+					mOwner.CheckBoxTieUpGroup.IsChecked = true;
 					for (Int32 i = 0; i < aTieUpGroups.Count; i++)
 					{
 						if (i == 0)
 						{
 							mOwner.LabelTieUpGroup.Tag = aTieUpGroups[i].Id;
-							mOwner.LabelTieUpGroup.Text = aTieUpGroups[i].Name;
+							mOwner.LabelTieUpGroup.Content = aTieUpGroups[i].Name;
 						}
 						else
 						{
 							mOwner.LabelTieUpGroup.Tag += "," + aTieUpGroups[i].Id;
-							mOwner.LabelTieUpGroup.Text += "," + aTieUpGroups[i].Name;
+							mOwner.LabelTieUpGroup.Content += "," + aTieUpGroups[i].Name;
 						}
 					}
 				}
@@ -1273,7 +1297,7 @@ namespace YukaLister
 		// ====================================================================
 
 		// オーナー
-		private FormEditTieUp mOwner;
+		private EditTieUpWindow mOwner;
 
 		// 各レコードの初期値
 		private List<TTieUp> mInitialTieUps;
@@ -1298,7 +1322,7 @@ namespace YukaLister
 		// --------------------------------------------------------------------
 		// コンストラクター
 		// --------------------------------------------------------------------
-		public EditMasterAdapterTTieUpGroup(FormEditMaster oOwner, List<TTieUpGroup> oInitialTieUpGroups, YukaListerSettings oYukaListerSettings)
+		public EditMasterAdapterTTieUpGroup(EditMasterWindow oOwner, List<TTieUpGroup> oInitialTieUpGroups, YukaListerSettings oYukaListerSettings)
 		{
 			// 変数初期化
 			mOwner = oOwner;
@@ -1397,7 +1421,13 @@ namespace YukaLister
 			mLogWriter = mOwner.mLogWriter;
 
 			// ラベル
-			mOwner.LabelNote.Text = "名称に「シリーズ」は含めないで下さい。";
+			mOwner.LabelId.Content = "シリーズ " + mOwner.LabelId.Content;
+			mOwner.LabelName.Content = "シリーズ" + mOwner.LabelName.Content;
+
+			// ヒント
+			mTextBoxName.ToolTip = "シリーズ名に「シリーズ」は含めないで下さい。";
+			HintAssist.SetHint(mTextBoxName, mTextBoxName.ToolTip);
+			ToolTipService.SetShowDuration(mTextBoxName, YlCommon.TOOL_TIP_LONG_INTERVAL);
 
 			// ID コンボボックス設定
 			foreach (TTieUpGroup aTieUpGroup in mInitialTieUpGroups)
@@ -1410,6 +1440,8 @@ namespace YukaLister
 				mOwner.ComboBoxId.Items.Add(aTieUpGroup.Id);
 			}
 			UpdateLabelInfo();
+
+			base.Init();
 		}
 
 		// --------------------------------------------------------------------
@@ -1467,7 +1499,7 @@ namespace YukaLister
 		// ====================================================================
 
 		// オーナー
-		private FormEditMaster mOwner;
+		private EditMasterWindow mOwner;
 
 		// 各レコードの初期値
 		private List<TTieUpGroup> mInitialTieUpGroups;
