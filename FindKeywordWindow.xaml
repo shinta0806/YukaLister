@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:YukaLister"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-        mc:Ignorable="d" WindowStyle="ToolWindow" ResizeMode="NoResize" Loaded="Window_Loaded" Closed="Window_Closed" ShowInTaskbar="False" Topmost="True" SizeToContent="WidthAndHeight">
+        mc:Ignorable="d" WindowStyle="ToolWindow" ResizeMode="NoResize" Loaded="Window_Loaded" Closed="Window_Closed" ShowInTaskbar="False" Topmost="True" SizeToContent="WidthAndHeight" Icon="アイコン/YukaListerアイコン_1.ico">
     <StackPanel>
         <TextBox x:Name="TextBoxKeyword" materialDesign:HintAssist.Hint="ここに検索したいキーワードを入力して下さい。" Margin="20,20,20,0" TextChanged="TextBoxKeyword_TextChanged" Width="400"/>
         <CheckBox x:Name="CheckBoxCaseSensitive" Content="大文字と小文字を区別する (_C)" Margin="20,10,20,0" Checked="CheckBoxCaseSensitive_Checked" Unchecked="CheckBoxCaseSensitive_Checked"/>

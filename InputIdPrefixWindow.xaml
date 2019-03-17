@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:YukaLister"
         mc:Ignorable="d"
-        Title="ID 接頭辞の設定" HorizontalAlignment="Left" VerticalAlignment="Top" SizeToContent="WidthAndHeight" ResizeMode="NoResize" Loaded="Window_Loaded" Closed="Window_Closed">
+        Title="ID 接頭辞の設定" HorizontalAlignment="Left" VerticalAlignment="Top" SizeToContent="WidthAndHeight" ResizeMode="NoResize" Loaded="Window_Loaded" Closed="Window_Closed" Icon="アイコン/YukaListerアイコン_1.ico">
     <StackPanel>
         <Label Content="各種 ID の先頭に付与する文字列を設定します。" Margin="20,15,0,0" HorizontalAlignment="Left"/>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="20,0,0,0">

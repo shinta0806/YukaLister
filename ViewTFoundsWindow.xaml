@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:YukaLister"
-        mc:Ignorable="d" Height="600" Width="1000" ResizeMode="CanResizeWithGrip" Loaded="Window_Loaded" SourceInitialized="Window_SourceInitialized" Closed="Window_Closed" ShowInTaskbar="False" Icon="pack://siteoforigin:,,,/アイコン/YukaListerアイコン.png">
+        mc:Ignorable="d" Height="600" Width="1000" ResizeMode="CanResizeWithGrip" Loaded="Window_Loaded" SourceInitialized="Window_SourceInitialized" Closed="Window_Closed" ShowInTaskbar="False" Icon="アイコン/YukaListerアイコン_1.ico">
     <DockPanel>
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="20,15,20,0">
             <Label Content="検索対象のすべてのファイルについて、リストに表示される内容を一覧で確認できます。"/>

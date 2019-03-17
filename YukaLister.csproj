@@ -292,9 +292,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="アイコン\YukaListerアイコン.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="アイコン\YukaListerアイコン_1.ico" />
   </ItemGroup>
   <ItemGroup>

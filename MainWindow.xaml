@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:YukaLister"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-        mc:Ignorable="d" Height="480" Width="810" Loaded="Window_Loaded" Margin="0" ResizeMode="CanResizeWithGrip" Closed="Window_Closed" Deactivated="Window_Deactivated" SourceInitialized="Window_SourceInitialized" Icon="pack://siteoforigin:,,,/アイコン/YukaListerアイコン.png" AllowDrop="True" DragEnter="Window_DragEnter" Drop="Window_Drop" DragOver="Window_DragOver">
+        mc:Ignorable="d" Height="480" Width="810" Loaded="Window_Loaded" Margin="0" ResizeMode="CanResizeWithGrip" Closed="Window_Closed" Deactivated="Window_Deactivated" SourceInitialized="Window_SourceInitialized" Icon="アイコン/YukaListerアイコン_1.ico" AllowDrop="True" DragEnter="Window_DragEnter" Drop="Window_Drop" DragOver="Window_DragOver">
     <DockPanel>
         <DockPanel DockPanel.Dock="Top" Margin="20,20,20,0">
             <Label x:Name="LabelIcon" Content="" Width="30" VerticalAlignment="Center" Height="30"/>

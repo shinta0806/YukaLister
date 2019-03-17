@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:YukaLister"
-        mc:Ignorable="d" Loaded="Window_Loaded" Closed="Window_Closed" SizeToContent="WidthAndHeight" ResizeMode="NoResize" Icon="pack://siteoforigin:,,,/アイコン/YukaListerアイコン.png" ShowInTaskbar="False">
+        mc:Ignorable="d" Loaded="Window_Loaded" Closed="Window_Closed" SizeToContent="WidthAndHeight" ResizeMode="NoResize" Icon="アイコン/YukaListerアイコン_1.ico" ShowInTaskbar="False">
     <StackPanel>
         <StackPanel Margin="20,20,20,0" Orientation="Horizontal">
             <Label Content="タイアップ ID (_I)：" Width="100" HorizontalContentAlignment="Right"/>

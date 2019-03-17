@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:YukaLister"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-        mc:Ignorable="d" Loaded="Window_Loaded" Closed="Window_Closed" ResizeMode="NoResize" ShowInTaskbar="False" Icon="pack://siteoforigin:,,,/アイコン/YukaListerアイコン.png" SizeToContent="WidthAndHeight">
+        mc:Ignorable="d" Loaded="Window_Loaded" Closed="Window_Closed" ResizeMode="NoResize" ShowInTaskbar="False" Icon="アイコン/YukaListerアイコン_1.ico" SizeToContent="WidthAndHeight">
     <StackPanel>
         <StackPanel Orientation="Horizontal" Margin="0,15">
             <Label Content="ファイル：" Margin="20,0,0,0" HorizontalAlignment="Left"/>
