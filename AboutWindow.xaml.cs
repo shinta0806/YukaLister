@@ -118,4 +118,7 @@ namespace YukaLister
 			}
 		}
 	}
+	// public partial class AboutWindow ___END___
+
 }
+// namespace YukaLister ___END___

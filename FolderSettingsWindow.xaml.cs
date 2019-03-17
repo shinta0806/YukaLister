@@ -16,19 +16,13 @@ using System.Data.SQLite;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Interop;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using YukaLister.Shared;
 
@@ -507,7 +501,7 @@ namespace YukaLister
 
 				Dispatcher.Invoke(new Action(() =>
 				{
-					DataGridPreview.SelectedIndex = aRowIndex;
+					Common.SelectDataGridCell(DataGridPreview, aRowIndex, 0);
 				}));
 			}
 			catch (OperationCanceledException)
@@ -594,7 +588,6 @@ namespace YukaLister
 				return;
 			}
 
-			Debug.WriteLine("SaveSettingsIfNeeded() saving");
 			FolderSettingsInDisk aFolderSettings = ComposToSettings();
 
 			// 保存

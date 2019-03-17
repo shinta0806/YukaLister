@@ -17,17 +17,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Interop;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using YukaLister.Shared;
 
@@ -50,7 +44,6 @@ namespace YukaLister
 			InitializeComponent();
 
 			// 変数初期化
-			//mFormFindKeyword = null;
 			mYukaListerSettings = oYukaListerSettings;
 			mLogWriter = oLogWriter;
 		}
@@ -81,6 +74,9 @@ namespace YukaLister
 		// ウィンドウハンドル
 		private IntPtr mHandle;
 
+		// Ctrl+F 捕捉用
+		private RoutedCommand mRoutedCommandCtrlF = new RoutedCommand();
+
 		// ログ
 		private LogWriter mLogWriter;
 
@@ -103,6 +99,22 @@ namespace YukaLister
 			else
 			{
 				return aValue.ToString();
+			}
+		}
+
+		// --------------------------------------------------------------------
+		// イベントハンドラー
+		// --------------------------------------------------------------------
+		private void ExecutedRoutedCommandCtrlF(object oSender, ExecutedRoutedEventArgs oExecutedRoutedEventArgs)
+		{
+			try
+			{
+				ShowFindKeywordWindow();
+			}
+			catch (Exception oExcep)
+			{
+				mLogWriter.ShowLogMessage(TraceEventType.Error, "Ctrl+F 時エラー：\n" + oExcep.Message);
+				mLogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 
@@ -289,6 +301,11 @@ namespace YukaLister
 
 			// データグリッド
 			InitDataGrid();
+
+			// ショートカットキー
+			mRoutedCommandCtrlF.InputGestures.Add(new KeyGesture(Key.F, ModifierKeys.Control));
+			CommandBinding aCommandBindingCtrlF = new CommandBinding(mRoutedCommandCtrlF, ExecutedRoutedCommandCtrlF);
+			CommandBindings.Add(aCommandBindingCtrlF);
 		}
 
 		// --------------------------------------------------------------------
@@ -336,6 +353,34 @@ namespace YukaLister
 			{
 				mLastSelectedRowIndex = -1;
 				mLastSelectedColumnIndex = -1;
+			}
+		}
+
+		// --------------------------------------------------------------------
+		// 検索ウィンドウを表示する
+		// --------------------------------------------------------------------
+		private void ShowFindKeywordWindow()
+		{
+			// 検索ウィンドウ準備
+			if (mFindKeywordWindow != null && !mFindKeywordWindow.IsVisible)
+			{
+				mFindKeywordWindow = new FindKeywordWindow(mFindKeywordWindow);
+				mFindKeywordWindow.Owner = this;
+			}
+			if (mFindKeywordWindow == null)
+			{
+				mFindKeywordWindow = new FindKeywordWindow(mLogWriter);
+				mFindKeywordWindow.Owner = this;
+			}
+
+			// 表示
+			if (mFindKeywordWindow.IsVisible)
+			{
+				mFindKeywordWindow.Activate();
+			}
+			else
+			{
+				mFindKeywordWindow.Show();
 			}
 		}
 
@@ -674,27 +719,7 @@ namespace YukaLister
 		{
 			try
 			{
-				// 検索ウィンドウ準備
-				if (mFindKeywordWindow != null && !mFindKeywordWindow.IsVisible)
-				{
-					mFindKeywordWindow = new FindKeywordWindow(mFindKeywordWindow);
-					mFindKeywordWindow.Owner = this;
-				}
-				if (mFindKeywordWindow == null)
-				{
-					mFindKeywordWindow = new FindKeywordWindow(mLogWriter);
-					mFindKeywordWindow.Owner = this;
-				}
-
-				// 表示
-				if (mFindKeywordWindow.IsVisible)
-				{
-					mFindKeywordWindow.Activate();
-				}
-				else
-				{
-					mFindKeywordWindow.Show();
-				}
+				ShowFindKeywordWindow();
 			}
 			catch (Exception oExcep)
 			{

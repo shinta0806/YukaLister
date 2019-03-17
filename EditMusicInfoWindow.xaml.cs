@@ -1,13 +1,4 @@
-﻿using Shinta;
-using System;
-using System.Collections.Generic;
-using System.Data.Linq;
-using System.Data.SQLite;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-// ============================================================================
+﻿// ============================================================================
 // 
 // ファイル名・フォルダー固定値から取得した楽曲情報等の編集を行うウィンドウ
 // 
@@ -17,15 +8,16 @@ using System.Threading.Tasks;
 // 
 // ----------------------------------------------------------------------------
 
+using Shinta;
+using System;
+using System.Collections.Generic;
+using System.Data.Linq;
+using System.Data.SQLite;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Windows.Shapes;
 using YukaLister.Shared;
 
 namespace YukaLister

@@ -20,6 +20,8 @@
 // フォルダー設定
 //
 // ToDo:
+// TFound ウィンドウでの Ctrl+F
+// 未登録検出でのスクロール
 // 検索ウィンドウで検索ワードも検索対象とする
 // ファイル名から命名規則で取得できる情報を精査する
 // データベースクラスのプロパティーをインターフェースにしたらどうか？
@@ -33,7 +35,6 @@ using Microsoft.WindowsAPICodePack.Dialogs;
 using Shinta;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Data.Linq;
 using System.Data.SQLite;
 using System.Diagnostics;
@@ -47,14 +48,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Threading;
 using YukaLister.Shared;
 
@@ -1442,17 +1438,6 @@ namespace YukaLister
 						from x in aTableFound
 						where x.Folder == YlCommon.ShortenPath(oFolderPathExLen).ToLower()
 						select x;
-#if DEBUGz
-				mLogWriter.ShowLogMessage(TraceEventType.Verbose, "RemoveNicoKaraFiles() " + YlCommon.ShortenPath(oFolderPath).ToLower());
-				if (aQueryResult == null)
-				{
-					mLogWriter.ShowLogMessage(TraceEventType.Verbose, "RemoveNicoKaraFiles() result null");
-				}
-				else
-				{
-					mLogWriter.ShowLogMessage(TraceEventType.Verbose, "RemoveNicoKaraFiles() del " + aQueryResult.Count() + " 件");
-				}
-#endif
 				aTableFound.DeleteAllOnSubmit(aQueryResult);
 				aYukariDbContext.SubmitChanges();
 			}
@@ -2383,17 +2368,6 @@ namespace YukaLister
 
 				// ゆかり用プレビュー
 				RunPreviewServerIfNeeded();
-
-#if DEBUGz
-				FrameworkElement ele = ButtonAddTargetFolder;
-				Debug.WriteLine("Window_Loaded() " + ele.GetType().Name);
-
-				Style style = ButtonRemoveTargetFolder.Style;
-				Debug.WriteLine("Window_Loaded() " + style.GetType().Name);
-
-				Object ob = FindResource("MaterialDesignRaisedLightButton");
-				Debug.WriteLine("Window_Loaded() " + ob.GetType().Name);
-#endif
 			}
 			catch (Exception oExcep)
 			{
@@ -2846,6 +2820,8 @@ namespace YukaLister
 				mLogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
-
 	}
+	// public partial class MainWindow ___END___
+
 }
+// namespace YukaLister ___END___
