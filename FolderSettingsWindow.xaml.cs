@@ -1424,4 +1424,6 @@ namespace YukaLister
 			}
 		}
 	}
+	// public partial class FolderSettingsWindow ___END___
 }
+// namespace YukaLister ___END___

@@ -169,7 +169,7 @@
       <DependentUpon>OutputSettingsWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="OutputWriter.cs" />
-    <Compile Include="PreviewServer.cs" />
+    <Compile Include="WebServer.cs" />
     <Compile Include="SearchMusicInfoWindow.xaml.cs">
       <DependentUpon>SearchMusicInfoWindow.xaml</DependentUpon>
     </Compile>

@@ -827,4 +827,6 @@ namespace YukaLister
 			}
 		}
 	}
+	// public partial class ViewTFoundsWindow ___END___
 }
+// namespace YukaLister ___END___

@@ -462,4 +462,6 @@ namespace YukaLister
 		}
 
 	}
+	// public partial class EditPeopleWindow ___END___
 }
+// namespace YukaLister ___END___

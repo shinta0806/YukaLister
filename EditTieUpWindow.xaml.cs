@@ -562,4 +562,6 @@ namespace YukaLister
 		}
 
 	}
+	// public partial class EditTieUpWindow ___END___
 }
+// namespace YukaLister ___END___

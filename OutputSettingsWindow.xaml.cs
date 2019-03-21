@@ -142,4 +142,6 @@ namespace YukaLister
 			}
 		}
 	}
+	// public partial class OutputSettingsWindow ___END___
 }
+// namespace YukaLister ___END___

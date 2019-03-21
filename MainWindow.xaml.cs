@@ -18,6 +18,7 @@
 // ----------------------------------------------------------------------------
 // ToDo:
 // インポートにドロップした時に R:\\ のようにダブル
+// SourceInitialized の順番再確認
 // 検索ウィンドウで検索ワードも検索対象とする
 // ファイル名から命名規則で取得できる情報を精査する
 // データベースクラスのプロパティーをインターフェースにしたらどうか？
@@ -1529,10 +1530,10 @@ namespace YukaLister
 				return;
 			}
 
-			PreviewServer aPreviewServer = new PreviewServer(mYukaListerSettings, mClosingCancellationTokenSource.Token, mLogWriter);
+			WebServer aWebServer = new WebServer(mYukaListerSettings, mClosingCancellationTokenSource.Token, mLogWriter);
 
 			// async を待機しない
-			Task aSuppressWarning = aPreviewServer.RunAsync();
+			Task aSuppressWarning = aWebServer.RunAsync();
 		}
 
 		// --------------------------------------------------------------------

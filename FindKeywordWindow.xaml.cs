@@ -239,5 +239,8 @@ namespace YukaLister
 				mLogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
+
 	}
+	// public partial class FindKeywordWindow ___END___
 }
+// namespace YukaLister ___END___

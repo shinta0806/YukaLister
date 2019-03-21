@@ -1229,4 +1229,6 @@ namespace YukaLister
 		}
 
 	}
+	// public partial class YukaListerSettingsWindow ___END___
 }
+// namespace YukaLister ___END___

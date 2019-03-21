@@ -796,4 +796,7 @@ namespace YukaLister
 			}
 		}
 	}
+	// public partial class EditMusicInfoWindow ___END___
+
 }
+// namespace YukaLister ___END___

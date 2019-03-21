@@ -363,4 +363,6 @@ namespace YukaLister
 		}
 
 	}
+	// public partial class SearchMusicInfoWindow ___END___
 }
+// namespace YukaLister ___END___

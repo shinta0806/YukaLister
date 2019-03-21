@@ -139,4 +139,6 @@ namespace YukaLister
 			}
 		}
 	}
+	// public partial class InputIdPrefixWindow ___END___
 }
+// namespace YukaLister ___END___

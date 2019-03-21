@@ -1139,4 +1139,6 @@ namespace YukaLister
 			}
 		}
 	}
+	// public partial class ImportWindow ___END___
 }
+// namespace YukaLister ___END___
