@@ -137,6 +137,8 @@ namespace YukaLister
 			{
 				mLogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "キーワード検索ウィンドウを開きます。");
 				Init();
+
+				TextBoxKeyword.Focus();
 			}
 			catch (Exception oExcep)
 			{

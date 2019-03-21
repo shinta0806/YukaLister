@@ -1863,15 +1863,7 @@ namespace YukaLister.Shared
 		{
 			mStatusLabel.Dispatcher.Invoke(new Action(() =>
 			{
-				mStatusLabel.Content = oMsg;
-				if (oTraceEventType == TraceEventType.Error)
-				{
-					mStatusLabel.Foreground = new SolidColorBrush(Colors.Red);
-				}
-				else
-				{
-					mStatusLabel.Foreground = new SolidColorBrush(Colors.Black);
-				}
+				YlCommon.SetStatusLabelMessage(mStatusLabel, oTraceEventType, oMsg);
 			}));
 			mLogWriterSync.ShowLogMessage(oTraceEventType, oMsg, true);
 		}

@@ -44,16 +44,16 @@
                 <StackPanel Orientation="Horizontal">
                     <Label Content="配布ページ：" HorizontalContentAlignment="Right" Width="90"/>
                     <Label>
-                        <Hyperlink Hyperlink.RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="http://shinta.coresv.com/software/yukalister_meteor_jpn/">
-                            <TextBlock Text="http://shinta.coresv.com/software/yukalister_meteor_jpn/"/>
+                        <Hyperlink Hyperlink.RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="http://shinta.coresv.com/software/yukalister-meteor-jpn/">
+                            <TextBlock Text="http://shinta.coresv.com/software/yukalister-meteor-jpn/"/>
                         </Hyperlink>
                     </Label>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal">
                     <Label Content="サポートページ：" HorizontalContentAlignment="Right" Width="90"/>
                     <Label>
-                        <Hyperlink Hyperlink.RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="http://shinta.coresv.com/software/yukalister_meteor_jpn/#Support">
-                            <TextBlock Text="http://shinta.coresv.com/software/yukalister_meteor_jpn/#Support"/>
+                        <Hyperlink Hyperlink.RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="http://shinta.coresv.com/software/yukalister-meteor-jpn/#Support">
+                            <TextBlock Text="http://shinta.coresv.com/software/yukalister-meteor-jpn/#Support"/>
                         </Hyperlink>
                     </Label>
                 </StackPanel>

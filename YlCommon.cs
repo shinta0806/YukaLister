@@ -25,6 +25,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace YukaLister.Shared
 {
@@ -3025,6 +3026,22 @@ namespace YukaLister.Shared
 						AddContextMenuItem(oElement, aCategory.Name, oClick);
 					}
 				}
+			}
+		}
+
+		// --------------------------------------------------------------------
+		// ステータスバーにメッセージを表示
+		// --------------------------------------------------------------------
+		public static void SetStatusLabelMessage(Label oStatusLabel, TraceEventType oTraceEventType, String oMsg)
+		{
+			oStatusLabel.Content = oMsg;
+			if (oTraceEventType == TraceEventType.Error)
+			{
+				oStatusLabel.Foreground = new SolidColorBrush(Colors.Red);
+			}
+			else
+			{
+				oStatusLabel.Foreground = new SolidColorBrush(Colors.Black);
 			}
 		}
 

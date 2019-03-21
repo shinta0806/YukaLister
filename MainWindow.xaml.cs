@@ -16,12 +16,8 @@
 // ----------------------------------------------------------------------------
 
 // ----------------------------------------------------------------------------
-// NEXT
-// フォルダー設定
-//
 // ToDo:
-// TFound ウィンドウでの Ctrl+F
-// 未登録検出でのスクロール
+// インポートにドロップした時に R:\\ のようにダブル
 // 検索ウィンドウで検索ワードも検索対象とする
 // ファイル名から命名規則で取得できる情報を精査する
 // データベースクラスのプロパティーをインターフェースにしたらどうか？
@@ -470,6 +466,15 @@ namespace YukaLister
 			Debug.Assert(!oFolderShLen.StartsWith(YlCommon.EXTENDED_LENGTH_PATH_PREFIX), "AutoTargetInfoPath2Sh() not ShLen");
 
 			return oFolderShLen.Substring(0, 3) + FILE_NAME_AUTO_TARGET_INFO;
+		}
+
+		// --------------------------------------------------------------------
+		// ステータスバーをクリア
+		// --------------------------------------------------------------------
+		private void ClearStatusBar()
+		{
+			// null にするとステーバスバーの高さが低くなってしまうので String.Empty にする
+			LabelBgStatus.Content = String.Empty;
 		}
 
 		// --------------------------------------------------------------------
@@ -1183,6 +1188,9 @@ namespace YukaLister
 
 			// ゆかりすたーステータス取得
 			TargetFolderInfo.MainWindowYukaListerStatus = MainWindowYukaListerStatus;
+
+			// ステータスバー
+			ClearStatusBar();
 
 			// extended-length なパス表記の設定（.NET 4.6.2 以降のみ有効とする）
 			SystemEnvironment aSystemEnvironment = new SystemEnvironment();
@@ -2363,7 +2371,6 @@ namespace YukaLister
 				}
 
 				// 楽曲情報データベースの同期
-				//ToolStripStatusLabelBgStatus.Text = null;
 				RunSyncClientIfNeeded();
 
 				// ゆかり用プレビュー
@@ -2770,9 +2777,14 @@ namespace YukaLister
 				DateTime aMusicInfoDbTimeBak = new FileInfo(YlCommon.MusicInfoDbPath()).LastWriteTime;
 				Boolean aRegetSyncDataNeeded;
 
+				ClearStatusBar();
+
 				YukaListerSettingsWindow aYukaListerSettingsWindow = new YukaListerSettingsWindow(mYukaListerSettings, mLogWriter);
 				aYukaListerSettingsWindow.Owner = this;
-				aYukaListerSettingsWindow.ShowDialog();
+				if ((Boolean)aYukaListerSettingsWindow.ShowDialog())
+				{
+					YlCommon.SetStatusLabelMessage(LabelBgStatus, TraceEventType.Information, "環境設定を変更しました。");
+				}
 				aRegetSyncDataNeeded = aYukaListerSettingsWindow.RegetSyncDataNeeded;
 
 				// ゆかり設定ファイルのフルパスが変更された場合は処理を行う
