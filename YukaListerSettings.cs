@@ -110,21 +110,54 @@ namespace YukaLister.Shared
 			}
 		}
 
-		// ゆかりでのプレビュー用のサーバーポート
-		private const String KEY_NAME_YUKARI_PREVIEW_PORT = "YukariPreviewPort";
+		// ゆかり用のサーバーポート
+		private const String KEY_NAME_WEB_SERVER_PORT = "WebServerPort";
 		[UserScopedSetting]
 		[DefaultSettingValue("13582")]
-		public Int32 YukariPreviewPort
+		public Int32 WebServerPort
 		{
 			get
 			{
-				return (Int32)this[KEY_NAME_YUKARI_PREVIEW_PORT];
+				return (Int32)this[KEY_NAME_WEB_SERVER_PORT];
 			}
 			set
 			{
-				this[KEY_NAME_YUKARI_PREVIEW_PORT] = value;
+				this[KEY_NAME_WEB_SERVER_PORT] = value;
 			}
 		}
+
+		// サムネイルを作成する動画の位置 [S]
+		private const String KEY_NAME_THUMB_SEEK_POS = "ThumbSeekPos";
+		[UserScopedSetting]
+		[DefaultSettingValue("60")]
+		public Int32 ThumbSeekPos
+		{
+			get
+			{
+				return (Int32)this[KEY_NAME_THUMB_SEEK_POS];
+			}
+			set
+			{
+				this[KEY_NAME_THUMB_SEEK_POS] = value;
+			}
+		}
+
+		// サムネイルのデフォルトの横幅 [px]
+		private const String KEY_NAME_THUMB_DEFAULT_WIDTH = "ThumbDefaultWidth";
+		[UserScopedSetting]
+		[DefaultSettingValue("80")]
+		public Int32 ThumbDefaultWidth
+		{
+			get
+			{
+				return (Int32)this[KEY_NAME_THUMB_DEFAULT_WIDTH];
+			}
+			set
+			{
+				this[KEY_NAME_THUMB_DEFAULT_WIDTH] = value;
+			}
+		}
+
 
 		// CSV 読み込み時の文字コード（書き込みは常に UTF-8）
 		private const String KEY_NAME_CSV_ENCODING = "CsvEncoding";
@@ -446,11 +479,19 @@ namespace YukaLister.Shared
 		}
 
 		// --------------------------------------------------------------------
-		// ゆかり用データベースファイル（ディスク）のフルパス
+		// ゆかり用リストデータベースファイル（ディスク）のフルパス
 		// --------------------------------------------------------------------
-		public String YukariDbInDiskPath()
+		public String YukariListDbInDiskPath()
 		{
-			return Path.GetDirectoryName(YukariConfigPath()) + "\\" + FOLDER_NAME_LIST + FILE_NAME_YUKARI_DB;
+			return Path.GetDirectoryName(YukariConfigPath()) + "\\" + FOLDER_NAME_LIST + FILE_NAME_YUKARI_LIST_DB;
+		}
+
+		// --------------------------------------------------------------------
+		// ゆかり用サムネイルデータベースファイル（ディスク）のフルパス
+		// --------------------------------------------------------------------
+		public String YukariThumbDbInDiskPath()
+		{
+			return Path.GetDirectoryName(YukariConfigPath()) + "\\" + FOLDER_NAME_LIST + FILE_NAME_YUKARI_THUMB_DB;
 		}
 
 		// ====================================================================
@@ -461,8 +502,11 @@ namespace YukaLister.Shared
 		// その他
 		// --------------------------------------------------------------------
 
-		// ゆかり用データベースファイル名
-		private const String FILE_NAME_YUKARI_DB = "List" + Common.FILE_EXT_SQLITE3;
+		// ゆかり用リストデータベースファイル名
+		private const String FILE_NAME_YUKARI_LIST_DB = "List" + Common.FILE_EXT_SQLITE3;
+
+		// ゆかり用サムネイルデータベースファイル名
+		private const String FILE_NAME_YUKARI_THUMB_DB = "Thumb" + Common.FILE_EXT_SQLITE3;
 
 		// ゆかり用データベースを保存するフォルダー名
 		private const String FOLDER_NAME_LIST = "list\\";

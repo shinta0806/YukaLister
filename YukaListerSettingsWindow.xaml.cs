@@ -777,7 +777,7 @@ namespace YukaLister
 				try
 				{
 					aTempYukaListerSettings.YukariConfigPathSeed = TextBoxYukariConfigPathSeed.Text;
-					TextBoxYukariListFolder.Text = Path.GetDirectoryName(aTempYukaListerSettings.YukariDbInDiskPath());
+					TextBoxYukariListFolder.Text = Path.GetDirectoryName(aTempYukaListerSettings.YukariListDbInDiskPath());
 				}
 				catch (Exception)
 				{

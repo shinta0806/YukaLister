@@ -549,7 +549,7 @@ namespace YukaLister
 		{
 			// コピー
 			mLogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "ゆかり用データベースを出力");
-			using (SQLiteConnection aConnection = YlCommon.CreateYukariDbInDiskConnection(mYukaListerSettings))
+			using (SQLiteConnection aConnection = YlCommon.CreateYukariListDbInDiskConnection(mYukaListerSettings))
 			{
 				YlCommon.YukariDbInMemoryConnection.BackupDatabase(aConnection, "main", "main", -1, null, 0);
 			}
@@ -590,32 +590,39 @@ namespace YukaLister
 				return;
 			}
 
-			mLogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "ゆかり用データベースを準備しています...");
-
-			// 作業用インメモリデータベースを作成
+			// リスト DB を作業用インメモリデータベースを作成
+			mLogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "ゆかり用リストデータベースを準備しています...");
 			YlCommon.YukariDbInMemoryConnection = YlCommon.CreateDbConnection(":memory:");
 			using (SQLiteCommand aCmd = new SQLiteCommand(YlCommon.YukariDbInMemoryConnection))
 			{
-				CreateYukariDbFoundTable(aCmd);
+				CreateYukariListDbFoundTable(aCmd);
 			}
 			YlCommon.CreateDbPropertyTable(YlCommon.YukariDbInMemoryConnection);
 
-			// ディスクにコピー
-			Directory.CreateDirectory(Path.GetDirectoryName(mYukaListerSettings.YukariDbInDiskPath()));
-			if (mYukaListerSettings.ClearPrevList || !File.Exists(mYukaListerSettings.YukariDbInDiskPath()))
+			// リスト DB をディスクにコピー
+			Directory.CreateDirectory(Path.GetDirectoryName(mYukaListerSettings.YukariListDbInDiskPath()));
+			if (mYukaListerSettings.ClearPrevList || !File.Exists(mYukaListerSettings.YukariListDbInDiskPath()))
 			{
 				CopyYukariDb();
 			}
 			else
 			{
-				mLogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "前回のゆかり用データベースをクリアしませんでした。");
+				mLogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "前回のゆかり用リストデータベースをクリアしませんでした。");
+			}
+
+			// サムネイル DB をディスクに作成（サムネイル DB はメモリには作らない）
+			mLogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "ゆかり用サムネイルデータベースを準備しています...");
+			using (SQLiteConnection aConnection = YlCommon.CreateYukariThumbDbInDiskConnection(mYukaListerSettings))
+			using (SQLiteCommand aCmd = new SQLiteCommand(aConnection))
+			{
+				CreateYukariThumbDbCacheThumbTable(aCmd);
 			}
 		}
 
 		// --------------------------------------------------------------------
-		// ゆかり用データベースの中にテーブルを作成
+		// ゆかり用リストデータベースの中にテーブルを作成
 		// --------------------------------------------------------------------
-		private void CreateYukariDbFoundTable(SQLiteCommand oCmd)
+		private void CreateYukariListDbFoundTable(SQLiteCommand oCmd)
 		{
 			// テーブル作成
 			List<String> aUniques = new List<String>();
@@ -635,6 +642,22 @@ namespace YukaLister
 			aIndices.Add(TTieUp.FIELD_NAME_TIE_UP_RUBY);
 			aIndices.Add(TFound.FIELD_NAME_FOUND_CATEGORY_NAME);
 			LinqUtils.CreateIndex(oCmd, LinqUtils.TableName(typeof(TFound)), aIndices);
+		}
+
+		// --------------------------------------------------------------------
+		// ゆかり用サムネイルデータベースの中にテーブルを作成
+		// --------------------------------------------------------------------
+		private void CreateYukariThumbDbCacheThumbTable(SQLiteCommand oCmd)
+		{
+			// テーブル作成
+			List<String> aUniques = new List<String>();
+			aUniques.Add(TCacheThumb.FIELD_NAME_CACHE_THUMB_ID);
+			LinqUtils.CreateTable(oCmd, typeof(TCacheThumb), aUniques);
+
+			// インデックス作成
+			List<String> aIndices = new List<String>();
+			aIndices.Add(TCacheThumb.FIELD_NAME_CACHE_THUMB_FOUND_UID);
+			LinqUtils.CreateIndex(oCmd, LinqUtils.TableName(typeof(TCacheThumb)), aIndices);
 		}
 
 		// --------------------------------------------------------------------
@@ -1357,7 +1380,7 @@ namespace YukaLister
 
 				// リスト出力
 				YukariOutputWriter aYukariOutputWriter = new YukariOutputWriter();
-				aYukariOutputWriter.FolderPath = Path.GetDirectoryName(mYukaListerSettings.YukariDbInDiskPath()) + "\\";
+				aYukariOutputWriter.FolderPath = Path.GetDirectoryName(mYukaListerSettings.YukariListDbInDiskPath()) + "\\";
 				YlCommon.OutputList(aYukariOutputWriter, mYukaListerSettings);
 
 				mLogWriter.ShowLogMessage(TraceEventType.Information, "リスト出力が完了しました。", true);
@@ -1993,7 +2016,7 @@ namespace YukaLister
 				try
 				{
 					// ダミーデータを送信してサーバーの待機を終了させる
-					TcpClient aClient = new TcpClient("localhost", mYukaListerSettings.YukariPreviewPort);
+					TcpClient aClient = new TcpClient("localhost", mYukaListerSettings.WebServerPort);
 					using (NetworkStream aNetworkStream = aClient.GetStream())
 					{
 						aNetworkStream.ReadTimeout = YlCommon.TCP_TIMEOUT;

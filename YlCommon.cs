@@ -1001,11 +1001,19 @@ namespace YukaLister.Shared
 		}
 
 		// --------------------------------------------------------------------
-		// ゆかり用データベース（ディスク）に接続
+		// ゆかり用リストデータベース（ディスク）に接続
 		// --------------------------------------------------------------------
-		public static SQLiteConnection CreateYukariDbInDiskConnection(YukaListerSettings oYukaListerSettings)
+		public static SQLiteConnection CreateYukariListDbInDiskConnection(YukaListerSettings oYukaListerSettings)
 		{
-			return YlCommon.CreateDbConnection(oYukaListerSettings.YukariDbInDiskPath());
+			return YlCommon.CreateDbConnection(oYukaListerSettings.YukariListDbInDiskPath());
+		}
+
+		// --------------------------------------------------------------------
+		// ゆかり用サムネイルデータベース（ディスク）に接続
+		// --------------------------------------------------------------------
+		public static SQLiteConnection CreateYukariThumbDbInDiskConnection(YukaListerSettings oYukaListerSettings)
+		{
+			return YlCommon.CreateDbConnection(oYukaListerSettings.YukariThumbDbInDiskPath());
 		}
 
 		// --------------------------------------------------------------------
