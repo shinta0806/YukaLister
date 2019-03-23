@@ -9,6 +9,9 @@
 // ・サムネイル画像取得
 //   <アドレス>:<ポート>/thumb?uid=<ファイル番号>[&width=<横幅>]
 //   http://localhost:13582/thumb?uid=7&width=80
+// ・動画プレビュー
+//   <アドレス>:<ポート>/preview?uid=<ファイル番号>
+//   http://localhost:13582/preview?uid=123
 // ----------------------------------------------------------------------------
 
 using Shinta;
@@ -17,6 +20,7 @@ using System.Collections.Generic;
 using System.Data.Linq;
 using System.Data.SQLite;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -72,7 +76,11 @@ namespace YukaLister.Shared
 		// サムネイルのアスペクト比
 		private const Double THUMB_ASPECT_RATIO = 16.0 / 9;
 
+		// サムネイルの横幅の最大値
+		private const Int32 THUMB_WIDTH_MAX = 320;
+
 		// コマンド
+		private const String SERVER_COMMAND_PREVIEW = "preview";
 		private const String SERVER_COMMAND_THUMB = "thumb";
 
 		// コマンドオプション
@@ -174,6 +182,7 @@ namespace YukaLister.Shared
 				}
 
 				// ビットマップに Visual を描画
+				Boolean aIsSave = true;
 				aTick = Environment.TickCount;
 				RenderTargetBitmap aOrigBitmap = new RenderTargetBitmap(aPlayer.NaturalVideoWidth, aPlayer.NaturalVideoHeight, 96, 96, PixelFormats.Pbgra32);
 				for (; ; )
@@ -187,6 +196,8 @@ namespace YukaLister.Shared
 					Thread.Sleep(Common.GENERAL_SLEEP_TIME);
 					if (Environment.TickCount - aTick > THUMB_TIMEOUT)
 					{
+						// サムネイルが黒い場合もタイムアウトとなるので、キャッシュに保存はしないが送信はする
+						aIsSave = false;
 						Debug.WriteLine("CreateThumb() time out: ビットマップに Visual を描画時");
 						break;
 					}
@@ -234,13 +245,12 @@ namespace YukaLister.Shared
 				aJpegEncoder.Frames.Add(BitmapFrame.Create(aThumbBitmap));
 
 				// キャッシュに保存
-				TCacheThumb aCacheThumb = SaveCache(oPathExLen, aJpegEncoder);
+				TCacheThumb aCacheThumb = SaveCache(aIsSave, oPathExLen, aJpegEncoder);
 
 				return aCacheThumb;
 			}
 			finally
 			{
-				Debug.WriteLine("CreateThumb() finally");
 				aPlayer.Close();
 			}
 		}
@@ -248,30 +258,48 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		// サムネイルキャッシュデータベースを検索
 		// --------------------------------------------------------------------
-		private TCacheThumb FindCache(String oFileName, Int32 oWidth)
+		private TCacheThumb FindCache(String oPathExLen, Int32 oWidth)
 		{
+			String aFileName = Path.GetFileName(oPathExLen);
 			using (SQLiteConnection aConnection = YlCommon.CreateYukariThumbDbInDiskConnection(mYukaListerSettings))
 			using (DataContext aCacheDbContext = new DataContext(aConnection))
 			{
 				Table<TCacheThumb> aTableCache = aCacheDbContext.GetTable<TCacheThumb>();
 				IQueryable<TCacheThumb> aQueryResult =
 						from x in aTableCache
-						where x.FileName == oFileName && x.Width == oWidth
+						where x.FileName == aFileName && x.Width == oWidth
 						select x;
 				foreach (TCacheThumb aRecord in aQueryResult)
 				{
-					return aRecord;
+					// ファイルのタイムスタンプを比較
+					FileInfo aFileInfo = new FileInfo(oPathExLen);
+					if (aRecord.FileLastWriteTime == JulianDay.DateTimeToModifiedJulianDate(aFileInfo.LastWriteTime))
+					{
+						Debug.WriteLine("FindCache() Hit: " + oPathExLen);
+						return aRecord;
+					}
+
+					// 不一致のキャッシュは削除し、後のキャッシュ保存が可能となるようにする
+					try
+					{
+						aTableCache.DeleteOnSubmit(aRecord);
+						aCacheDbContext.SubmitChanges();
+					}
+					catch (Exception)
+					{
+					}
 				}
 			}
 
+			Debug.WriteLine("FindCache() Miss: " + oPathExLen);
 			return null;
 		}
 
 		// --------------------------------------------------------------------
-		// URL 引数から具体的なサムネイル対象を解析
+		// URL 引数から動画ファイルのパスを解析
 		// ＜例外＞ Exception
 		// --------------------------------------------------------------------
-		private void GetThumbOptions(Dictionary<String, String> oOptions, out String oPathExLen, out Int32 oWidth)
+		private void GetPathOption(Dictionary<String, String> oOptions, out String oPathExLen)
 		{
 			if (!oOptions.ContainsKey(OPTION_NAME_UID))
 			{
@@ -299,6 +327,15 @@ namespace YukaLister.Shared
 				throw new Exception("Bad " + OPTION_NAME_UID + ".");
 			}
 			oPathExLen = YlCommon.ExtendPath(aTarget.Path);
+		}
+
+		// --------------------------------------------------------------------
+		// URL 引数からサムネイル用オプションを解析
+		// ＜例外＞ Exception
+		// --------------------------------------------------------------------
+		private void GetThumbOptions(Dictionary<String, String> oOptions, out String oPathExLen, out Int32 oWidth)
+		{
+			GetPathOption(oOptions, out oPathExLen);
 
 			// 横幅を解析
 			if (!oOptions.ContainsKey(OPTION_NAME_WIDTH))
@@ -308,6 +345,10 @@ namespace YukaLister.Shared
 			else
 			{
 				oWidth = Int32.Parse(oOptions[OPTION_NAME_WIDTH]);
+				if (oWidth <= 0 || oWidth > THUMB_WIDTH_MAX)
+				{
+					throw new Exception("Bad width.");
+				}
 			}
 		}
 
@@ -336,7 +377,7 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		// キャッシュデータベースにレコードを保存する
 		// --------------------------------------------------------------------
-		private TCacheThumb SaveCache(String oPathExLen, JpegBitmapEncoder oJpegEncoder)
+		private TCacheThumb SaveCache(Boolean oIsSave, String oPathExLen, JpegBitmapEncoder oJpegEncoder)
 		{
 			TCacheThumb aCacheThumb = new TCacheThumb();
 			aCacheThumb.FileName = Path.GetFileName(oPathExLen);
@@ -356,28 +397,32 @@ namespace YukaLister.Shared
 			aCacheThumb.FileLastWriteTime = JulianDay.DateTimeToModifiedJulianDate(aFileInfo.LastWriteTime);
 			aCacheThumb.ThumbLastWriteTime = JulianDay.DateTimeToModifiedJulianDate(DateTime.UtcNow);
 
-			using (SQLiteConnection aConnection = YlCommon.CreateYukariThumbDbInDiskConnection(mYukaListerSettings))
-			using (DataContext aCacheDbContext = new DataContext(aConnection))
+			if (oIsSave)
 			{
-				Table<TCacheThumb> aTableCache = aCacheDbContext.GetTable<TCacheThumb>();
-
-				// ユニーク ID の決定
-				IQueryable<Int64> aQueryResult =
-						from x in aTableCache
-						select x.Uid;
-				aCacheThumb.Uid = (aQueryResult.Count() == 0 ? 0 : aQueryResult.Max()) + 1;
-
-				// 保存
-				aTableCache.InsertOnSubmit(aCacheThumb);
-
-				try
+				using (SQLiteConnection aConnection = YlCommon.CreateYukariThumbDbInDiskConnection(mYukaListerSettings))
+				using (DataContext aCacheDbContext = new DataContext(aConnection))
 				{
-					aCacheDbContext.SubmitChanges();
-				}
-				catch (Exception)
-				{
-					// 他のスレッドが、同一 Uid や同一ファイル名・横幅のレコードを先に書き込んだ場合は例外となるが、
-					// キャッシュを保存できなくても致命的ではないため、速やかにクライアントに画像を返すためにリトライはしない
+					Table<TCacheThumb> aTableCache = aCacheDbContext.GetTable<TCacheThumb>();
+
+					// ユニーク ID の決定
+					IQueryable<Int64> aQueryResult =
+							from x in aTableCache
+							select x.Uid;
+					aCacheThumb.Uid = (aQueryResult.Count() == 0 ? 0 : aQueryResult.Max()) + 1;
+
+					// 保存
+					aTableCache.InsertOnSubmit(aCacheThumb);
+
+					try
+					{
+						aCacheDbContext.SubmitChanges();
+					}
+					catch (Exception)
+					{
+						// 他のスレッドが、同一 Uid や同一ファイル名・横幅のレコードを先に書き込んだ場合は例外となるが、
+						// キャッシュを保存できなくても致命的ではないため、速やかにクライアントに画像を返すためにリトライはしない
+						Debug.WriteLine("SaveCache() save err");
+					}
 				}
 			}
 
@@ -498,7 +543,7 @@ namespace YukaLister.Shared
 					aNetworkStream.WriteTimeout = YlCommon.TCP_TIMEOUT;
 
 					// ヘッダー部分を読み込む
-					Debug.WriteLine("[" + Thread.CurrentThread.ManagedThreadId + "] SendResponse() header");
+					//Debug.WriteLine("[" + Thread.CurrentThread.ManagedThreadId + "] SendResponse() header");
 					List<String> aHeaders = new List<String>();
 					for (; ; )
 					{
@@ -522,19 +567,25 @@ namespace YukaLister.Shared
 						throw new Exception("ヘッダーでパスが指定されていません。");
 					}
 					String aDocPath = aRequests[1];
-					Debug.WriteLine("[" + Thread.CurrentThread.ManagedThreadId + "] SendResponse() aDocPath: " + aDocPath);
+					//Debug.WriteLine("[" + Thread.CurrentThread.ManagedThreadId + "] SendResponse() aDocPath: " + aDocPath);
 					if (String.IsNullOrEmpty(aDocPath))
 					{
 						throw new Exception("ヘッダーのパスが空です。");
 					}
 
 					// コマンド解析（先頭が '/' であることに注意）
-					if (aDocPath.IndexOf(SERVER_COMMAND_THUMB) == 1)
+					if (aDocPath.IndexOf(SERVER_COMMAND_PREVIEW) == 1)
+					{
+						SendResponsePreview(aNetworkStream, aWriter, aDocPath);
+					}
+					else if (aDocPath.IndexOf(SERVER_COMMAND_THUMB) == 1)
 					{
 						SendResponseThumb(aNetworkStream, aWriter, aDocPath);
 					}
 					else
 					{
+						// ToDo: obsolete
+						// ゆかり側が新 URL に対応次第削除する
 						// パス解析（先頭の '/' を除く）
 						String aPath = null;
 						if (aDocPath.Length == 1)
@@ -543,12 +594,6 @@ namespace YukaLister.Shared
 						}
 						else
 						{
-#if DEBUGz
-							Thread.Sleep(5 * 1000);
-							SendErrorResponse(aWriter, "Test mode.");
-							aWriter.Flush();
-							return;
-#endif
 							aPath = YlCommon.ExtendPath(HttpUtility.UrlDecode(aDocPath, Encoding.UTF8).Substring(1).Replace('/', '\\'));
 							if (File.Exists(aPath))
 							{
@@ -581,6 +626,33 @@ namespace YukaLister.Shared
 		}
 
 		// --------------------------------------------------------------------
+		// クライアントにプレビュー用動画データを返す
+		// --------------------------------------------------------------------
+		private void SendResponsePreview(NetworkStream oNetworkStream, StreamWriter oWriter, String oCommand)
+		{
+			try
+			{
+				// 動画の確定
+				Dictionary<String, String> aOptions = AnalyzeCommandOptions(oCommand);
+				GetPathOption(aOptions, out String aPathExLen);
+
+				// 送信
+				if (File.Exists(aPathExLen))
+				{
+					SendFile(oNetworkStream, aPathExLen);
+				}
+				else
+				{
+					SendErrorResponse(oWriter, "File not found.");
+				}
+			}
+			catch (Exception oExcep)
+			{
+				SendErrorResponse(oWriter, oExcep.Message);
+			}
+		}
+
+		// --------------------------------------------------------------------
 		// クライアントにサムネイルを返す
 		// --------------------------------------------------------------------
 		private void SendResponseThumb(NetworkStream oNetworkStream, StreamWriter oWriter, String oCommand)
@@ -592,7 +664,7 @@ namespace YukaLister.Shared
 				GetThumbOptions(aOptions, out String aPathExLen, out Int32 aWidth);
 
 				// キャッシュから探す
-				TCacheThumb aCacheThumb = FindCache(Path.GetFileName(aPathExLen), aWidth);
+				TCacheThumb aCacheThumb = FindCache(aPathExLen, aWidth);
 
 				if (aCacheThumb == null)
 				{
@@ -600,10 +672,16 @@ namespace YukaLister.Shared
 					aCacheThumb = CreateThumb(aPathExLen, aWidth);
 				}
 
+				// 更新日
+				DateTime aLastModified = JulianDay.ModifiedJulianDateToDateTime(aCacheThumb.ThumbLastWriteTime);
+				String aLastModifiedStr = aLastModified.ToString("ddd, dd MMM yyyy HH:mm:ss", CultureInfo.CreateSpecificCulture("en-US")) + " GMT";
+				Debug.WriteLine("SendResponseThumb() aLastModifiedStr: " + aLastModifiedStr);
+
 				// ヘッダー
 				String aHeader = "HTTP/1.1 200 OK\n"
 						+ "Content-Length: " + aCacheThumb.Image.Length + "\n"
-						+ "Content-Type: image/jpeg\n\n";
+						+ "Content-Type: image/jpeg\n"
+						+ "Last-Modified: " + aLastModifiedStr + "\n\n";
 				Byte[] aSendBytes = Encoding.UTF8.GetBytes(aHeader);
 				oNetworkStream.Write(aSendBytes, 0, aSendBytes.Length);
 
