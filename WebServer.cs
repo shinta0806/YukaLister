@@ -164,82 +164,111 @@ namespace YukaLister.Shared
 				IsMuted = true,
 				ScrubbingEnabled = true,
 			};
-			aPlayer.Open(new Uri(aTarget.Path, UriKind.Absolute));
-			aPlayer.Play();
-			aPlayer.Pause();
-
-			// 指定位置へシーク
-			aPlayer.Position = TimeSpan.FromSeconds(mYukaListerSettings.ThumbSeekPos);
-			Debug.WriteLine("[" + Thread.CurrentThread.ManagedThreadId + "] CreateThumb() Position: " + aPlayer.Position.ToString() + " " + Environment.TickCount.ToString("#,0"));
-
-			// 読み込みが完了するまで待機
-			Int32 aTick = Environment.TickCount;
-			while (aPlayer.DownloadProgress < 1.0 ||/* aPlayer.IsBuffering || aPlayer.BufferingProgress < 1.0 ||*/ aPlayer.NaturalVideoWidth == 0)
+			try
 			{
-				Thread.Sleep(Common.GENERAL_SLEEP_TIME);
-				if (Environment.TickCount - aTick > THUMB_TIMEOUT)
+				aPlayer.Open(new Uri(aTarget.Path, UriKind.Absolute));
+				aPlayer.Play();
+				aPlayer.Pause();
+
+				// 指定位置へシーク
+				aPlayer.Position = TimeSpan.FromSeconds(mYukaListerSettings.ThumbSeekPos);
+				Debug.WriteLine("[" + Thread.CurrentThread.ManagedThreadId + "] CreateThumb() Position: " + aPlayer.Position.ToString() + " " + Environment.TickCount.ToString("#,0"));
+
+				// 読み込みが完了するまで待機
+				Int32 aTick = Environment.TickCount;
+				while (aPlayer.DownloadProgress < 1.0 ||/* aPlayer.IsBuffering || aPlayer.BufferingProgress < 1.0 ||*/ aPlayer.NaturalVideoWidth == 0)
 				{
-					break;
+					Thread.Sleep(Common.GENERAL_SLEEP_TIME);
+					if (Environment.TickCount - aTick > THUMB_TIMEOUT)
+					{
+						break;
+					}
 				}
-			}
-#if true
-			if (!aPlayer.HasVideo)
-			{
-				throw new Exception("Movie doesn't have any video.");
-			}
-#endif
-
-			// 生成するサムネイルのサイズを計算
-			Int32 aThumbWidth = mYukaListerSettings.ThumbDefaultWidth;
-			Int32 aThumbHeight = (Int32)(aThumbWidth / THUMB_ASPECT_RATIO);
-			Debug.WriteLine("CreateThumb() Thumb size: " + aThumbWidth + " x " + aThumbHeight + " " + Environment.TickCount.ToString("#,0"));
-
-			// 動画のリサイズサイズを計算
-			Double aPlayerAspectRatio = (Double)aPlayer.NaturalVideoWidth / aPlayer.NaturalVideoHeight;
-			Int32 aResizeWidth;
-			Int32 aResizeHeight;
-			if (aPlayerAspectRatio > THUMB_ASPECT_RATIO)
-			{
-				aResizeWidth = aThumbWidth;
-				aResizeHeight = (Int32)(aResizeWidth / THUMB_ASPECT_RATIO);
-			}
-			else
-			{
-				aResizeHeight = aThumbHeight;
-				aResizeWidth = (Int32)(aResizeHeight * THUMB_ASPECT_RATIO);
-			}
-			Debug.WriteLine("CreateThumb() Resize size: " + aResizeWidth + " x " + aResizeHeight);
-
-			// 描画用の Visual に動画を描画
-			DrawingVisual aVisual = new DrawingVisual();
-			using (DrawingContext aContext = aVisual.RenderOpen())
-			{
-				aContext.DrawRectangle(Brushes.Black, null, new Rect(0, 0, aThumbWidth, aThumbHeight));
-				aContext.DrawVideo(aPlayer, new Rect((aThumbWidth - aResizeWidth) / 2, (aThumbHeight - aResizeHeight) / 2, aResizeWidth, aResizeHeight));
-			}
-
-			// ビットマップに Visual を描画
-			aTick = Environment.TickCount;
-			RenderTargetBitmap aBitmap = new RenderTargetBitmap(aThumbWidth, aThumbHeight, 96, 96, PixelFormats.Pbgra32);
-			for (; ; )
-			{
-				aBitmap.Render(aVisual);
-				if (IsRenderDone(aBitmap))
+				if (!aPlayer.HasVideo)
 				{
-					Debug.WriteLine("CreateThumb() render done time: " + (Environment.TickCount - aTick));
-					break;
+					throw new Exception("Movie doesn't have any video.");
 				}
-				Thread.Sleep(Common.GENERAL_SLEEP_TIME);
-				if (Environment.TickCount - aTick > THUMB_TIMEOUT)
-				{
-					break;
-				}
-			}
 
-			// JPEG にエンコード
-			JpegBitmapEncoder aEncoder = new JpegBitmapEncoder();
-			aEncoder.Frames.Add(BitmapFrame.Create(aBitmap));
-			return aEncoder;
+				// 描画用の Visual に動画を描画
+				// 縮小して描画するとニアレストネイバー法で縮小されて画質が悪くなる
+				// RenderOptions.SetBitmapScalingMode() も効かないようなので、元のサイズで描画する
+				DrawingVisual aVisual = new DrawingVisual();
+				using (DrawingContext aContext = aVisual.RenderOpen())
+				{
+					aContext.DrawVideo(aPlayer, new Rect(0, 0, aPlayer.NaturalVideoWidth, aPlayer.NaturalVideoHeight));
+				}
+
+				// ビットマップに Visual を描画
+				aTick = Environment.TickCount;
+				RenderTargetBitmap aBitmap = new RenderTargetBitmap(aPlayer.NaturalVideoWidth, aPlayer.NaturalVideoHeight, 96, 96, PixelFormats.Pbgra32);
+				for (; ; )
+				{
+					aBitmap.Render(aVisual);
+					if (IsRenderDone(aBitmap))
+					{
+						Debug.WriteLine("CreateThumb() render done time: " + (Environment.TickCount - aTick));
+						break;
+					}
+					Thread.Sleep(Common.GENERAL_SLEEP_TIME);
+					if (Environment.TickCount - aTick > THUMB_TIMEOUT)
+					{
+						break;
+					}
+				}
+				//aBitmap.Freeze();
+				//aPlayer.Close();
+
+				// 生成するサムネイルのサイズを計算
+				Int32 aThumbWidth = mYukaListerSettings.ThumbDefaultWidth;
+				Int32 aThumbHeight = (Int32)(aThumbWidth / THUMB_ASPECT_RATIO);
+				Debug.WriteLine("CreateThumb() Thumb size: " + aThumbWidth + " x " + aThumbHeight + " " + Environment.TickCount.ToString("#,0"));
+
+				// 動画のリサイズサイズを計算
+				Double aPlayerAspectRatio = (Double)aPlayer.NaturalVideoWidth / aPlayer.NaturalVideoHeight;
+				Int32 aResizeWidth;
+				Int32 aResizeHeight;
+				if (aPlayerAspectRatio > THUMB_ASPECT_RATIO)
+				{
+					aResizeWidth = aThumbWidth;
+					aResizeHeight = (Int32)(aResizeWidth / THUMB_ASPECT_RATIO);
+				}
+				else
+				{
+					aResizeHeight = aThumbHeight;
+					aResizeWidth = (Int32)(aResizeHeight * THUMB_ASPECT_RATIO);
+				}
+				Double aScale = (Double)aResizeWidth / aPlayer.NaturalVideoWidth;
+				Debug.WriteLine("CreateThumb() Resize size: " + aResizeWidth + " x " + aResizeHeight);
+
+				// 縮小
+				var aScaledBitmap = new TransformedBitmap(aBitmap, new ScaleTransform(aScale, aScale));
+
+				// サムネイルサイズにはめる
+				DrawingVisual aThumbVisual = new DrawingVisual();
+				using (DrawingContext aContext = aThumbVisual.RenderOpen())
+				{
+					aContext.DrawImage(aScaledBitmap, new Rect((aThumbWidth - aResizeWidth) / 2, (aThumbHeight - aResizeHeight) / 2, aResizeWidth, aResizeHeight));
+				}
+
+				// ビットマップに Visual を描画
+				aTick = Environment.TickCount;
+				RenderTargetBitmap aThumbBitmap = new RenderTargetBitmap(aThumbWidth, aThumbHeight, 96, 96, PixelFormats.Pbgra32);
+				aThumbBitmap.Render(aThumbVisual);
+
+				// JPEG にエンコード
+				JpegBitmapEncoder aEncoder = new JpegBitmapEncoder();
+				aEncoder.Frames.Add(BitmapFrame.Create(aThumbBitmap));
+				return aEncoder;
+			}
+			catch (Exception oExcep)
+			{
+				throw oExcep;
+			}
+			finally
+			{
+				Debug.WriteLine("CreateThumb() finally");
+				aPlayer.Close();
+			}
 		}
 
 		// --------------------------------------------------------------------

@@ -145,7 +145,7 @@ namespace YukaLister.Shared
 		// サムネイルのデフォルトの横幅 [px]
 		private const String KEY_NAME_THUMB_DEFAULT_WIDTH = "ThumbDefaultWidth";
 		[UserScopedSetting]
-		[DefaultSettingValue("80")]
+		[DefaultSettingValue("128")]
 		public Int32 ThumbDefaultWidth
 		{
 			get

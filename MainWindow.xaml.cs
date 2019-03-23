@@ -202,8 +202,6 @@ namespace YukaLister
 		// --------------------------------------------------------------------
 		private void AddNicoKaraInfo(String oFolderPathExLen)
 		{
-			Debug.Assert(oFolderPathExLen.StartsWith(YlCommon.EXTENDED_LENGTH_PATH_PREFIX), "AddNicoKaraInfo() not ExLen");
-
 			// フォルダー設定を読み込む
 			FolderSettingsInDisk aFolderSettingsInDisk = YlCommon.LoadFolderSettings2Ex(oFolderPathExLen);
 			FolderSettingsInMemory aFolderSettingsInMemory = YlCommon.CreateFolderSettingsInMemory(aFolderSettingsInDisk);
