@@ -15,6 +15,7 @@ using Shinta;
 using System;
 using System.Collections.Generic;
 using System.Data.Linq;
+using System.Data.SQLite;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -63,7 +64,7 @@ namespace YukaLister.Shared
 		// ====================================================================
 
 		// 直ちに起動できるタスクの数（アプリケーション全体）
-		private const Int32 APP_WORKER_THREADS = 32;
+		private const Int32 APP_WORKER_THREADS = 16;
 
 		// Web サーバー以外用に残しておくタスクの数
 		private const Int32 GENERAL_WORKER_THREADS = 1;
@@ -76,6 +77,7 @@ namespace YukaLister.Shared
 
 		// コマンドオプション
 		private const String OPTION_NAME_UID = "uid";
+		private const String OPTION_NAME_WIDTH = "width";
 
 		// サムネイル生成時のタイムアウト [ms]
 		private const Int32 THUMB_TIMEOUT = 10 * 1000;
@@ -131,7 +133,145 @@ namespace YukaLister.Shared
 		// サムネイルを JPEG 形式で作成
 		// ＜例外＞ Exception
 		// --------------------------------------------------------------------
-		private JpegBitmapEncoder CreateThumb(Dictionary<String, String> oOptions)
+		private TCacheThumb CreateThumb(String oPathExLen, Int32 oWidth)
+		{
+			// MediaPlayer がいつまで生きていればサムネイルが確定されるか不明のため、最後に Close() できるよう、最初に生成しておく
+			MediaPlayer aPlayer = new MediaPlayer
+			{
+				IsMuted = true,
+				ScrubbingEnabled = true,
+			};
+
+			try
+			{
+				// 動画を開いてすぐに一時停止する
+				// Uri は extended-length パスをサポートしていない模様なので短くする
+				aPlayer.Open(new Uri("file://" + YlCommon.ShortenPath(oPathExLen), UriKind.Absolute));
+				aPlayer.Play();
+				aPlayer.Pause();
+
+				// 指定位置へシーク
+				aPlayer.Position = TimeSpan.FromSeconds(mYukaListerSettings.ThumbSeekPos);
+
+				// 読み込みが完了するまで待機
+				Int32 aTick = Environment.TickCount;
+				while (aPlayer.DownloadProgress < 1.0 || aPlayer.NaturalVideoWidth == 0)
+				{
+					Thread.Sleep(Common.GENERAL_SLEEP_TIME);
+					if (Environment.TickCount - aTick > THUMB_TIMEOUT)
+					{
+						throw new Exception("Movie read timeout.");
+					}
+				}
+
+				// 描画用の Visual に動画を描画
+				// 縮小して描画するとニアレストネイバー法で縮小されて画質が悪くなる
+				// RenderOptions.SetBitmapScalingMode() も効かないようなので、元のサイズで描画する
+				DrawingVisual aOrigVisual = new DrawingVisual();
+				using (DrawingContext aContext = aOrigVisual.RenderOpen())
+				{
+					aContext.DrawVideo(aPlayer, new Rect(0, 0, aPlayer.NaturalVideoWidth, aPlayer.NaturalVideoHeight));
+				}
+
+				// ビットマップに Visual を描画
+				aTick = Environment.TickCount;
+				RenderTargetBitmap aOrigBitmap = new RenderTargetBitmap(aPlayer.NaturalVideoWidth, aPlayer.NaturalVideoHeight, 96, 96, PixelFormats.Pbgra32);
+				for (; ; )
+				{
+					aOrigBitmap.Render(aOrigVisual);
+					if (IsRenderDone(aOrigBitmap))
+					{
+						Debug.WriteLine("CreateThumb() render done time: " + (Environment.TickCount - aTick));
+						break;
+					}
+					Thread.Sleep(Common.GENERAL_SLEEP_TIME);
+					if (Environment.TickCount - aTick > THUMB_TIMEOUT)
+					{
+						Debug.WriteLine("CreateThumb() time out: ビットマップに Visual を描画時");
+						break;
+					}
+				}
+
+				// 生成するサムネイルのサイズを計算
+				Int32 aThumbWidth = oWidth;
+				Int32 aThumbHeight = (Int32)(aThumbWidth / THUMB_ASPECT_RATIO);
+				Debug.WriteLine("[" + Thread.CurrentThread.ManagedThreadId + "] CreateThumb() Thumb size: " + aThumbWidth + " x " + aThumbHeight);
+
+				// 動画のリサイズサイズを計算
+				Double aPlayerAspectRatio = (Double)aPlayer.NaturalVideoWidth / aPlayer.NaturalVideoHeight;
+				Int32 aResizeWidth;
+				Int32 aResizeHeight;
+				if (aPlayerAspectRatio > THUMB_ASPECT_RATIO)
+				{
+					aResizeWidth = aThumbWidth;
+					aResizeHeight = (Int32)(aResizeWidth / THUMB_ASPECT_RATIO);
+				}
+				else
+				{
+					aResizeHeight = aThumbHeight;
+					aResizeWidth = (Int32)(aResizeHeight * THUMB_ASPECT_RATIO);
+				}
+				Double aScale = (Double)aResizeWidth / aPlayer.NaturalVideoWidth;
+				Debug.WriteLine("[" + Thread.CurrentThread.ManagedThreadId + "] CreateThumb() Resize size: " + aResizeWidth + " x " + aResizeHeight);
+
+				// 縮小
+				var aScaledBitmap = new TransformedBitmap(aOrigBitmap, new ScaleTransform(aScale, aScale));
+
+				// サムネイルサイズにはめる
+				DrawingVisual aThumbVisual = new DrawingVisual();
+				using (DrawingContext aContext = aThumbVisual.RenderOpen())
+				{
+					aContext.DrawImage(aScaledBitmap, new Rect((aThumbWidth - aResizeWidth) / 2, (aThumbHeight - aResizeHeight) / 2, aResizeWidth, aResizeHeight));
+				}
+
+				// ビットマップに Visual を描画
+				aTick = Environment.TickCount;
+				RenderTargetBitmap aThumbBitmap = new RenderTargetBitmap(aThumbWidth, aThumbHeight, 96, 96, PixelFormats.Pbgra32);
+				aThumbBitmap.Render(aThumbVisual);
+
+				// JPEG にエンコード
+				JpegBitmapEncoder aJpegEncoder = new JpegBitmapEncoder();
+				aJpegEncoder.Frames.Add(BitmapFrame.Create(aThumbBitmap));
+
+				// キャッシュに保存
+				TCacheThumb aCacheThumb = SaveCache(oPathExLen, aJpegEncoder);
+
+				return aCacheThumb;
+			}
+			finally
+			{
+				Debug.WriteLine("CreateThumb() finally");
+				aPlayer.Close();
+			}
+		}
+
+		// --------------------------------------------------------------------
+		// サムネイルキャッシュデータベースを検索
+		// --------------------------------------------------------------------
+		private TCacheThumb FindCache(String oFileName, Int32 oWidth)
+		{
+			using (SQLiteConnection aConnection = YlCommon.CreateYukariThumbDbInDiskConnection(mYukaListerSettings))
+			using (DataContext aCacheDbContext = new DataContext(aConnection))
+			{
+				Table<TCacheThumb> aTableCache = aCacheDbContext.GetTable<TCacheThumb>();
+				IQueryable<TCacheThumb> aQueryResult =
+						from x in aTableCache
+						where x.FileName == oFileName && x.Width == oWidth
+						select x;
+				foreach (TCacheThumb aRecord in aQueryResult)
+				{
+					return aRecord;
+				}
+			}
+
+			return null;
+		}
+
+		// --------------------------------------------------------------------
+		// URL 引数から具体的なサムネイル対象を解析
+		// ＜例外＞ Exception
+		// --------------------------------------------------------------------
+		private void GetThumbOptions(Dictionary<String, String> oOptions, out String oPathExLen, out Int32 oWidth)
 		{
 			if (!oOptions.ContainsKey(OPTION_NAME_UID))
 			{
@@ -139,6 +279,7 @@ namespace YukaLister.Shared
 			}
 			Int32 aUid = Int32.Parse(oOptions[OPTION_NAME_UID]);
 
+			// ゆかり用データベースから UID を検索
 			TFound aTarget = null;
 			using (DataContext aYukariDbContext = new DataContext(YlCommon.YukariDbInMemoryConnection))
 			{
@@ -157,117 +298,16 @@ namespace YukaLister.Shared
 			{
 				throw new Exception("Bad " + OPTION_NAME_UID + ".");
 			}
+			oPathExLen = YlCommon.ExtendPath(aTarget.Path);
 
-			// 動画を開いてすぐに一時停止する
-			MediaPlayer aPlayer = new MediaPlayer
+			// 横幅を解析
+			if (!oOptions.ContainsKey(OPTION_NAME_WIDTH))
 			{
-				IsMuted = true,
-				ScrubbingEnabled = true,
-			};
-			try
-			{
-				aPlayer.Open(new Uri(aTarget.Path, UriKind.Absolute));
-				aPlayer.Play();
-				aPlayer.Pause();
-
-				// 指定位置へシーク
-				aPlayer.Position = TimeSpan.FromSeconds(mYukaListerSettings.ThumbSeekPos);
-				Debug.WriteLine("[" + Thread.CurrentThread.ManagedThreadId + "] CreateThumb() Position: " + aPlayer.Position.ToString() + " " + Environment.TickCount.ToString("#,0"));
-
-				// 読み込みが完了するまで待機
-				Int32 aTick = Environment.TickCount;
-				while (aPlayer.DownloadProgress < 1.0 ||/* aPlayer.IsBuffering || aPlayer.BufferingProgress < 1.0 ||*/ aPlayer.NaturalVideoWidth == 0)
-				{
-					Thread.Sleep(Common.GENERAL_SLEEP_TIME);
-					if (Environment.TickCount - aTick > THUMB_TIMEOUT)
-					{
-						break;
-					}
-				}
-				if (!aPlayer.HasVideo)
-				{
-					throw new Exception("Movie doesn't have any video.");
-				}
-
-				// 描画用の Visual に動画を描画
-				// 縮小して描画するとニアレストネイバー法で縮小されて画質が悪くなる
-				// RenderOptions.SetBitmapScalingMode() も効かないようなので、元のサイズで描画する
-				DrawingVisual aVisual = new DrawingVisual();
-				using (DrawingContext aContext = aVisual.RenderOpen())
-				{
-					aContext.DrawVideo(aPlayer, new Rect(0, 0, aPlayer.NaturalVideoWidth, aPlayer.NaturalVideoHeight));
-				}
-
-				// ビットマップに Visual を描画
-				aTick = Environment.TickCount;
-				RenderTargetBitmap aBitmap = new RenderTargetBitmap(aPlayer.NaturalVideoWidth, aPlayer.NaturalVideoHeight, 96, 96, PixelFormats.Pbgra32);
-				for (; ; )
-				{
-					aBitmap.Render(aVisual);
-					if (IsRenderDone(aBitmap))
-					{
-						Debug.WriteLine("CreateThumb() render done time: " + (Environment.TickCount - aTick));
-						break;
-					}
-					Thread.Sleep(Common.GENERAL_SLEEP_TIME);
-					if (Environment.TickCount - aTick > THUMB_TIMEOUT)
-					{
-						break;
-					}
-				}
-				//aBitmap.Freeze();
-				//aPlayer.Close();
-
-				// 生成するサムネイルのサイズを計算
-				Int32 aThumbWidth = mYukaListerSettings.ThumbDefaultWidth;
-				Int32 aThumbHeight = (Int32)(aThumbWidth / THUMB_ASPECT_RATIO);
-				Debug.WriteLine("CreateThumb() Thumb size: " + aThumbWidth + " x " + aThumbHeight + " " + Environment.TickCount.ToString("#,0"));
-
-				// 動画のリサイズサイズを計算
-				Double aPlayerAspectRatio = (Double)aPlayer.NaturalVideoWidth / aPlayer.NaturalVideoHeight;
-				Int32 aResizeWidth;
-				Int32 aResizeHeight;
-				if (aPlayerAspectRatio > THUMB_ASPECT_RATIO)
-				{
-					aResizeWidth = aThumbWidth;
-					aResizeHeight = (Int32)(aResizeWidth / THUMB_ASPECT_RATIO);
-				}
-				else
-				{
-					aResizeHeight = aThumbHeight;
-					aResizeWidth = (Int32)(aResizeHeight * THUMB_ASPECT_RATIO);
-				}
-				Double aScale = (Double)aResizeWidth / aPlayer.NaturalVideoWidth;
-				Debug.WriteLine("CreateThumb() Resize size: " + aResizeWidth + " x " + aResizeHeight);
-
-				// 縮小
-				var aScaledBitmap = new TransformedBitmap(aBitmap, new ScaleTransform(aScale, aScale));
-
-				// サムネイルサイズにはめる
-				DrawingVisual aThumbVisual = new DrawingVisual();
-				using (DrawingContext aContext = aThumbVisual.RenderOpen())
-				{
-					aContext.DrawImage(aScaledBitmap, new Rect((aThumbWidth - aResizeWidth) / 2, (aThumbHeight - aResizeHeight) / 2, aResizeWidth, aResizeHeight));
-				}
-
-				// ビットマップに Visual を描画
-				aTick = Environment.TickCount;
-				RenderTargetBitmap aThumbBitmap = new RenderTargetBitmap(aThumbWidth, aThumbHeight, 96, 96, PixelFormats.Pbgra32);
-				aThumbBitmap.Render(aThumbVisual);
-
-				// JPEG にエンコード
-				JpegBitmapEncoder aEncoder = new JpegBitmapEncoder();
-				aEncoder.Frames.Add(BitmapFrame.Create(aThumbBitmap));
-				return aEncoder;
+				oWidth = mYukaListerSettings.ThumbDefaultWidth;
 			}
-			catch (Exception oExcep)
+			else
 			{
-				throw oExcep;
-			}
-			finally
-			{
-				Debug.WriteLine("CreateThumb() finally");
-				aPlayer.Close();
+				oWidth = Int32.Parse(oOptions[OPTION_NAME_WIDTH]);
 			}
 		}
 
@@ -288,11 +328,60 @@ namespace YukaLister.Shared
 
 			// 中央の位置
 			Int32 aOffset = (aHeight / 2) * aStride + (aWidth / 2) * oBitmap.Format.BitsPerPixel / 8;
-			//Debug.WriteLine("IsRenderDone() aWidth: " + aWidth + ", aHeight: " + aHeight + ", aPixels: " + aPixels.Length + ", aOffset: " + aOffset);
-			//Debug.WriteLine("IsRenderDone() BGR: " + aPixels[aOffset] + ", " + aPixels[aOffset + 1] + ", " + aPixels[aOffset + 2]);
 
 			// RGB いずれかが 0 以外なら転写完了
 			return aPixels[aOffset] != 0 || aPixels[aOffset + 1] != 0 || aPixels[aOffset + 2] != 0;
+		}
+
+		// --------------------------------------------------------------------
+		// キャッシュデータベースにレコードを保存する
+		// --------------------------------------------------------------------
+		private TCacheThumb SaveCache(String oPathExLen, JpegBitmapEncoder oJpegEncoder)
+		{
+			TCacheThumb aCacheThumb = new TCacheThumb();
+			aCacheThumb.FileName = Path.GetFileName(oPathExLen);
+			aCacheThumb.Width = (Int32)oJpegEncoder.Frames[0].Width;
+			Debug.WriteLine("SaveCache() width: " + aCacheThumb.Width);
+
+			// サムネイル画像データを取得
+			using (MemoryStream aMemStream = new MemoryStream())
+			{
+				oJpegEncoder.Save(aMemStream);
+				aCacheThumb.Image = new Byte[aMemStream.Length];
+				aMemStream.Seek(0, SeekOrigin.Begin);
+				aMemStream.Read(aCacheThumb.Image, 0, (Int32)aMemStream.Length);
+			}
+
+			FileInfo aFileInfo = new FileInfo(oPathExLen);
+			aCacheThumb.FileLastWriteTime = JulianDay.DateTimeToModifiedJulianDate(aFileInfo.LastWriteTime);
+			aCacheThumb.ThumbLastWriteTime = JulianDay.DateTimeToModifiedJulianDate(DateTime.UtcNow);
+
+			using (SQLiteConnection aConnection = YlCommon.CreateYukariThumbDbInDiskConnection(mYukaListerSettings))
+			using (DataContext aCacheDbContext = new DataContext(aConnection))
+			{
+				Table<TCacheThumb> aTableCache = aCacheDbContext.GetTable<TCacheThumb>();
+
+				// ユニーク ID の決定
+				IQueryable<Int64> aQueryResult =
+						from x in aTableCache
+						select x.Uid;
+				aCacheThumb.Uid = (aQueryResult.Count() == 0 ? 0 : aQueryResult.Max()) + 1;
+
+				// 保存
+				aTableCache.InsertOnSubmit(aCacheThumb);
+
+				try
+				{
+					aCacheDbContext.SubmitChanges();
+				}
+				catch (Exception)
+				{
+					// 他のスレッドが、同一 Uid や同一ファイル名・横幅のレコードを先に書き込んだ場合は例外となるが、
+					// キャッシュを保存できなくても致命的ではないため、速やかにクライアントに画像を返すためにリトライはしない
+				}
+			}
+
+			return aCacheThumb;
 		}
 
 		// --------------------------------------------------------------------
@@ -498,27 +587,28 @@ namespace YukaLister.Shared
 		{
 			try
 			{
+				// サムネイル対象の確定
 				Dictionary<String, String> aOptions = AnalyzeCommandOptions(oCommand);
-				JpegBitmapEncoder aJpeg = CreateThumb(aOptions);
+				GetThumbOptions(aOptions, out String aPathExLen, out Int32 aWidth);
 
-				using (MemoryStream aMemStream = new MemoryStream())
+				// キャッシュから探す
+				TCacheThumb aCacheThumb = FindCache(Path.GetFileName(aPathExLen), aWidth);
+
+				if (aCacheThumb == null)
 				{
-					aJpeg.Save(aMemStream);
-					Debug.WriteLine("SendResponseThumb() jpeg size: " + aMemStream.Length);
-
-					// ヘッダー
-					String aHeader = "HTTP/1.1 200 OK\n"
-							+ "Content-Length: " + aMemStream.Length + "\n"
-							+ "Content-Type: image/jpeg\n\n";
-					Byte[] aSendBytes = Encoding.UTF8.GetBytes(aHeader);
-					oNetworkStream.Write(aSendBytes, 0, aSendBytes.Length);
-
-					// 画像
-					Byte[] aJpegBytes = new Byte[aMemStream.Length];
-					aMemStream.Seek(0, SeekOrigin.Begin);
-					aMemStream.Read(aJpegBytes, 0, (Int32)aMemStream.Length);
-					oNetworkStream.Write(aJpegBytes, 0, (Int32)aMemStream.Length);
+					// キャッシュに無い場合は新規作成
+					aCacheThumb = CreateThumb(aPathExLen, aWidth);
 				}
+
+				// ヘッダー
+				String aHeader = "HTTP/1.1 200 OK\n"
+						+ "Content-Length: " + aCacheThumb.Image.Length + "\n"
+						+ "Content-Type: image/jpeg\n\n";
+				Byte[] aSendBytes = Encoding.UTF8.GetBytes(aHeader);
+				oNetworkStream.Write(aSendBytes, 0, aSendBytes.Length);
+
+				// サムネイルデータ
+				oNetworkStream.Write(aCacheThumb.Image, 0, aCacheThumb.Image.Length);
 			}
 			catch (Exception oExcep)
 			{
@@ -569,12 +659,10 @@ namespace YukaLister.Shared
 						// 接続要求があったら受け入れる
 						// ToDo: タイムアウト付きにして CancelToken 判定
 						TcpClient aClient = aListener.AcceptTcpClient();
-						Debug.WriteLine("WebServerByWorker() accept");
 
 						// タスク上限を超えないように調整
 						while (aNumWebServerTasks >= mWebServerTasksLimit)
 						{
-							Debug.WriteLine("[" + Thread.CurrentThread.ManagedThreadId + "] WebServerByWorker() タスク上限待機" + Environment.TickCount.ToString("#,0"));
 							mCancellationToken.ThrowIfCancellationRequested();
 							Thread.Sleep(Common.GENERAL_SLEEP_TIME);
 						}
@@ -583,9 +671,7 @@ namespace YukaLister.Shared
 						Interlocked.Increment(ref aNumWebServerTasks);
 						Task.Run(() =>
 						{
-							Debug.WriteLine("[" + Thread.CurrentThread.ManagedThreadId + "] WebServerByWorker() タスク開始" + Environment.TickCount.ToString("#,0"));
 							SendResponse(aClient);
-							Debug.WriteLine("[" + Thread.CurrentThread.ManagedThreadId + "] WebServerByWorker() タスク終了" + Environment.TickCount.ToString("#,0"));
 							Interlocked.Decrement(ref aNumWebServerTasks);
 						});
 					}

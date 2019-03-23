@@ -1408,36 +1408,40 @@ namespace YukaLister.Shared
 		// ====================================================================
 
 		public const String TABLE_NAME_CACHE_THUMB = "t_cache_thumb";
-		public const String FIELD_NAME_CACHE_THUMB_ID = "cache_thumb_id";
-		public const String FIELD_NAME_CACHE_THUMB_FOUND_UID = "cache_thumb_found_uid";
+		public const String FIELD_NAME_CACHE_THUMB_UID = "cache_thumb_uid";
+		public const String FIELD_NAME_CACHE_THUMB_FILE_NAME = "cache_thumb_file_name";
 		public const String FIELD_NAME_CACHE_THUMB_WIDTH = "cache_thumb_width";
 		public const String FIELD_NAME_CACHE_THUMB_IMAGE = "cache_thumb_image";
-		public const String FIELD_NAME_CACHE_THUMB_LAST_WRITE_TIME = "cache_thumb_last_write_time";
+		public const String FIELD_NAME_CACHE_THUMB_FILE_LAST_WRITE_TIME = "cache_thumb_file_last_write_time";
+		public const String FIELD_NAME_CACHE_THUMB_THUMB_LAST_WRITE_TIME = "cache_thumb_thumb_last_write_time";
 
 		// ====================================================================
 		// フィールド
 		// ====================================================================
 
-		// キャッシュサムネイル ID
-		[Column(Name = FIELD_NAME_CACHE_THUMB_ID, DbType = LinqUtils.DB_TYPE_INT64, CanBeNull = false, IsPrimaryKey = true)]
-		public Int64 Id { get; set; }
+		// キャッシュサムネイルユニーク ID
+		[Column(Name = FIELD_NAME_CACHE_THUMB_UID, DbType = LinqUtils.DB_TYPE_INT64, CanBeNull = false, IsPrimaryKey = true)]
+		public Int64 Uid { get; set; }
 
-		// TFound ユニーク ID ＜参照項目＞
-		[Column(Name = FIELD_NAME_CACHE_THUMB_FOUND_UID, DbType = LinqUtils.DB_TYPE_INT64, CanBeNull = false)]
-		public Int64 FoundUid { get; set; }
+		// ファイル名（パス無し）
+		[Column(Name = FIELD_NAME_CACHE_THUMB_FILE_NAME, DbType = LinqUtils.DB_TYPE_STRING, CanBeNull = false)]
+		public String FileName { get; set; }
 
 		// サムネイル横サイズ
 		[Column(Name = FIELD_NAME_CACHE_THUMB_WIDTH, DbType = LinqUtils.DB_TYPE_INT32, CanBeNull = false)]
 		public Int32 Width { get; set; }
 
 		// サムネイル画像データ
-		[Column(Name = FIELD_NAME_CACHE_THUMB_IMAGE, DbType = LinqUtils.DB_TYPE_BLOB, CanBeNull = true)]
+		[Column(Name = FIELD_NAME_CACHE_THUMB_IMAGE, DbType = LinqUtils.DB_TYPE_BLOB, CanBeNull = false)]
 		public Byte[] Image { get; set; }
 
 		// 動画ファイル最終更新日時（修正ユリウス日）
-		[Column(Name = FIELD_NAME_CACHE_THUMB_LAST_WRITE_TIME, DbType = LinqUtils.DB_TYPE_DOUBLE, CanBeNull = false)]
-		public Double LastWriteTime { get; set; }
+		[Column(Name = FIELD_NAME_CACHE_THUMB_FILE_LAST_WRITE_TIME, DbType = LinqUtils.DB_TYPE_DOUBLE, CanBeNull = false)]
+		public Double FileLastWriteTime { get; set; }
 
+		// サムネイル最終更新日時（修正ユリウス日）
+		[Column(Name = FIELD_NAME_CACHE_THUMB_THUMB_LAST_WRITE_TIME, DbType = LinqUtils.DB_TYPE_DOUBLE, CanBeNull = false)]
+		public Double ThumbLastWriteTime { get; set; }
 	}
 	// public class TCacheThumb ___END___
 }

@@ -608,12 +608,15 @@ namespace YukaLister
 				mLogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "前回のゆかり用リストデータベースをクリアしませんでした。");
 			}
 
-			// サムネイル DB をディスクに作成（サムネイル DB はメモリには作らない）
-			mLogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "ゆかり用サムネイルデータベースを準備しています...");
-			using (SQLiteConnection aConnection = YlCommon.CreateYukariThumbDbInDiskConnection(mYukaListerSettings))
-			using (SQLiteCommand aCmd = new SQLiteCommand(aConnection))
+			// サムネイル DB をディスクに作成（サムネイル DB はメモリには作らない、前回のデータベースはクリアしない）
+			if (!File.Exists(mYukaListerSettings.YukariThumbDbInDiskPath()))
 			{
-				CreateYukariThumbDbCacheThumbTable(aCmd);
+				mLogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "ゆかり用サムネイルデータベースを準備しています...");
+				using (SQLiteConnection aConnection = YlCommon.CreateYukariThumbDbInDiskConnection(mYukaListerSettings))
+				using (SQLiteCommand aCmd = new SQLiteCommand(aConnection))
+				{
+					CreateYukariThumbDbCacheThumbTable(aCmd);
+				}
 			}
 		}
 
@@ -649,12 +652,14 @@ namespace YukaLister
 		{
 			// テーブル作成
 			List<String> aUniques = new List<String>();
-			aUniques.Add(TCacheThumb.FIELD_NAME_CACHE_THUMB_ID);
+			aUniques.Add(TCacheThumb.FIELD_NAME_CACHE_THUMB_UID);
+			aUniques.Add(TCacheThumb.FIELD_NAME_CACHE_THUMB_FILE_NAME + "," + TCacheThumb.FIELD_NAME_CACHE_THUMB_WIDTH);
 			LinqUtils.CreateTable(oCmd, typeof(TCacheThumb), aUniques);
 
 			// インデックス作成
 			List<String> aIndices = new List<String>();
-			aIndices.Add(TCacheThumb.FIELD_NAME_CACHE_THUMB_FOUND_UID);
+			aIndices.Add(TCacheThumb.FIELD_NAME_CACHE_THUMB_FILE_NAME);
+			aIndices.Add(TCacheThumb.FIELD_NAME_CACHE_THUMB_THUMB_LAST_WRITE_TIME);
 			LinqUtils.CreateIndex(oCmd, LinqUtils.TableName(typeof(TCacheThumb)), aIndices);
 		}
 
