@@ -141,19 +141,15 @@ namespace YukaLister
 		// Windows API Code Pack ダイアログ
 		private CommonOpenFileDialog mOpenFileDialogFolder;
 
-		// DGV セルスタイル
-		//private DataGridViewCellStyle[] mCellStyles;
-
-		// DoFolderTaskByWorker() による DGV 更新判定用：削除により実際には当該行が存在しない可能性があることに注意
-		//private Int32 mDirtyDgvLineMin;
-		//private Int32 mDirtyDgvLineMax;
-
 		// DataGrid 表示更新判定用
 		// 複数スレッドからロックせずアクセスされるので、一時的に整合性がとれなくなっても最終的にまともに DataGrid が表示されることが必要
 		private Boolean mDirtyDg;
 
 		// タイマー
 		DispatcherTimer mTimerUpdateDg;
+
+		// config.ini 監視用
+		FileSystemWatcher mFileSystemWatcherYukariConfig;
 
 		// 終了時タスク安全中断用
 		private CancellationTokenSource mClosingCancellationTokenSource = new CancellationTokenSource();
@@ -424,7 +420,7 @@ namespace YukaLister
 		}
 
 		// --------------------------------------------------------------------
-		// config.ini を解析して簡易認証の設定を取得
+		// ゆかり設定ファイルを解析して簡易認証の設定を取得
 		// --------------------------------------------------------------------
 		private void AnalyzeYukariEasyAuthConfig()
 		{
@@ -443,6 +439,7 @@ namespace YukaLister
 
 				// 簡易認証キーワード
 				mYukaListerSettings.YukariEasyAuthKeyword = YukariConfigValue(aConfig, YUKARI_CONFIG_KEY_NAME_EASY_AUTH_KEYWORD);
+				Debug.WriteLine("AnalyzeYukariEasyAuthConfig() EasyPass: " + mYukaListerSettings.YukariEasyAuthKeyword);
 			}
 			catch (Exception oExcep)
 			{
@@ -1001,6 +998,18 @@ namespace YukaLister
 		}
 
 		// --------------------------------------------------------------------
+		// イベントハンドラー
+		// --------------------------------------------------------------------
+		private void FileSystemWatcherYukariConfig_Changed(Object oSender, FileSystemEventArgs oFileSystemEventArgs)
+		{
+			Dispatcher.Invoke(new Action(() =>
+			{
+				YlCommon.SetStatusLabelMessage(LabelBgStatus, TraceEventType.Information, "ゆかり設定ファイルが更新されました。");
+			}));
+			AnalyzeYukariEasyAuthConfig();
+		}
+
+		// --------------------------------------------------------------------
 		// 次に実行すべきフォルダータスクを検索
 		// --------------------------------------------------------------------
 		private void FindFolderTaskTarget(out TargetFolderInfo oTargetFolderInfo)
@@ -1268,6 +1277,13 @@ namespace YukaLister
 			mTimerUpdateDg.Interval = new TimeSpan(0, 0, 1);
 			mTimerUpdateDg.Tick += new EventHandler(TimerUpdateDg_Tick);
 
+			// ゆかり設定ファイル監視
+			mFileSystemWatcherYukariConfig = new FileSystemWatcher();
+			mFileSystemWatcherYukariConfig.Created += new FileSystemEventHandler(FileSystemWatcherYukariConfig_Changed);
+			mFileSystemWatcherYukariConfig.Deleted += new FileSystemEventHandler(FileSystemWatcherYukariConfig_Changed);
+			mFileSystemWatcherYukariConfig.Changed += new FileSystemEventHandler(FileSystemWatcherYukariConfig_Changed);
+			SetFileSystemWatcherYukariConfig();
+
 			// 楽曲情報データベース
 			PrepareMusicInfoDb();
 
@@ -1400,6 +1416,12 @@ namespace YukaLister
 			{
 				if (!mYukaListerSettings.OutputYukari)
 				{
+					return;
+				}
+
+				if (mYukaListerStatus == YukaListerStatus.Error)
+				{
+					mLogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "エラー発生中のためリストタスクを実行できません。");
 					return;
 				}
 
@@ -1658,6 +1680,23 @@ namespace YukaLister
 			if (oTargetFolderInfo.Visible)
 			{
 				mDirtyDg = true;
+			}
+		}
+
+		// --------------------------------------------------------------------
+		// ゆかり設定ファイルの監視設定
+		// --------------------------------------------------------------------
+		private void SetFileSystemWatcherYukariConfig()
+		{
+			if (IsYukariConfigPathSet())
+			{
+				mFileSystemWatcherYukariConfig.Path = Path.GetDirectoryName(mYukaListerSettings.YukariConfigPath());
+				mFileSystemWatcherYukariConfig.Filter = Path.GetFileName(mYukaListerSettings.YukariConfigPath());
+				mFileSystemWatcherYukariConfig.EnableRaisingEvents = true;
+			}
+			else
+			{
+				mFileSystemWatcherYukariConfig.EnableRaisingEvents = false;
 			}
 		}
 
@@ -2885,6 +2924,8 @@ namespace YukaLister
 				if (mYukaListerSettings.YukariConfigPath() != aYukariConfigPathBak)
 				{
 					SetYukaListerStatus();
+					AnalyzeYukariEasyAuthConfig();
+					SetFileSystemWatcherYukariConfig();
 
 					if (mYukaListerStatus == YukaListerStatus.Error)
 					{

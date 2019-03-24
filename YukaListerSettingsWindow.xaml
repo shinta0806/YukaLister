@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:YukaLister"
         mc:Ignorable="d" ResizeMode="NoResize" ShowInTaskbar="False" SizeToContent="WidthAndHeight" Loaded="Window_Loaded" Closed="Window_Closed" Icon="アイコン/YukaListerアイコン_1.ico">
     <StackPanel>
-        <TabControl x:Name="TabControlYukaListerSettings" Height="450" Width="570" Margin="10,10,10,0" AllowDrop="True" DragOver="TabControlYukaListerSettings_DragOver" Drop="TabControlYukaListerSettings_Drop">
+        <TabControl x:Name="TabControlYukaListerSettings" Height="480" Width="570" Margin="10,10,10,0" AllowDrop="True" DragOver="TabControlYukaListerSettings_DragOver" Drop="TabControlYukaListerSettings_Drop">
             <TabItem x:Name="TabItemSettings" Header="設定" DragOver="TabItemSettings_DragOver" Drop="TabItemSettings_Drop" AllowDrop="True">
                 <StackPanel>
                     <DockPanel Margin="20,20,20,0">
