@@ -540,6 +540,9 @@ namespace YukaLister.Shared
 		// ツールチップの長めの表示時間 [ms]
 		public const Int32 TOOL_TIP_LONG_INTERVAL = 10 * 1000;
 
+		// サムネイルの横幅として指定可能なサイズ [px]
+		public static readonly Int32[] THUMB_WIDTH_LIST = new Int32[] { 80, 128, 160, 240, 320 };
+
 		// ====================================================================
 		// public プロパティー
 		// ====================================================================
@@ -3295,7 +3298,7 @@ namespace YukaLister.Shared
 				aContext.SubmitChanges();
 
 				// 新しいプロパティーを挿入
-				aTableProperty.InsertOnSubmit(new TProperty { AppId = APP_ID, AppVer = APP_VER });
+				aTableProperty.InsertOnSubmit(new TProperty { AppId = APP_ID, AppVer = APP_GENERATION + "," + APP_VER });
 				aContext.SubmitChanges();
 			}
 		}

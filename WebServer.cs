@@ -7,10 +7,10 @@
 // ----------------------------------------------------------------------------
 // 【アクセス仕様】
 // ・サムネイル画像取得
-//   <アドレス>:<ポート>/thumb?uid=<ファイル番号>[&width=<横幅>]
+//   <アドレス>:<ポート>/thumb?uid=<ファイル番号>[&width=<横幅>][&easypass=<簡易認証キーワード>]
 //   http://localhost:13582/thumb?uid=7&width=80
 // ・動画プレビュー
-//   <アドレス>:<ポート>/preview?uid=<ファイル番号>
+//   <アドレス>:<ポート>/preview?uid=<ファイル番号>[&easypass=<簡易認証キーワード>]
 //   http://localhost:13582/preview?uid=123
 // ----------------------------------------------------------------------------
 
@@ -84,6 +84,7 @@ namespace YukaLister.Shared
 		private const String SERVER_COMMAND_THUMB = "thumb";
 
 		// コマンドオプション
+		private const String OPTION_NAME_EASY_PASS = "easypass";
 		private const String OPTION_NAME_UID = "uid";
 		private const String OPTION_NAME_WIDTH = "width";
 
@@ -135,6 +136,27 @@ namespace YukaLister.Shared
 			}
 
 			return aOptions;
+		}
+
+		// --------------------------------------------------------------------
+		// 簡易認証を満たしているかどうか
+		// ＜返値＞ 満たしている、または、認証不要の場合は true
+		// --------------------------------------------------------------------
+		private Boolean CheckEasyAuth(Dictionary<String, String> oOptions)
+		{
+			if (!mYukaListerSettings.YukariUseEasyAuth)
+			{
+				// 認証不要
+				return true;
+			}
+
+			if (oOptions.ContainsKey(OPTION_NAME_EASY_PASS) && oOptions[OPTION_NAME_EASY_PASS] == mYukaListerSettings.YukariEasyAuthKeyword)
+			{
+				// 認証成功
+				return true;
+			}
+
+			return false;
 		}
 
 		// --------------------------------------------------------------------
@@ -345,11 +367,23 @@ namespace YukaLister.Shared
 			else
 			{
 				oWidth = Int32.Parse(oOptions[OPTION_NAME_WIDTH]);
-				if (oWidth <= 0 || oWidth > THUMB_WIDTH_MAX)
+				if (oWidth < YlCommon.THUMB_WIDTH_LIST[0] || oWidth > YlCommon.THUMB_WIDTH_LIST[YlCommon.THUMB_WIDTH_LIST.Length - 1])
 				{
 					throw new Exception("Bad width.");
 				}
 			}
+
+			// 既定の横幅に調整
+			Int32 aIndex = 0;
+			for (Int32 i = YlCommon.THUMB_WIDTH_LIST.Length - 1; i >= 0; i--)
+			{
+				if (oWidth >= YlCommon.THUMB_WIDTH_LIST[i])
+				{
+					aIndex = i;
+					break;
+				}
+			}
+			oWidth = YlCommon.THUMB_WIDTH_LIST[aIndex];
 		}
 
 		// --------------------------------------------------------------------
@@ -573,37 +607,46 @@ namespace YukaLister.Shared
 						throw new Exception("ヘッダーのパスが空です。");
 					}
 
-					// コマンド解析（先頭が '/' であることに注意）
-					if (aDocPath.IndexOf(SERVER_COMMAND_PREVIEW) == 1)
+					// 簡易認証チェック
+					Dictionary<String, String> aOptions = AnalyzeCommandOptions(aDocPath);
+					if (CheckEasyAuth(aOptions))
 					{
-						SendResponsePreview(aNetworkStream, aWriter, aDocPath);
-					}
-					else if (aDocPath.IndexOf(SERVER_COMMAND_THUMB) == 1)
-					{
-						SendResponseThumb(aNetworkStream, aWriter, aDocPath);
-					}
-					else
-					{
-						// ToDo: obsolete
-						// ゆかり側が新 URL に対応次第削除する
-						// パス解析（先頭の '/' を除く）
-						String aPath = null;
-						if (aDocPath.Length == 1)
+						// コマンド解析（先頭が '/' であることに注意）
+						if (aDocPath.IndexOf(SERVER_COMMAND_PREVIEW) == 1)
 						{
-							SendErrorResponse(aWriter, "File is not specified.");
+							SendResponsePreview(aNetworkStream, aWriter, aOptions);
+						}
+						else if (aDocPath.IndexOf(SERVER_COMMAND_THUMB) == 1)
+						{
+							SendResponseThumb(aNetworkStream, aWriter, aOptions);
 						}
 						else
 						{
-							aPath = YlCommon.ExtendPath(HttpUtility.UrlDecode(aDocPath, Encoding.UTF8).Substring(1).Replace('/', '\\'));
-							if (File.Exists(aPath))
+							// ToDo: obsolete
+							// ゆかり側が新 URL に対応次第削除する
+							// パス解析（先頭の '/' を除く）
+							String aPath = null;
+							if (aDocPath.Length == 1)
 							{
-								SendFile(aNetworkStream, aPath);
+								SendErrorResponse(aWriter, "File is not specified.");
 							}
 							else
 							{
-								SendErrorResponse(aWriter, "File not found.");
+								aPath = YlCommon.ExtendPath(HttpUtility.UrlDecode(aDocPath, Encoding.UTF8).Substring(1).Replace('/', '\\'));
+								if (File.Exists(aPath))
+								{
+									SendFile(aNetworkStream, aPath);
+								}
+								else
+								{
+									SendErrorResponse(aWriter, "File not found.");
+								}
 							}
 						}
+					}
+					else
+					{
+						SendErrorResponse(aWriter, "Bad auth.");
 					}
 
 					aWriter.Flush();
@@ -611,11 +654,11 @@ namespace YukaLister.Shared
 			}
 			catch (OperationCanceledException)
 			{
-				mLogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "プレビュー応答を中止しました。");
+				mLogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "クライアントへの応答を中止しました。");
 			}
 			catch (Exception oExcep)
 			{
-				mLogWriter.ShowLogMessage(TraceEventType.Error, "プレビュー応答エラー：\n" + oExcep.Message, true);
+				mLogWriter.ShowLogMessage(TraceEventType.Error, "クライアントへの応答時エラー：\n" + oExcep.Message, true);
 				mLogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 			finally
@@ -628,13 +671,12 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		// クライアントにプレビュー用動画データを返す
 		// --------------------------------------------------------------------
-		private void SendResponsePreview(NetworkStream oNetworkStream, StreamWriter oWriter, String oCommand)
+		private void SendResponsePreview(NetworkStream oNetworkStream, StreamWriter oWriter, Dictionary<String, String> oOptions)
 		{
 			try
 			{
 				// 動画の確定
-				Dictionary<String, String> aOptions = AnalyzeCommandOptions(oCommand);
-				GetPathOption(aOptions, out String aPathExLen);
+				GetPathOption(oOptions, out String aPathExLen);
 
 				// 送信
 				if (File.Exists(aPathExLen))
@@ -655,13 +697,12 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		// クライアントにサムネイルを返す
 		// --------------------------------------------------------------------
-		private void SendResponseThumb(NetworkStream oNetworkStream, StreamWriter oWriter, String oCommand)
+		private void SendResponseThumb(NetworkStream oNetworkStream, StreamWriter oWriter, Dictionary<String, String> oOptions)
 		{
 			try
 			{
 				// サムネイル対象の確定
-				Dictionary<String, String> aOptions = AnalyzeCommandOptions(oCommand);
-				GetThumbOptions(aOptions, out String aPathExLen, out Int32 aWidth);
+				GetThumbOptions(oOptions, out String aPathExLen, out Int32 aWidth);
 
 				// キャッシュから探す
 				TCacheThumb aCacheThumb = FindCache(aPathExLen, aWidth);

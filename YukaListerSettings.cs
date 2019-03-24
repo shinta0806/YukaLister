@@ -274,6 +274,40 @@ namespace YukaLister.Shared
 		}
 
 		// --------------------------------------------------------------------
+		// ゆかりの設定
+		// --------------------------------------------------------------------
+
+		// 簡易認証を使用するかどうか
+		private const String KEY_NAME_YUKARI_USE_EASY_AUTH = "YukariUseEasyAuth";
+		[UserScopedSetting]
+		public Boolean YukariUseEasyAuth
+		{
+			get
+			{
+				return (Boolean)this[KEY_NAME_YUKARI_USE_EASY_AUTH];
+			}
+			set
+			{
+				this[KEY_NAME_YUKARI_USE_EASY_AUTH] = value;
+			}
+		}
+
+		// 簡易認証キーワード
+		private const String KEY_NAME_YUKARI_EASY_AUTH_KEYWORD = "YukariEasyAuthKeyword";
+		[UserScopedSetting]
+		public String YukariEasyAuthKeyword
+		{
+			get
+			{
+				return (String)this[KEY_NAME_YUKARI_EASY_AUTH_KEYWORD];
+			}
+			set
+			{
+				this[KEY_NAME_YUKARI_EASY_AUTH_KEYWORD] = value;
+			}
+		}
+
+		// --------------------------------------------------------------------
 		// 終了時の状態
 		// --------------------------------------------------------------------
 

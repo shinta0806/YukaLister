@@ -107,6 +107,10 @@ namespace YukaLister
 		// アプリケーション構成ファイル
 		private const String FILE_NAME_APP_CONFIG = "YukaLister.exe.config";
 
+		// ゆかりの config.ini の項目
+		private const String YUKARI_CONFIG_KEY_NAME_USE_EASY_AUTH = "useeasyauth";
+		private const String YUKARI_CONFIG_KEY_NAME_EASY_AUTH_KEYWORD = "useeasyauth_word";
+
 		// ====================================================================
 		// private メンバー変数
 		// ====================================================================
@@ -420,6 +424,35 @@ namespace YukaLister
 		}
 
 		// --------------------------------------------------------------------
+		// config.ini を解析して簡易認証の設定を取得
+		// --------------------------------------------------------------------
+		private void AnalyzeYukariEasyAuthConfig()
+		{
+			try
+			{
+				if (!IsYukariConfigPathSet())
+				{
+					throw new Exception("ゆかり設定ファイルが正しく指定されていません。");
+				}
+
+				String[] aConfig = File.ReadAllLines(mYukaListerSettings.YukariConfigPath(), Encoding.UTF8);
+
+				// 簡易認証を使用するかどうか
+				String aUseEasyAuth = YukariConfigValue(aConfig, YUKARI_CONFIG_KEY_NAME_USE_EASY_AUTH);
+				mYukaListerSettings.YukariUseEasyAuth = (aUseEasyAuth == "1");
+
+				// 簡易認証キーワード
+				mYukaListerSettings.YukariEasyAuthKeyword = YukariConfigValue(aConfig, YUKARI_CONFIG_KEY_NAME_EASY_AUTH_KEYWORD);
+			}
+			catch (Exception oExcep)
+			{
+				// エラーの場合は情報をクリア
+				mYukaListerSettings.YukariUseEasyAuth = false;
+				mLogWriter.ShowLogMessage(TraceEventType.Error, oExcep.Message + "サーバーに簡易認証を適用しません。", true);
+			}
+		}
+
+		// --------------------------------------------------------------------
 		// トラック情報からオンボーカル・オフボーカルがあるか解析する
 		// --------------------------------------------------------------------
 		private void AnalyzeSmartTrack(String oTrack, out Boolean oHasOn, out Boolean oHasOff)
@@ -616,6 +649,7 @@ namespace YukaLister
 				using (SQLiteCommand aCmd = new SQLiteCommand(aConnection))
 				{
 					CreateYukariThumbDbCacheThumbTable(aCmd);
+					YlCommon.CreateDbPropertyTable(aConnection);
 				}
 			}
 		}
@@ -2315,6 +2349,38 @@ namespace YukaLister
 			return IntPtr.Zero;
 		}
 
+		// --------------------------------------------------------------------
+		// ゆかり設定を config.ini の内容から取得
+		// --------------------------------------------------------------------
+		private String YukariConfigValue(String[] oConfig, String oKeyName)
+		{
+			// キーを検索
+			Int32 aLine = -1;
+			for (Int32 i = 0; i < oConfig.Length; i++)
+			{
+				if (oConfig[i].StartsWith(oKeyName + "="))
+				{
+					aLine = i;
+					break;
+				}
+			}
+			if (aLine < 0)
+			{
+				// キーがない
+				return String.Empty;
+			}
+
+			// 値を検索
+			Int32 aPos = oConfig[aLine].IndexOf('=');
+			if (aPos == oConfig[aLine].Length - 1)
+			{
+				// 値がない
+				return String.Empty;
+			}
+
+			return oConfig[aLine].Substring(aPos + 1);
+		}
+
 		// ====================================================================
 		// IDE 生成イベントハンドラー（メインウィンドウ）
 		// ====================================================================
@@ -2401,6 +2467,7 @@ namespace YukaLister
 				RunSyncClientIfNeeded();
 
 				// ゆかり用プレビュー
+				AnalyzeYukariEasyAuthConfig();
 				RunPreviewServerIfNeeded();
 			}
 			catch (Exception oExcep)
