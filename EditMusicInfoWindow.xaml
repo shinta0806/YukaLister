@@ -11,8 +11,8 @@
             <Label Content="ファイル：" Margin="20,0,0,0" HorizontalAlignment="Left"/>
             <Label x:Name="LabelPath" Content="-" Margin="0" HorizontalAlignment="Left"/>
         </StackPanel>
-        <StackPanel Orientation="Horizontal">
-            <GroupBox Header="ファイル名・フォルダー固定値から取得した名称" Padding="5" Margin="20,0,0,0" materialDesign:ColorZoneAssist.Mode="Accent">
+        <StackPanel Orientation="Horizontal" Margin="20,0">
+            <GroupBox Header="ファイル名・フォルダー固定値から取得した名称" Padding="5" Margin="0" materialDesign:ColorZoneAssist.Mode="Accent">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="30"/>
@@ -23,7 +23,7 @@
                         <RowDefinition Height="30"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="100"/>
                         <ColumnDefinition Width="210"/>
                     </Grid.ColumnDefinitions>
                     <Label Content="タイアップ名：" Margin="0" HorizontalAlignment="Right" Grid.Row="1"/>
@@ -51,15 +51,15 @@
                     </Grid.ColumnDefinitions>
                     <CheckBox x:Name="CheckBoxUseTieUpAlias" Content="タイアップ名を揃える" Grid.ColumnSpan="3" Checked="CheckBoxUseTieUpAlias_Checked" Unchecked="CheckBoxUseTieUpAlias_Checked"/>
                     <Label Content="正式名称：" Margin="0" HorizontalAlignment="Right" Grid.Row="1"/>
-                    <Button x:Name="ButtonSearchTieUpOrigin" Content="検索" Grid.Row="1" Grid.Column="1" Height="Auto" FontSize="12" Padding="2" Style="{StaticResource MaterialDesignRaisedLightButton}" Click="ButtonSearchTieUpOrigin_Click" Margin="0,5,5,5" ToolTip=""/>
+                    <Button x:Name="ButtonSearchTieUpOrigin" Content="検索" Grid.Row="1" Grid.Column="1" Height="Auto" FontSize="12" Padding="2" Style="{StaticResource MaterialDesignRaisedLightButton}" Click="ButtonSearchTieUpOrigin_Click" Margin="0,5,5,5"/>
                     <Label x:Name="LabelTieUpOrigin" Content="-" Margin="0" Grid.Row="1" Grid.Column="2"/>
                     <CheckBox x:Name="CheckBoxUseSongAlias" Content="楽曲名を揃える" Grid.Row="3" Grid.ColumnSpan="3" Checked="CheckBoxUseSongAlias_Checked" Unchecked="CheckBoxUseSongAlias_Checked"/>
                     <Label Content="正式名称：" Margin="0" HorizontalAlignment="Right" Grid.Row="4"/>
-                    <Button x:Name="ButtonSearchSongOrigin" Content="検索" Grid.Row="4" Grid.Column="1" Height="Auto" FontSize="12" Padding="2" Style="{StaticResource MaterialDesignRaisedLightButton}" Click="ButtonSearchSongOrigin_Click" Margin="0,5,5,5" ToolTip=""/>
+                    <Button x:Name="ButtonSearchSongOrigin" Content="検索" Grid.Row="4" Grid.Column="1" Height="Auto" FontSize="12" Padding="2" Style="{StaticResource MaterialDesignRaisedLightButton}" Click="ButtonSearchSongOrigin_Click" Margin="0,5,5,5"/>
                     <Label x:Name="LabelSongOrigin" Content="-" Margin="0" Grid.Row="4" Grid.Column="2"/>
                 </Grid>
             </GroupBox>
-            <GroupBox Header="データベース編集" Padding="5" Margin="10,0,20,0" materialDesign:ColorZoneAssist.Mode="Accent">
+            <GroupBox Header="データベース編集" Padding="5" Margin="10,0,0,0" materialDesign:ColorZoneAssist.Mode="Accent">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="30"/>
@@ -78,7 +78,7 @@
             </GroupBox>
         </StackPanel>
         <DockPanel Margin="20">
-            <Button x:Name="ButtonCancel" Content="キャンセル" Margin="0" Height="Auto" Style="{StaticResource MaterialDesignRaisedLightButton}" Click="ButtonCancel_Click" IsCancel="True" Width="100" DockPanel.Dock="Right"/>
+            <Button x:Name="ButtonCancel" Content="キャンセル" Margin="0" Height="Auto" Style="{StaticResource MaterialDesignRaisedLightButton}" Click="ButtonCancel_Click" IsCancel="True" Width="100" DockPanel.Dock="Right" Padding="4"/>
             <Button x:Name="ButtonOK" Content="OK" Margin="0,0,20,0" Height="Auto" Click="ButtonOK_Click" IsDefault="True" Width="100" DockPanel.Dock="Right"/>
             <Label Content="ファイル名等から取得した名称が間違っている場合でも楽曲情報データベースを適用できるようにします。" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Center"/>
             <Label x:Name="LabelHelp" Grid.Column="1" Margin="0" VerticalAlignment="Center" HorizontalAlignment="Left">

@@ -18,7 +18,7 @@
         </StackPanel>
         <TextBox x:Name="TextBoxIdPrefix" Margin="20,10,20,0" Width="320" HorizontalAlignment="Left"/>
         <StackPanel Orientation="Horizontal" FlowDirection="RightToLeft" Margin="20">
-            <Button x:Name="ButtonCancel" Content="キャンセル" Height="Auto" Style="{StaticResource MaterialDesignRaisedLightButton}" Click="ButtonCancel_Click" IsCancel="True" Width="100"/>
+            <Button x:Name="ButtonCancel" Content="キャンセル" Height="Auto" Style="{StaticResource MaterialDesignRaisedLightButton}" Click="ButtonCancel_Click" IsCancel="True" Width="100" Padding="4"/>
             <Button x:Name="ButtonOK" Content="OK" Margin="20,0,0,0" Height="Auto" Click="ButtonOK_Click" IsDefault="True" Width="100"/>
         </StackPanel>
     </StackPanel>

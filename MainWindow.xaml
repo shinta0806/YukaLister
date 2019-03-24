@@ -38,8 +38,8 @@
         <DockPanel DockPanel.Dock="Bottom" Margin="20,0,20,20" LastChildFill="False">
             <Button x:Name="ButtonAddTargetFolder" Content="追加 (_A)" Width="100" Height="Auto" Click="ButtonAddTargetFolder_Click" ToolTip="ゆかり検索対象フォルダーを追加"/>
             <Button x:Name="ButtonRemoveTargetFolder" Content="削除 (_D)" Style="{StaticResource MaterialDesignRaisedLightButton}" Width="100" Height="Auto" Margin="20,0,0,0" Click="ButtonRemoveTargetFolder_Click" ToolTip="ゆかり検索対象フォルダーを削除"/>
-            <Button x:Name="ButtonFolderSettings" Content="フォルダー設定 (_F)" Style="{StaticResource MaterialDesignRaisedLightButton}" Width="140" Height="Auto" ToolTip="フォルダーの検索設定" Click="ButtonFolderSettings_Click" DockPanel.Dock="Right"/>
-            <Button x:Name="ButtonTFounds" Content="ファイル一覧 (_L)" Style="{StaticResource MaterialDesignRaisedLightButton}" Width="140" Height="Auto" Margin="0,0,20,0" ToolTip="ゆかり検索対象のファイルを一覧表示" Click="ButtonTFounds_Click" DockPanel.Dock="Right"/>
+            <Button x:Name="ButtonFolderSettings" Content="フォルダー設定 (_F)" Style="{StaticResource MaterialDesignRaisedLightButton}" Width="140" Height="Auto" ToolTip="フォルダーの検索設定" Click="ButtonFolderSettings_Click" DockPanel.Dock="Right" Padding="4"/>
+            <Button x:Name="ButtonTFounds" Content="ファイル一覧 (_L)" Style="{StaticResource MaterialDesignRaisedLightButton}" Width="140" Height="Auto" Margin="0,0,20,0" ToolTip="ゆかり検索対象のファイルを一覧表示" Click="ButtonTFounds_Click" DockPanel.Dock="Right" Padding="4"/>
         </DockPanel>
         <DataGrid x:Name="DataGridTargetFolders" AutoGenerateColumns="False" CanUserReorderColumns="False" CanUserSortColumns="False" CanUserResizeRows="False" IsReadOnly="True" PreviewMouseLeftButtonDown="DataGridTargetFolders_PreviewMouseLeftButtonDown" SelectionMode="Single" SelectionChanged="DataGridTargetFolders_SelectionChanged" Margin="20,10,20,20">
             <DataGrid.ItemContainerStyle>

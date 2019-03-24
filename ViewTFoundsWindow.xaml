@@ -16,7 +16,7 @@
         </StackPanel>
         <DockPanel DockPanel.Dock="Bottom" Margin="20,0,20,20" LastChildFill="False">
             <Button x:Name="ButtonEditMusicInfo" Content="編集 (_E)" Width="140" Height="Auto" Click="ButtonEditMusicInfo_Click" ToolTip="タイアップ名・楽曲名を編集"/>
-            <Button x:Name="ButtonFolderSettings" Content="フォルダー設定 (_S)" Style="{StaticResource MaterialDesignRaisedLightButton}" Width="140" Height="Auto" Margin="20,0,0,0" ToolTip="フォルダーの検索設定" Click="ButtonFolderSettings_Click"/>
+            <Button x:Name="ButtonFolderSettings" Content="フォルダー設定 (_S)" Style="{StaticResource MaterialDesignRaisedLightButton}" Width="140" Height="Auto" Margin="20,0,0,0" ToolTip="フォルダーの検索設定" Click="ButtonFolderSettings_Click" Padding="4"/>
             <Button x:Name="ButtonFind" Content="検索 (_F)" Style="{StaticResource MaterialDesignRaisedLightButton}" Width="120" Height="Auto" Margin="40,0,0,0" ToolTip="キーワード検索" Click="ButtonFind_Click"/>
             <Button x:Name="ButtonFindEmptyCell" Content="□↓検索 (_G)" Style="{StaticResource MaterialDesignRaisedLightButton}" Width="120" Height="Auto" Margin="20,0,0,0" ToolTip="空欄のセルを検索" Click="ButtonFindEmptyCell_Click"/>
             <Button x:Name="ButtonFindNormalCell" Content="■↓検索 (_H)" Style="{StaticResource MaterialDesignRaisedLightButton}" Width="120" Height="Auto" Margin="20,0,0,0" ToolTip="空欄ではないセルの検索" Click="ButtonFindNormalCell_Click"/>

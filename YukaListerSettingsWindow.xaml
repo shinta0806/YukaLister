@@ -79,7 +79,7 @@
                         <CheckBox x:Name="CheckBoxCheckRss" Content="ゆかりすたーの最新情報・更新版を自動的に確認する (_L)" Checked="CheckBoxCheckRss_Checked" Unchecked="CheckBoxCheckRss_Checked"/>
                     </StackPanel>
                     <DockPanel Margin="20,10,20,0">
-                        <Button x:Name="ButtonCheckRss" Height="Auto" Content="今すぐ最新情報を確認する (_A)" Style="{StaticResource MaterialDesignRaisedLightButton}" Margin="0" Width="210" DockPanel.Dock="Right" Click="ButtonCheckRss_Click"/>
+                        <Button x:Name="ButtonCheckRss" Height="Auto" Content="今すぐ最新情報を確認する (_A)" Style="{StaticResource MaterialDesignRaisedLightButton}" Margin="0" Width="210" DockPanel.Dock="Right" Click="ButtonCheckRss_Click" Padding="4"/>
                         <ProgressBar x:Name="ProgressBarCheckRss" Height="Auto" Margin="0,0,10,0" Visibility="Hidden" IsIndeterminate="True"/>
                     </DockPanel>
                     <StackPanel Margin="20,10,0,0">
@@ -161,7 +161,7 @@
             <TabItem x:Name="TabItemExport" Header="エクスポート"/>
         </TabControl>
         <DockPanel Margin="20">
-            <Button x:Name="ButtonCancel" Content="キャンセル" Margin="0" Height="Auto" Style="{StaticResource MaterialDesignRaisedLightButton}" Click="ButtonCancel_Click" IsCancel="True" Width="100" DockPanel.Dock="Right"/>
+            <Button x:Name="ButtonCancel" Content="キャンセル" Margin="0" Height="Auto" Style="{StaticResource MaterialDesignRaisedLightButton}" Click="ButtonCancel_Click" IsCancel="True" Width="100" DockPanel.Dock="Right" Padding="4"/>
             <Button x:Name="ButtonOK" Content="OK" Margin="0,0,20,0" Height="Auto" Click="ButtonOK_Click" IsDefault="True" Width="100" DockPanel.Dock="Right"/>
             <Label Content="設定やデータベースメンテナンス等を行います。" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Center"/>
             <Label x:Name="LabelHelp" Grid.Column="1" Margin="0" VerticalAlignment="Center" HorizontalAlignment="Left">

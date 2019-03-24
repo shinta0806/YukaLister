@@ -11,7 +11,7 @@
             </TabControl>
         </StackPanel>
         <StackPanel Orientation="Horizontal" FlowDirection="RightToLeft" Margin="0,20,20,20">
-            <Button x:Name="ButtonCancel" Content="キャンセル" Margin="0" Height="Auto" Style="{StaticResource MaterialDesignRaisedLightButton}" IsCancel="True" Width="100"/>
+            <Button x:Name="ButtonCancel" Content="キャンセル" Margin="0" Height="Auto" Style="{StaticResource MaterialDesignRaisedLightButton}" IsCancel="True" Width="100" Padding="4"/>
             <Button x:Name="ButtonOK" Content="OK" Margin="20,0,0,0" Height="Auto" IsDefault="True" Width="100" Click="ButtonOK_Click"/>
         </StackPanel>
     </StackPanel>
