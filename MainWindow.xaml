@@ -1,0 +1,72 @@
+﻿<Window x:Name="Window" x:Class="YukaLister.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:YukaLister"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        mc:Ignorable="d" Height="480" Width="810" Loaded="Window_Loaded" Margin="0" ResizeMode="CanResizeWithGrip" Closed="Window_Closed" Deactivated="Window_Deactivated" SourceInitialized="Window_SourceInitialized" Icon="アイコン/YukaListerアイコン_1.ico" AllowDrop="True" DragEnter="Window_DragEnter" Drop="Window_Drop" DragOver="Window_DragOver">
+    <DockPanel>
+        <DockPanel DockPanel.Dock="Top" Margin="20,20,20,0">
+            <Label x:Name="LabelIcon" Content="" Width="30" VerticalAlignment="Center" Height="30"/>
+            <Button x:Name="ButtonHelp" Style="{StaticResource MaterialDesignRaisedLightButton}" ToolTip="ヘルプ" Width="50" Height="25" Click="ButtonHelp_Click" DockPanel.Dock="Right" VerticalAlignment="Center">
+                <Button.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem x:Name="MenuItemHelp" Header="ヘルプ (_H)" Click="MenuItemHelp_Click" />
+                        <Separator />
+                        <MenuItem x:Name="MenuItemHistory" Header="改訂履歴 (_U)" Click="MenuItemHistory_Click" />
+                        <MenuItem x:Name="MenuItemAbout" Header="バージョン情報 (_A)" Click="MenuItemAbout_Click"/>
+                    </ContextMenu>
+                </Button.ContextMenu>
+                <materialDesign:PackIcon Kind="HelpOutline" Height="18" Width="18" />
+            </Button>
+            <Button x:Name="ButtonYukaListerSettings" Style="{StaticResource MaterialDesignRaisedLightButton}" ToolTip="環境設定" Width="50" Height="25" Margin="0,0,10,0" Click="ButtonYukaListerSettings_Click" DockPanel.Dock="Right" VerticalAlignment="Center">
+                <materialDesign:PackIcon Kind="SettingsOutline" Height="18" Width="18" />
+            </Button>
+            <Label x:Name="LabelYukaListerStatus" Content="" Margin="0,0,10,0" VerticalAlignment="Center" Height="30" VerticalContentAlignment="Center" Padding="5,0"/>
+        </DockPanel>
+        <DockPanel DockPanel.Dock="Top" Margin="0,10,0,0">
+            <Border BorderBrush="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}" BorderThickness="1" Height="3" Margin="0" Width="20" VerticalAlignment="Center"/>
+            <Label Content="ゆかり検索対象フォルダー" Margin="10,0" VerticalAlignment="Center"/>
+            <Border BorderBrush="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}" BorderThickness="1" Height="3" Margin="0" VerticalAlignment="Center"/>
+        </DockPanel>
+        <StatusBar x:Name="StatusBarBgStatus" DockPanel.Dock="Bottom">
+            <StatusBarItem>
+                <Label x:Name="LabelBgStatus" Content="-" Padding="0" VerticalContentAlignment="Center"></Label>
+            </StatusBarItem>
+        </StatusBar>
+        <DockPanel DockPanel.Dock="Bottom" Margin="20,0,20,20" LastChildFill="False">
+            <Button x:Name="ButtonAddTargetFolder" Content="追加 (_A)" Width="100" Height="Auto" Click="ButtonAddTargetFolder_Click" ToolTip="ゆかり検索対象フォルダーを追加"/>
+            <Button x:Name="ButtonRemoveTargetFolder" Content="削除 (_D)" Style="{StaticResource MaterialDesignRaisedLightButton}" Width="100" Height="Auto" Margin="20,0,0,0" Click="ButtonRemoveTargetFolder_Click" ToolTip="ゆかり検索対象フォルダーを削除"/>
+            <Button x:Name="ButtonFolderSettings" Content="フォルダー設定 (_F)" Style="{StaticResource MaterialDesignRaisedLightButton}" Width="140" Height="Auto" ToolTip="フォルダーの検索設定" Click="ButtonFolderSettings_Click" DockPanel.Dock="Right" Padding="4"/>
+            <Button x:Name="ButtonTFounds" Content="ファイル一覧 (_L)" Style="{StaticResource MaterialDesignRaisedLightButton}" Width="140" Height="Auto" Margin="0,0,20,0" ToolTip="ゆかり検索対象のファイルを一覧表示" Click="ButtonTFounds_Click" DockPanel.Dock="Right" Padding="4"/>
+        </DockPanel>
+        <DataGrid x:Name="DataGridTargetFolders" AutoGenerateColumns="False" CanUserReorderColumns="False" CanUserSortColumns="False" CanUserResizeRows="False" IsReadOnly="True" PreviewMouseLeftButtonDown="DataGridTargetFolders_PreviewMouseLeftButtonDown" SelectionMode="Single" SelectionChanged="DataGridTargetFolders_SelectionChanged" Margin="20,10,20,20">
+            <DataGrid.ItemContainerStyle>
+                <Style TargetType="DataGridRow">
+                    <Style.Triggers>
+                        <!-- StatusForLabelColor によって背景を設定する -->
+                        <DataTrigger Binding="{Binding StatusForLabelColor}" Value="0">
+                            <Setter Property="Background" Value="#FAFAFA" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding StatusForLabelColor}" Value="1">
+                            <Setter Property="Background" Value="#E1FFE1" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding StatusForLabelColor}" Value="2">
+                            <Setter Property="Background" Value="#FFE1E1" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding StatusForLabelColor}" Value="4">
+                            <Setter Property="Background" Value="#E1E1FF" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.ItemContainerStyle>
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="" Width="40" Binding="{Binding AccLabel}" />
+                <DataGridTextColumn Header="状態" Width="150" Binding="{Binding FolderTaskStatusLabel}" />
+                <DataGridTextColumn Header="フォルダー" Width="*" Binding="{Binding PathLabel}" />
+                <DataGridTextColumn Header="設定有無" Width="80" Binding="{Binding FolderSettingsStatusLabel}" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</Window>

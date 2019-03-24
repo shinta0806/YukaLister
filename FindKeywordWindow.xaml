@@ -1,0 +1,19 @@
+﻿<Window x:Class="YukaLister.FindKeywordWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:YukaLister"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        mc:Ignorable="d" WindowStyle="ToolWindow" ResizeMode="NoResize" Loaded="Window_Loaded" Closed="Window_Closed" ShowInTaskbar="False" Topmost="True" SizeToContent="WidthAndHeight" Icon="アイコン/YukaListerアイコン_1.ico">
+    <StackPanel>
+        <TextBox x:Name="TextBoxKeyword" materialDesign:HintAssist.Hint="ここに検索したいキーワードを入力して下さい。" Margin="20,20,20,0" TextChanged="TextBoxKeyword_TextChanged" Width="400"/>
+        <CheckBox x:Name="CheckBoxCaseSensitive" Content="大文字と小文字を区別する (_C)" Margin="20,10,20,0" Checked="CheckBoxCaseSensitive_Checked" Unchecked="CheckBoxCaseSensitive_Checked"/>
+        <CheckBox x:Name="CheckBoxWholeMatch" Content="セルの内容全体が一致するものを検索する (_W)" Margin="20,10,20,0" Checked="CheckBoxWholeMatch_Checked" Unchecked="CheckBoxWholeMatch_Checked"/>
+        <DockPanel Margin="20">
+            <Button x:Name="ButtonFindPrev" Content="前を検索 (_P)" Width="120" Height="Auto" Style="{StaticResource MaterialDesignRaisedLightButton}" Click="ButtonFindPrev_Click"/>
+            <Button x:Name="ButtonFindNext" Content="次を検索 (_N)" Margin="20,0,0,0" Width="120" Height="Auto" Click="ButtonFindNext_Click" IsDefault="True"/>
+            <Button x:Name="ButtonCancel" Content="閉じる" HorizontalAlignment="Right" Width="100" Height="Auto" Style="{StaticResource MaterialDesignRaisedLightButton}" Click="ButtonCancel_Click" IsCancel="True"/>
+        </DockPanel>
+    </StackPanel>
+</Window>
