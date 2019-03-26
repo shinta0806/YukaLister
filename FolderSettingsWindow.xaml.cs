@@ -394,12 +394,6 @@ namespace YukaLister
 			{
 				mCategoryNames = YlCommon.SelectCategoryNames(aConnection);
 			}
-
-			// 設計時サイズ以下にできないようにする
-			MinWidth = ActualWidth;
-			MinHeight = ActualHeight;
-
-			Common.CascadeWindow(this);
 		}
 
 		// --------------------------------------------------------------------
@@ -920,7 +914,6 @@ namespace YukaLister
 		{
 			try
 			{
-				mLogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "フォルダー設定ウィンドウを開きます。");
 				Init();
 
 				UpdateSettingsFileStatus();
@@ -941,7 +934,13 @@ namespace YukaLister
 		{
 			try
 			{
+				mLogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "フォルダー設定ウィンドウを開きます。");
 
+				// 設計時サイズ以下にできないようにする
+				MinWidth = ActualWidth;
+				MinHeight = ActualHeight;
+
+				Common.CascadeWindow(this);
 			}
 			catch (Exception oExcep)
 			{
