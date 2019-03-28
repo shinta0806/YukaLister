@@ -350,17 +350,25 @@ namespace YukaLister
 				return;
 			}
 
-			// CSV がある場合に設定
-			if (File.Exists(Path.GetDirectoryName(oTextBoxStandard.Text) + "\\" + oFileBody + Common.FILE_EXT_CSV))
+			// フォルダー名
+			// Path.GetDirectoryName() はルートフォルダーの場合のみ末尾が '\\' となるため、常に '\\' となるように変換する
+			String aFolder = Path.GetDirectoryName(oTextBoxStandard.Text);
+			if (!String.IsNullOrEmpty(aFolder) && aFolder[aFolder.Length - 1] != '\\')
 			{
-				oTextBoxTarget.Text = Path.GetDirectoryName(oTextBoxStandard.Text) + "\\" + oFileBody + Common.FILE_EXT_CSV;
+				aFolder += "\\";
+			}
+
+			// CSV がある場合に設定
+			if (File.Exists(aFolder + oFileBody + Common.FILE_EXT_CSV))
+			{
+				oTextBoxTarget.Text = aFolder + oFileBody + Common.FILE_EXT_CSV;
 				return;
 			}
 
 			// ZIP がある場合に設定
-			if (File.Exists(Path.GetDirectoryName(oTextBoxStandard.Text) + "\\" + oFileBody + Common.FILE_EXT_ZIP))
+			if (File.Exists(aFolder + oFileBody + Common.FILE_EXT_ZIP))
 			{
-				oTextBoxTarget.Text = Path.GetDirectoryName(oTextBoxStandard.Text) + "\\" + oFileBody + Common.FILE_EXT_ZIP;
+				oTextBoxTarget.Text = aFolder + oFileBody + Common.FILE_EXT_ZIP;
 			}
 		}
 
