@@ -202,6 +202,9 @@ namespace YukaLister.Shared
 		// 追加 HTML ヘッダー
 		protected String mAdditionalHeader;
 
+		// 追加ナビゲーション
+		protected String mAdditionalNavi;
+
 		// トップページからリストをリンクする際の引数
 		protected String mListLinkArg;
 
@@ -258,6 +261,7 @@ namespace YukaLister.Shared
 		// HTML テンプレートに記載されている変数
 		private const String HTML_VAR_ADDITIONAL_DESCRIPTION = "<!-- $AdditionalDescription$ -->";
 		private const String HTML_VAR_ADDITIONAL_HEADER = "<!-- $AdditionalHeader$ -->";
+		private const String HTML_VAR_ADDITIONAL_NAVI = "<!-- $AdditionalNavi$ -->";
 		private const String HTML_VAR_CATEGORY = "<!-- $Category$ -->";
 		private const String HTML_VAR_CATEGORY_INDEX = "<!-- $CategoryIndex$ -->";
 		private const String HTML_VAR_CLASS_OF_AL = "<!-- $ClassOfAl$ -->";
@@ -423,6 +427,20 @@ namespace YukaLister.Shared
 			}
 
 			oSB.Append("\n  </tr>\n");
+		}
+
+		// --------------------------------------------------------------------
+		// HTML テンプレートの内容にどのページでも使われる変数を適用する
+		// --------------------------------------------------------------------
+		private String ApplyGeneralVars(String oTemplate, Boolean oIsNewExists)
+		{
+			oTemplate = oTemplate.Replace(HTML_VAR_ADDITIONAL_HEADER, mAdditionalHeader);
+			oTemplate = oTemplate.Replace(HTML_VAR_ADDITIONAL_NAVI, mAdditionalNavi);
+			oTemplate = oTemplate.Replace(HTML_VAR_GROUP_NAVI, GroupNavi(oIsNewExists));
+			oTemplate = oTemplate.Replace(HTML_VAR_GENERATOR, YlCommon.APP_NAME_J + "  " + YlCommon.APP_VER);
+			oTemplate = oTemplate.Replace(HTML_VAR_GENERATE_DATE, DateTime.Now.ToString(YlCommon.DATE_FORMAT));
+
+			return oTemplate;
 		}
 
 		// --------------------------------------------------------------------
@@ -933,14 +951,11 @@ namespace YukaLister.Shared
 
 			// インデックスページ
 			String aTopTemplate = LoadTemplate("HtmlIndex");
+			aTopTemplate = ApplyGeneralVars(aTopTemplate, oIsNewExists);
 			aTopTemplate = aTopTemplate.Replace(HTML_VAR_TITLE, mDirectoryTopName);
-			aTopTemplate = aTopTemplate.Replace(HTML_VAR_ADDITIONAL_HEADER, mAdditionalHeader);
-			aTopTemplate = aTopTemplate.Replace(HTML_VAR_GROUP_NAVI, GroupNavi(oIsNewExists));
 			aTopTemplate = aTopTemplate.Replace(HTML_VAR_DIRECTORY, mDirectoryTopLink);
 			aTopTemplate = aTopTemplate.Replace(HTML_VAR_INDICES, aSB.ToString());
 			aTopTemplate = aTopTemplate.Replace(HTML_VAR_NUM_SONGS, "（合計 " + aNumTotalSongs.ToString("#,0") + " 曲）");
-			aTopTemplate = aTopTemplate.Replace(HTML_VAR_GENERATOR, YlCommon.APP_NAME_J + "  " + YlCommon.APP_VER);
-			aTopTemplate = aTopTemplate.Replace(HTML_VAR_GENERATE_DATE, DateTime.Now.ToString(YlCommon.DATE_FORMAT));
 
 			File.WriteAllText(mTempFolderPath + IndexFileName(oIsAdult, oKindFileName), aTopTemplate, Encoding.UTF8);
 		}
@@ -1004,14 +1019,11 @@ namespace YukaLister.Shared
 
 			// インデックスページ
 			String aTopTemplate = LoadTemplate("HtmlIndex");
+			aTopTemplate = ApplyGeneralVars(aTopTemplate, oIsNewExists);
 			aTopTemplate = aTopTemplate.Replace(HTML_VAR_TITLE, mDirectoryTopName);
-			aTopTemplate = aTopTemplate.Replace(HTML_VAR_ADDITIONAL_HEADER, mAdditionalHeader);
-			aTopTemplate = aTopTemplate.Replace(HTML_VAR_GROUP_NAVI, GroupNavi(oIsNewExists));
 			aTopTemplate = aTopTemplate.Replace(HTML_VAR_DIRECTORY, mDirectoryTopLink);
 			aTopTemplate = aTopTemplate.Replace(HTML_VAR_INDICES, aSB.ToString());
 			aTopTemplate = aTopTemplate.Replace(HTML_VAR_NUM_SONGS, "（合計 " + aNumTotalSongs.ToString("#,0") + " 曲）");
-			aTopTemplate = aTopTemplate.Replace(HTML_VAR_GENERATOR, YlCommon.APP_NAME_J + "  " + YlCommon.APP_VER);
-			aTopTemplate = aTopTemplate.Replace(HTML_VAR_GENERATE_DATE, DateTime.Now.ToString(YlCommon.DATE_FORMAT));
 
 			File.WriteAllText(mTempFolderPath + IndexFileName(oIsAdult, oKindFileName), aTopTemplate, Encoding.UTF8);
 		}
@@ -1130,10 +1142,9 @@ namespace YukaLister.Shared
 
 			// 内容
 			String aTopTemplate = LoadTemplate("HtmlIndexNotice");
-			aTopTemplate = aTopTemplate.Replace(HTML_VAR_ADDITIONAL_HEADER, mAdditionalHeader);
-			aTopTemplate = aTopTemplate.Replace(HTML_VAR_GROUP_NAVI, GroupNavi(aWebOutputSettings.EnableNew));
-			aTopTemplate = aTopTemplate.Replace(HTML_VAR_GENERATOR, YlCommon.APP_NAME_J + "  " + YlCommon.APP_VER);
-			aTopTemplate = aTopTemplate.Replace(HTML_VAR_GENERATE_DATE, DateTime.Now.ToString(YlCommon.DATE_FORMAT));
+			aTopTemplate = ApplyGeneralVars(aTopTemplate, aWebOutputSettings.EnableNew);
+			aTopTemplate = aTopTemplate.Replace(HTML_VAR_TITLE, mDirectoryTopName);
+			aTopTemplate = aTopTemplate.Replace(HTML_VAR_DIRECTORY, mDirectoryTopLink);
 
 			// 新着（実際には新着が無い場合でも、更新中リストとしては 404 にならないように新着も出力しておく）
 			File.WriteAllText(FolderPath + OutputFileName(false, KIND_FILE_NAME_NEW, "すべて", null), aTopTemplate, Encoding.UTF8);
@@ -1189,14 +1200,11 @@ namespace YukaLister.Shared
 
 			// テンプレート適用
 			String aDirectory = " &gt; " + oKindName + " &gt; " + oGroupName + (String.IsNullOrEmpty(oPageName) ? null : " &gt; " + oPageName);
+			aTemplate = ApplyGeneralVars(aTemplate, oIsNewExists);
 			aTemplate = aTemplate.Replace(HTML_VAR_TITLE, mDirectoryTopName + aDirectory);
-			aTemplate = aTemplate.Replace(HTML_VAR_ADDITIONAL_HEADER, mAdditionalHeader);
-			aTemplate = aTemplate.Replace(HTML_VAR_GROUP_NAVI, GroupNavi(oIsNewExists));
 			aTemplate = aTemplate.Replace(HTML_VAR_DIRECTORY, mDirectoryTopLink + aDirectory);
 			aTemplate = aTemplate.Replace(HTML_VAR_NUM_SONGS, "（" + aNumPageSongs.ToString("#,0") + " 曲）");
 			aTemplate = aTemplate.Replace(HTML_VAR_ADDITIONAL_DESCRIPTION, mAdditionalDescription);
-			aTemplate = aTemplate.Replace(HTML_VAR_GENERATOR, YlCommon.APP_NAME_J + "  " + YlCommon.APP_VER);
-			aTemplate = aTemplate.Replace(HTML_VAR_GENERATE_DATE, DateTime.Now.ToString(YlCommon.DATE_FORMAT));
 			aTemplate = aTemplate.Replace(HTML_VAR_PROGRAMS, aSB.ToString());
 
 			File.WriteAllText(mTempFolderPath + OutputFileName(oIsAdult, oKindFileName, oGroupName, oPageName), aTemplate, Encoding.UTF8);

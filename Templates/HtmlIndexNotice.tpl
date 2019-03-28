@@ -10,6 +10,7 @@
 <!-- $AdditionalHeader$ -->
 </head>
 <body>
+<!-- $YukariNavi$ -->
 <div class="indices">
 <!-- $GroupNavi$ -->
 </div>

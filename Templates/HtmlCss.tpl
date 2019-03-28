@@ -1,7 +1,7 @@
 ﻿@charset "utf-8";
 
 /* ============================================================================
-** ニコカラりすたー HTML 出力のスタイルシート
+** ゆかりすたー HTML 出力のスタイルシート
 ============================================================================ */
 
 /* ----------------------------------------------------------------------------
@@ -11,6 +11,26 @@
 input
 {
 	display: none;
+}
+
+.additionalnavi
+{
+	background-color: #222222;
+	margin-bottom: 10px;
+	padding: 10px;
+}
+
+.additionalnavilink
+{
+	border-radius: 5px;
+	color: #ffffff;
+	padding: 5px 10px 5px 10px;
+	text-decoration: none;
+}
+
+.additionalnavilink:hover
+{
+	background-color: #555555;
 }
 
 .accchild

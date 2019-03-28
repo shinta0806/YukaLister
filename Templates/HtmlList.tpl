@@ -10,6 +10,7 @@
 <!-- $AdditionalHeader$ -->
 </head>
 <body>
+<!-- $AdditionalNavi$ -->
 <div class="indices">
 <!-- $GroupNavi$ -->
 </div>

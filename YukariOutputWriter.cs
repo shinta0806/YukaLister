@@ -45,9 +45,8 @@ namespace YukaLister.Shared
 			String aListLinkArg = "<?php empty($yukarisearchlink) ? print \"\" : print \"?yukarihost=\".$yukarihost;?>";
 
 			mListExt = Common.FILE_EXT_PHP;
-			mDirectoryTopName = "ゆかり検索 &gt; " + YlCommon.APP_NAME_J + "一覧";
-			mDirectoryTopLink = "<a href=\"/search.php" + aListLinkArg + "\">ゆかり検索</a> &gt; <a href=\"" + TopFileName + aListLinkArg + "\">"
-					+ YlCommon.APP_NAME_J + "一覧</a>";
+			mDirectoryTopName = YlCommon.APP_NAME_J + " 曲一覧";
+			mDirectoryTopLink = "<a href=\"" + TopFileName + aListLinkArg + "\">曲一覧</a>";
 			mAdditionalDescription = "ファイル名をクリックすると、ゆかりでリクエストできます。<br>";
 			mAdditionalHeader = "<?php\n"
 					+ "$yukarisearchlink = '';\n"
@@ -56,6 +55,10 @@ namespace YukaLister.Shared
 					+ "    $yukarisearchlink = 'http://'.$yukarihost.'/search_listerdb_filelist.php?anyword=';\n"
 					+ "}\n"
 					+ "?>\n";
+			mAdditionalNavi = "<div class=\"additionalnavi\">"
+					+ "<a class=\"additionalnavilink\" href=\"/search.php" + aListLinkArg + "\">検索</a> "
+					+ "<a class=\"additionalnavilink\" href=\"/requestlist_only.php" + aListLinkArg + "\">予約一覧</a> "
+					+ "</div>";
 			mListLinkArg = aListLinkArg;
 		}
 
