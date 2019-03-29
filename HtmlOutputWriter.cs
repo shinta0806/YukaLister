@@ -35,8 +35,6 @@ namespace YukaLister.Shared
 
 			// メンバー変数
 			mListExt = Common.FILE_EXT_HTML;
-			mDirectoryTopName = "曲一覧";
-			mDirectoryTopLink = "<a href=\"" + TopFileName + "\">" + mDirectoryTopName + "</a>";
 			mAdditionalDescription = null;
 			mAdditionalHeader = null;
 			mAdditionalNavi = null;

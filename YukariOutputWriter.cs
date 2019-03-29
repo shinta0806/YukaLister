@@ -45,8 +45,6 @@ namespace YukaLister.Shared
 			String aListLinkArg = "<?php empty($yukarisearchlink) ? print \"\" : print \"?yukarihost=\".$yukarihost;?>";
 
 			mListExt = Common.FILE_EXT_PHP;
-			mDirectoryTopName = YlCommon.APP_NAME_J + " 曲一覧";
-			mDirectoryTopLink = "<a href=\"" + TopFileName + aListLinkArg + "\">曲一覧</a>";
 			mAdditionalDescription = "ファイル名をクリックすると、ゆかりでリクエストできます。<br>";
 			mAdditionalHeader = "<?php\n"
 					+ "$yukarisearchlink = '';\n"

@@ -184,17 +184,19 @@ namespace YukaLister.Shared
 		}
 
 		// ====================================================================
+		// protected 定数
+		// ====================================================================
+
+		// 階層トップの名前
+		protected const String DIRECTORY_TOP_NAME = "曲一覧";
+
+
+		// ====================================================================
 		// protected メンバー変数
 		// ====================================================================
 
 		// リストの拡張子（ピリオド含む）
 		protected String mListExt;
-
-		// 階層トップの名前（タイトル用）
-		protected String mDirectoryTopName;
-
-		// 階層トップのリンク（ページの先頭用）
-		protected String mDirectoryTopLink;
 
 		// 追加説明
 		protected String mAdditionalDescription;
@@ -547,6 +549,52 @@ namespace YukaLister.Shared
 		}
 
 		// --------------------------------------------------------------------
+		// リスト上部に表示するディレクトリーリンクを生成する
+		// KeyValuePair<String, String>: 表示名, リンク先ファイル名
+		// --------------------------------------------------------------------
+		private String DirectoryLink(List<KeyValuePair<String, String>> oDirectories = null)
+		{
+			StringBuilder aSB = new StringBuilder();
+			aSB.Append("<a href=\"" + TopFileName + mListLinkArg + "\">" + DIRECTORY_TOP_NAME + "</a>");
+			if (oDirectories != null)
+			{
+				foreach (KeyValuePair<String, String> aDir in oDirectories)
+				{
+					aSB.Append(" &gt; ");
+					if (String.IsNullOrEmpty(aDir.Value))
+					{
+						// 非リンク
+						aSB.Append(aDir.Key);
+					}
+					else
+					{
+						// リンク
+						aSB.Append("<a href=\"" + aDir.Value + mListLinkArg + "\">" + aDir.Key + "</a>");
+					}
+				}
+			}
+			return aSB.ToString();
+		}
+
+		// --------------------------------------------------------------------
+		// タイトルとして表示するディレクトリー階層を生成する
+		// KeyValuePair<String, String>: 表示名, リンク先ファイル名
+		// --------------------------------------------------------------------
+		private String DirectoryText(List<KeyValuePair<String, String>> oDirectories = null)
+		{
+			StringBuilder aSB = new StringBuilder();
+			aSB.Append(YlCommon.APP_NAME_J + DIRECTORY_TOP_NAME);
+			if (oDirectories != null)
+			{
+				foreach (KeyValuePair<String, String> aDir in oDirectories)
+				{
+					aSB.Append(" &gt; " + aDir.Key);
+				}
+			}
+			return aSB.ToString();
+		}
+
+		// --------------------------------------------------------------------
 		// 章を終了する
 		// --------------------------------------------------------------------
 		private void EndChapter(StringBuilder oSB)
@@ -769,7 +817,7 @@ namespace YukaLister.Shared
 			}
 
 			// インデックスページ
-			OutputIndexPage(aArtistsAndHeads, oIsAdult, KIND_FILE_NAME_ARTIST, oIsNewExists);
+			OutputIndexPage(aArtistsAndHeads, oIsAdult, "歌手別", KIND_FILE_NAME_ARTIST, oIsNewExists);
 		}
 
 		// --------------------------------------------------------------------
@@ -832,7 +880,7 @@ namespace YukaLister.Shared
 			}
 
 			// インデックスページ
-			OutputIndexPage(aCategoriesAndHeads, oIsAdult, KIND_FILE_NAME_CATEGORY, oIsNewExists);
+			OutputIndexPage(aCategoriesAndHeads, oIsAdult, "カテゴリー別", KIND_FILE_NAME_CATEGORY, oIsNewExists);
 		}
 
 		// --------------------------------------------------------------------
@@ -898,7 +946,7 @@ namespace YukaLister.Shared
 			}
 
 			// インデックスページ
-			OutputIndexPage(aComposersAndHeads, oIsAdult, KIND_FILE_NAME_COMPOSER, oIsNewExists);
+			OutputIndexPage(aComposersAndHeads, oIsAdult, "作曲者別", KIND_FILE_NAME_COMPOSER, oIsNewExists);
 		}
 
 		// --------------------------------------------------------------------
@@ -923,7 +971,7 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		// インデックスページ（ページは任意の文字列ごと）を出力
 		// --------------------------------------------------------------------
-		private void OutputFreestyleIndexPage(Dictionary<String, List<PageInfo>> oGroupsAndPages, Boolean oIsAdult, String oKindFileName, Boolean oIsNewExists)
+		private void OutputFreestyleIndexPage(Dictionary<String, List<PageInfo>> oGroupsAndPages, Boolean oIsAdult, String oKindName, String oKindFileName, Boolean oIsNewExists)
 		{
 			Int32 aNumTotalSongs = 0;
 			Int32 aGroupIndex = 0;
@@ -950,10 +998,12 @@ namespace YukaLister.Shared
 			}
 
 			// インデックスページ
+			List<KeyValuePair<String, String>> aDirectories = new List<KeyValuePair<String, String>>();
+			aDirectories.Add(new KeyValuePair<String, String>(oKindName, IndexFileName(oIsAdult, oKindFileName)));
 			String aTopTemplate = LoadTemplate("HtmlIndex");
 			aTopTemplate = ApplyGeneralVars(aTopTemplate, oIsNewExists);
-			aTopTemplate = aTopTemplate.Replace(HTML_VAR_TITLE, mDirectoryTopName);
-			aTopTemplate = aTopTemplate.Replace(HTML_VAR_DIRECTORY, mDirectoryTopLink);
+			aTopTemplate = aTopTemplate.Replace(HTML_VAR_TITLE, DirectoryText(aDirectories));
+			aTopTemplate = aTopTemplate.Replace(HTML_VAR_DIRECTORY, DirectoryLink(aDirectories));
 			aTopTemplate = aTopTemplate.Replace(HTML_VAR_INDICES, aSB.ToString());
 			aTopTemplate = aTopTemplate.Replace(HTML_VAR_NUM_SONGS, "（合計 " + aNumTotalSongs.ToString("#,0") + " 曲）");
 
@@ -991,7 +1041,7 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		// インデックスページ（ページは頭文字ごと）を出力
 		// --------------------------------------------------------------------
-		private void OutputIndexPage(Dictionary<String, List<PageInfo>> oGroupsAndPages, Boolean oIsAdult, String oKindFileName, Boolean oIsNewExists)
+		private void OutputIndexPage(Dictionary<String, List<PageInfo>> oGroupsAndPages, Boolean oIsAdult, String oKindName, String oKindFileName, Boolean oIsNewExists)
 		{
 			Int32 aNumTotalSongs = 0;
 			Int32 aGroupIndex = 0;
@@ -1018,10 +1068,12 @@ namespace YukaLister.Shared
 			}
 
 			// インデックスページ
+			List<KeyValuePair<String, String>> aDirectories = new List<KeyValuePair<String, String>>();
+			aDirectories.Add(new KeyValuePair<String, String>(oKindName, IndexFileName(oIsAdult, oKindFileName)));
 			String aTopTemplate = LoadTemplate("HtmlIndex");
 			aTopTemplate = ApplyGeneralVars(aTopTemplate, oIsNewExists);
-			aTopTemplate = aTopTemplate.Replace(HTML_VAR_TITLE, mDirectoryTopName);
-			aTopTemplate = aTopTemplate.Replace(HTML_VAR_DIRECTORY, mDirectoryTopLink);
+			aTopTemplate = aTopTemplate.Replace(HTML_VAR_TITLE, DirectoryText(aDirectories));
+			aTopTemplate = aTopTemplate.Replace(HTML_VAR_DIRECTORY, DirectoryLink(aDirectories));
 			aTopTemplate = aTopTemplate.Replace(HTML_VAR_INDICES, aSB.ToString());
 			aTopTemplate = aTopTemplate.Replace(HTML_VAR_NUM_SONGS, "（合計 " + aNumTotalSongs.ToString("#,0") + " 曲）");
 
@@ -1143,8 +1195,8 @@ namespace YukaLister.Shared
 			// 内容
 			String aTopTemplate = LoadTemplate("HtmlIndexNotice");
 			aTopTemplate = ApplyGeneralVars(aTopTemplate, aWebOutputSettings.EnableNew);
-			aTopTemplate = aTopTemplate.Replace(HTML_VAR_TITLE, mDirectoryTopName);
-			aTopTemplate = aTopTemplate.Replace(HTML_VAR_DIRECTORY, mDirectoryTopLink);
+			aTopTemplate = aTopTemplate.Replace(HTML_VAR_TITLE, DirectoryText());
+			aTopTemplate = aTopTemplate.Replace(HTML_VAR_DIRECTORY, DirectoryLink());
 
 			// 新着（実際には新着が無い場合でも、更新中リストとしては 404 にならないように新着も出力しておく）
 			File.WriteAllText(FolderPath + OutputFileName(false, KIND_FILE_NAME_NEW, "すべて", null), aTopTemplate, Encoding.UTF8);
@@ -1199,10 +1251,16 @@ namespace YukaLister.Shared
 			}
 
 			// テンプレート適用
-			String aDirectory = " &gt; " + oKindName + " &gt; " + oGroupName + (String.IsNullOrEmpty(oPageName) ? null : " &gt; " + oPageName);
+			List<KeyValuePair<String, String>> aDirectories = new List<KeyValuePair<String, String>>();
+			aDirectories.Add(new KeyValuePair<String, String>(oKindName, IndexFileName(oIsAdult, oKindFileName)));
+			aDirectories.Add(new KeyValuePair<String, String>(oGroupName, null));
+			if (!String.IsNullOrEmpty(oPageName))
+			{
+				aDirectories.Add(new KeyValuePair<String, String>(oPageName, null));
+			}
 			aTemplate = ApplyGeneralVars(aTemplate, oIsNewExists);
-			aTemplate = aTemplate.Replace(HTML_VAR_TITLE, mDirectoryTopName + aDirectory);
-			aTemplate = aTemplate.Replace(HTML_VAR_DIRECTORY, mDirectoryTopLink + aDirectory);
+			aTemplate = aTemplate.Replace(HTML_VAR_TITLE, DirectoryText(aDirectories));
+			aTemplate = aTemplate.Replace(HTML_VAR_DIRECTORY, DirectoryLink(aDirectories));
 			aTemplate = aTemplate.Replace(HTML_VAR_NUM_SONGS, "（" + aNumPageSongs.ToString("#,0") + " 曲）");
 			aTemplate = aTemplate.Replace(HTML_VAR_ADDITIONAL_DESCRIPTION, mAdditionalDescription);
 			aTemplate = aTemplate.Replace(HTML_VAR_PROGRAMS, aSB.ToString());
@@ -1299,7 +1357,7 @@ namespace YukaLister.Shared
 			}
 
 			// インデックスページ
-			OutputIndexPage(aPeriodsAndHeads, oIsAdult, KIND_FILE_NAME_PERIOD, oIsNewExists);
+			OutputIndexPage(aPeriodsAndHeads, oIsAdult, "年代別", KIND_FILE_NAME_PERIOD, oIsNewExists);
 		}
 
 		// --------------------------------------------------------------------
@@ -1364,7 +1422,7 @@ namespace YukaLister.Shared
 			}
 
 			// インデックスページ
-			OutputFreestyleIndexPage(aHeadsAndTieUpGroups, oIsAdult, KIND_FILE_NAME_TIE_UP_GROUP, oIsNewExists);
+			OutputFreestyleIndexPage(aHeadsAndTieUpGroups, oIsAdult, "シリーズ別", KIND_FILE_NAME_TIE_UP_GROUP, oIsNewExists);
 		}
 
 		// --------------------------------------------------------------------
@@ -1400,7 +1458,7 @@ namespace YukaLister.Shared
 			}
 
 			// インデックスページ
-			OutputFreestyleIndexPage(aYearsAndSeasons, oIsAdult, KIND_FILE_NAME_SEASON, oIsNewExists);
+			OutputFreestyleIndexPage(aYearsAndSeasons, oIsAdult, "期別", KIND_FILE_NAME_SEASON, oIsNewExists);
 		}
 
 		// --------------------------------------------------------------------
