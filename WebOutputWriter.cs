@@ -294,6 +294,7 @@ namespace YukaLister.Shared
 		private const String HTML_VAR_GENERATOR = "<!-- $Generator$ -->";
 		private const String HTML_VAR_GROUP_NAVI = "<!-- $GroupNavi$ -->";
 		private const String HTML_VAR_INDICES = "<!-- $Indices$ -->";
+		private const String HTML_VAR_NEIGHBOR = "<!-- $Neighbor$ -->";
 		private const String HTML_VAR_NEW = "<!-- $New$ -->";
 		private const String HTML_VAR_NUM_SONGS = "<!-- $NumSongs$ -->";
 		private const String HTML_VAR_PAGES = "<!-- $Pages$ -->";
@@ -347,6 +348,28 @@ namespace YukaLister.Shared
 				oPageInfoTree.Content = oPageInfoTree.Content.Replace(HTML_VAR_TITLE, oPageInfoTree.DirectoryText());
 				oPageInfoTree.Content = oPageInfoTree.Content.Replace(HTML_VAR_DIRECTORY, oPageInfoTree.DirectoryLink(mListLinkArg));
 				oPageInfoTree.Content = oPageInfoTree.Content.Replace(HTML_VAR_NUM_SONGS, oPageInfoTree.NumTotalSongs.ToString("#,0"));
+
+				// 隣のページ
+				if (oPageInfoTree.Parent != null & oPageInfoTree.Parent.Children.Count > 1)
+				{
+					List<PageInfoTree> aChildren = oPageInfoTree.Parent.Children;
+					Int32 aIndex = aChildren.IndexOf(oPageInfoTree);
+					StringBuilder aSB = new StringBuilder();
+					aSB.Append("<table class=\"centering\"><tr>");
+					if (aIndex > 0)
+					{
+						aSB.Append("<td class=\"exist\"><a href=\"" + aChildren[aIndex - 1].FileName + mListLinkArg + "\">　&lt;&lt;　"
+								+ aChildren[aIndex - 1].Name + "　</a></td>");
+					}
+					aSB.Append("<td>　" + oPageInfoTree.Parent.Name + "　" + oPageInfoTree.Name + "　</td>");
+					if (aIndex < aChildren.Count - 1)
+					{
+						aSB.Append("<td class=\"exist\"><a href=\"" + aChildren[aIndex + 1].FileName + mListLinkArg + "\">　"
+								+ aChildren[aIndex + 1].Name + "　&gt;&gt;　</a></td>");
+					}
+					aSB.Append("</tr></table>\n");
+					oPageInfoTree.Content = oPageInfoTree.Content.Replace(HTML_VAR_NEIGHBOR, aSB.ToString());
+				}
 			}
 
 			// 子ページを調整

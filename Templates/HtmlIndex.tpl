@@ -26,6 +26,9 @@
 <p>
 （合計 <!-- $NumSongs$ --> 曲）
 </p>
+<div class="indices">
+<!-- $Neighbor$ -->
+</div>
 <p class="generator">by <!-- $Generator$ --> <!-- $GenerateDate$ --></p>
 </body>
 </html>

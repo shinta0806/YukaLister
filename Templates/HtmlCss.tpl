@@ -52,6 +52,7 @@ input
 
 .centering
 {
+	margin: auto;
 	text-align: center;
 }
 
