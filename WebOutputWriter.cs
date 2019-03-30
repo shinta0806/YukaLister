@@ -284,6 +284,7 @@ namespace YukaLister.Shared
 		private const String HTML_VAR_ADDITIONAL_NAVI = "<!-- $AdditionalNavi$ -->";
 		private const String HTML_VAR_CATEGORY = "<!-- $Category$ -->";
 		private const String HTML_VAR_CATEGORY_INDEX = "<!-- $CategoryIndex$ -->";
+		private const String HTML_VAR_CHAPTER_NAME = "<!-- $ChapterName$ -->";
 		private const String HTML_VAR_CLASS_OF_AL = "<!-- $ClassOfAl$ -->";
 		private const String HTML_VAR_CLASS_OF_KANA = "<!-- $ClassOfKana$ -->";
 		private const String HTML_VAR_CLASS_OF_MISC = "<!-- $ClassOfMisc$ -->";
@@ -661,7 +662,7 @@ namespace YukaLister.Shared
 			}
 
 			// インデックス
-			GenerateIndexPageContent(aPageInfoTree, oIsAdult, KIND_FILE_NAME_ARTIST);
+			GenerateIndexPageContent(aPageInfoTree, oIsAdult, KIND_FILE_NAME_ARTIST, "歌手別");
 
 			return aPageInfoTree;
 		}
@@ -727,7 +728,7 @@ namespace YukaLister.Shared
 			}
 
 			// インデックス
-			GenerateIndexPageContent(aPageInfoTree, oIsAdult, KIND_FILE_NAME_CATEGORY);
+			GenerateIndexPageContent(aPageInfoTree, oIsAdult, KIND_FILE_NAME_CATEGORY, "カテゴリー名");
 
 			return aPageInfoTree;
 		}
@@ -796,7 +797,7 @@ namespace YukaLister.Shared
 			}
 
 			// インデックス
-			GenerateIndexPageContent(aPageInfoTree, oIsAdult, KIND_FILE_NAME_COMPOSER);
+			GenerateIndexPageContent(aPageInfoTree, oIsAdult, KIND_FILE_NAME_COMPOSER, "作曲者別");
 
 			return aPageInfoTree;
 		}
@@ -804,7 +805,7 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		// インデックスページ（ページは任意の文字列ごと）の内容を生成
 		// --------------------------------------------------------------------
-		private void GenerateFreestyleIndexPageContent(PageInfoTree oIndexPage, Boolean oIsAdult, String oKindFileName)
+		private void GenerateFreestyleIndexPageContent(PageInfoTree oIndexPage, Boolean oIsAdult, String oKindFileName, String oChapterName)
 		{
 			Int32 aGroupIndex = 0;
 			StringBuilder aSB = new StringBuilder();
@@ -830,7 +831,9 @@ namespace YukaLister.Shared
 
 			// インデックスページ
 			String aTopTemplate = LoadTemplate("HtmlIndex");
-			oIndexPage.Content = aTopTemplate.Replace(HTML_VAR_INDICES, aSB.ToString());
+			aTopTemplate = aTopTemplate.Replace(HTML_VAR_CHAPTER_NAME, oChapterName);
+			aTopTemplate = aTopTemplate.Replace(HTML_VAR_INDICES, aSB.ToString());
+			oIndexPage.Content = aTopTemplate;
 		}
 
 		// --------------------------------------------------------------------
@@ -861,7 +864,7 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		// インデックスページ（ページは頭文字ごと）の内容を生成
 		// --------------------------------------------------------------------
-		private void GenerateIndexPageContent(PageInfoTree oIndexPage, Boolean oIsAdult, String oKindFileName)
+		private void GenerateIndexPageContent(PageInfoTree oIndexPage, Boolean oIsAdult, String oKindFileName, String oChapterName)
 		{
 			Int32 aGroupIndex = 0;
 			StringBuilder aSB = new StringBuilder();
@@ -887,7 +890,9 @@ namespace YukaLister.Shared
 
 			// インデックスページ
 			String aTopTemplate = LoadTemplate("HtmlIndex");
-			oIndexPage.Content = aTopTemplate.Replace(HTML_VAR_INDICES, aSB.ToString());
+			aTopTemplate = aTopTemplate.Replace(HTML_VAR_CHAPTER_NAME, oChapterName);
+			aTopTemplate = aTopTemplate.Replace(HTML_VAR_INDICES, aSB.ToString());
+			oIndexPage.Content = aTopTemplate;
 		}
 
 		// --------------------------------------------------------------------
@@ -1022,6 +1027,7 @@ namespace YukaLister.Shared
 
 			// テンプレート適用
 			aTemplate = aTemplate.Replace(HTML_VAR_ADDITIONAL_DESCRIPTION, mAdditionalDescription);
+			aTemplate = aTemplate.Replace(HTML_VAR_CHAPTER_NAME, YlCommon.OUTPUT_ITEM_NAMES[(Int32)oChapterItem]);
 			aTemplate = aTemplate.Replace(HTML_VAR_PROGRAMS, aSB.ToString());
 
 			aPageInfoTree.Content = aTemplate;
@@ -1124,7 +1130,7 @@ namespace YukaLister.Shared
 			}
 
 			// インデックス
-			GenerateIndexPageContent(aPageInfoTree, oIsAdult, KIND_FILE_NAME_PERIOD);
+			GenerateIndexPageContent(aPageInfoTree, oIsAdult, KIND_FILE_NAME_PERIOD, "年代");
 
 			return aPageInfoTree;
 		}
@@ -1192,7 +1198,7 @@ namespace YukaLister.Shared
 			}
 
 			// インデックス
-			GenerateFreestyleIndexPageContent(aPageInfoTree, oIsAdult, KIND_FILE_NAME_TIE_UP_GROUP);
+			GenerateFreestyleIndexPageContent(aPageInfoTree, oIsAdult, KIND_FILE_NAME_TIE_UP_GROUP, "五十音");
 
 			return aPageInfoTree;
 		}
@@ -1231,7 +1237,7 @@ namespace YukaLister.Shared
 			}
 
 			// インデックス
-			GenerateFreestyleIndexPageContent(aPageInfoTree, oIsAdult, KIND_FILE_NAME_SEASON);
+			GenerateFreestyleIndexPageContent(aPageInfoTree, oIsAdult, KIND_FILE_NAME_SEASON, "年");
 
 			return aPageInfoTree;
 		}

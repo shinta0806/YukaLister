@@ -17,8 +17,8 @@
 <p>
 <!-- $Directory$ --><br>
 <br>
-番組分類をクリックすると、インデックスが一覧表示されます。<br>
-全ての番組分類を <a href="javascript:void(0)" onClick="set_all_programs(true);">開く</a> / <a href="javascript:void(0)" onClick="set_all_programs(false);">閉じる</a><br>
+<!-- $ChapterName$ -->をクリックすると、インデックスが一覧表示されます。<br>
+全ての<!-- $ChapterName$ -->を <a href="javascript:void(0)" onClick="set_all_programs(true);">開く</a> / <a href="javascript:void(0)" onClick="set_all_programs(false);">閉じる</a><br>
 </p>
 <div class="indices">
 <!-- $Indices$ -->

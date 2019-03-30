@@ -50,6 +50,11 @@ input
 	opacity: 1;
 }
 
+.centering
+{
+	text-align: center;
+}
+
 table
 {
 	border-collapse: collapse;
