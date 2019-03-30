@@ -146,24 +146,30 @@ namespace YukaLister.Shared
 		{
 			PrepareOutput();
 
-			// 出力先フォルダーへの出力
-			OutputCss();
-			OutputJs();
+			// 内容の生成
+			GenerateNew();
+			GenerateCategoryAndHeads();
+			GenerateTieUpGroupHeadAndTieUpGroups();
+			GeneratePeriodAndHeads();
+			GenerateYearsAndSeasons();
+			GenerateArtistAndHeads();
+			GenerateComposerAndHeads();
+
+			// 内容の調整
+			AdjustList(mTopPage);
 
 			// 一時フォルダーへの出力
-			Boolean aIsNewExists = OutputNew();
-			OutputCategoryAndHeads(aIsNewExists);
-			OutputTieUpGroupHeadAndTieUpGroups(aIsNewExists);
-			OutputPeriodAndHeads(aIsNewExists);
-			OutputYearsAndSeasons(aIsNewExists);
-			OutputArtistAndHeads(aIsNewExists);
-			OutputComposerAndHeads(aIsNewExists);
+			OutputList(mTopPage);
 
 			// インデックス系を「更新中」表示にする
 			OutputNoticeIndexes();
 
 			// 古いファイルを削除
 			DeleteOldListContents();
+
+			// 出力先フォルダーへの出力
+			OutputCss();
+			OutputJs();
 
 			// 一時フォルダーから移動
 			MoveList();
@@ -187,10 +193,6 @@ namespace YukaLister.Shared
 		// protected 定数
 		// ====================================================================
 
-		// 階層トップの名前
-		protected const String DIRECTORY_TOP_NAME = "曲一覧";
-
-
 		// ====================================================================
 		// protected メンバー変数
 		// ====================================================================
@@ -198,13 +200,16 @@ namespace YukaLister.Shared
 		// リストの拡張子（ピリオド含む）
 		protected String mListExt;
 
+		// トップページ
+		protected PageInfoTree mTopPage;
+
 		// 追加説明
 		protected String mAdditionalDescription;
 
 		// 追加 HTML ヘッダー
 		protected String mAdditionalHeader;
 
-		// 追加ナビゲーション
+		// 追加階層ナビゲーション
 		protected String mAdditionalNavi;
 
 		// トップページからリストをリンクする際の引数
@@ -231,6 +236,19 @@ namespace YukaLister.Shared
 		protected override void PrepareOutput()
 		{
 			base.PrepareOutput();
+
+			// ページ構造の基本を生成
+			mTopPage = new PageInfoTree();
+			mTopPage.Name = "曲一覧";
+			mTopPage.FileName = IndexFileName(false, KIND_FILE_NAME_CATEGORY);
+
+			PageInfoTree aGeneral = new PageInfoTree();
+			aGeneral.Name = ZoneName(false);
+			mTopPage.AddChild(aGeneral);
+
+			PageInfoTree aAdult = new PageInfoTree();
+			aAdult.Name = ZoneName(true);
+			mTopPage.AddChild(aAdult);
 
 			// テーブル項目名（原則 YlCommon.OUTPUT_ITEM_NAMES だが一部見やすいよう変更）
 			mThNames = new List<String>(YlCommon.OUTPUT_ITEM_NAMES);
@@ -300,6 +318,42 @@ namespace YukaLister.Shared
 		// ====================================================================
 		// private メンバー関数
 		// ====================================================================
+
+		// --------------------------------------------------------------------
+		// リストの内容を調整する
+		// --------------------------------------------------------------------
+		private void AdjustList(PageInfoTree oPageInfoTree)
+		{
+			// HTML テンプレートの内容にどのページでも使われる変数を適用する
+			ReplaceListContent(oPageInfoTree, HTML_VAR_ADDITIONAL_HEADER, mAdditionalHeader);
+			ReplaceListContent(oPageInfoTree, HTML_VAR_ADDITIONAL_NAVI, mAdditionalNavi);
+			ReplaceListContent(oPageInfoTree, HTML_VAR_GROUP_NAVI, GroupNavi(((WebOutputSettings)OutputSettings).EnableNew));
+			ReplaceListContent(oPageInfoTree, HTML_VAR_GENERATOR, YlCommon.APP_NAME_J + "  " + YlCommon.APP_VER);
+			ReplaceListContent(oPageInfoTree, HTML_VAR_GENERATE_DATE, DateTime.Now.ToString(YlCommon.DATE_FORMAT));
+
+			// その他の調整
+			AdjustListMisc(oPageInfoTree);
+		}
+
+		// --------------------------------------------------------------------
+		// その他の調整
+		// --------------------------------------------------------------------
+		private void AdjustListMisc(PageInfoTree oPageInfoTree)
+		{
+			// oPageInfoTree を調整
+			if (!String.IsNullOrEmpty(oPageInfoTree.Content))
+			{
+				oPageInfoTree.Content = oPageInfoTree.Content.Replace(HTML_VAR_TITLE, oPageInfoTree.DirectoryText());
+				oPageInfoTree.Content = oPageInfoTree.Content.Replace(HTML_VAR_DIRECTORY, oPageInfoTree.DirectoryLink(mListLinkArg));
+				oPageInfoTree.Content = oPageInfoTree.Content.Replace(HTML_VAR_NUM_SONGS, oPageInfoTree.NumTotalSongs.ToString("#,0"));
+			}
+
+			// 子ページを調整
+			for (Int32 i = 0; i < oPageInfoTree.Children.Count; i++)
+			{
+				AdjustListMisc(oPageInfoTree.Children[i]);
+			}
+		}
 
 		// --------------------------------------------------------------------
 		// 曲情報を文字列に追加する
@@ -432,20 +486,6 @@ namespace YukaLister.Shared
 		}
 
 		// --------------------------------------------------------------------
-		// HTML テンプレートの内容にどのページでも使われる変数を適用する
-		// --------------------------------------------------------------------
-		private String ApplyGeneralVars(String oTemplate, Boolean oIsNewExists)
-		{
-			oTemplate = oTemplate.Replace(HTML_VAR_ADDITIONAL_HEADER, mAdditionalHeader);
-			oTemplate = oTemplate.Replace(HTML_VAR_ADDITIONAL_NAVI, mAdditionalNavi);
-			oTemplate = oTemplate.Replace(HTML_VAR_GROUP_NAVI, GroupNavi(oIsNewExists));
-			oTemplate = oTemplate.Replace(HTML_VAR_GENERATOR, YlCommon.APP_NAME_J + "  " + YlCommon.APP_VER);
-			oTemplate = oTemplate.Replace(HTML_VAR_GENERATE_DATE, DateTime.Now.ToString(YlCommon.DATE_FORMAT));
-
-			return oTemplate;
-		}
-
-		// --------------------------------------------------------------------
 		// 章を開始する
 		// --------------------------------------------------------------------
 		private void BeginChapter(StringBuilder oSB, OutputItems oChapterItem, Int32 oChapterIndex, Int32 oNumChapters, List<TFound> oTFounds)
@@ -549,58 +589,692 @@ namespace YukaLister.Shared
 		}
 
 		// --------------------------------------------------------------------
-		// リスト上部に表示するディレクトリーリンクを生成する
-		// KeyValuePair<String, String>: 表示名, リンク先ファイル名
-		// --------------------------------------------------------------------
-		private String DirectoryLink(List<KeyValuePair<String, String>> oDirectories = null)
-		{
-			StringBuilder aSB = new StringBuilder();
-			aSB.Append("<a href=\"" + TopFileName + mListLinkArg + "\">" + DIRECTORY_TOP_NAME + "</a>");
-			if (oDirectories != null)
-			{
-				foreach (KeyValuePair<String, String> aDir in oDirectories)
-				{
-					aSB.Append(" &gt; ");
-					if (String.IsNullOrEmpty(aDir.Value))
-					{
-						// 非リンク
-						aSB.Append(aDir.Key);
-					}
-					else
-					{
-						// リンク
-						aSB.Append("<a href=\"" + aDir.Value + mListLinkArg + "\">" + aDir.Key + "</a>");
-					}
-				}
-			}
-			return aSB.ToString();
-		}
-
-		// --------------------------------------------------------------------
-		// タイトルとして表示するディレクトリー階層を生成する
-		// KeyValuePair<String, String>: 表示名, リンク先ファイル名
-		// --------------------------------------------------------------------
-		private String DirectoryText(List<KeyValuePair<String, String>> oDirectories = null)
-		{
-			StringBuilder aSB = new StringBuilder();
-			aSB.Append(YlCommon.APP_NAME_J + DIRECTORY_TOP_NAME);
-			if (oDirectories != null)
-			{
-				foreach (KeyValuePair<String, String> aDir in oDirectories)
-				{
-					aSB.Append(" &gt; " + aDir.Key);
-				}
-			}
-			return aSB.ToString();
-		}
-
-		// --------------------------------------------------------------------
 		// 章を終了する
 		// --------------------------------------------------------------------
 		private void EndChapter(StringBuilder oSB)
 		{
 			oSB.Append("</table>\n");
 			oSB.Append("</div>\n");
+		}
+
+		// --------------------------------------------------------------------
+		// グループ＝歌手別、ページ＝頭文字、章＝歌手名、でページ内容生成
+		// --------------------------------------------------------------------
+		private void GenerateArtistAndHeads()
+		{
+			ZonePage(false).AddChild(GenerateArtistAndHeadsCore(false));
+			ZonePage(true).AddChild(GenerateArtistAndHeadsCore(true));
+		}
+
+		// --------------------------------------------------------------------
+		// グループ＝歌手別、ページ＝頭文字、章＝歌手名、でページ内容生成
+		// --------------------------------------------------------------------
+		private PageInfoTree GenerateArtistAndHeadsCore(Boolean oIsAdult)
+		{
+			PageInfoTree aPageInfoTree = new PageInfoTree();
+			aPageInfoTree.Name = "歌手別";
+			aPageInfoTree.FileName = IndexFileName(oIsAdult, KIND_FILE_NAME_ARTIST);
+
+			// 歌手名とそれに紐付く楽曲群
+			Dictionary<String, List<TFound>> aArtistNamesAndTFounds = new Dictionary<String, List<TFound>>();
+
+			IQueryable<TFound> aQueryResult =
+					from x in TableFound
+					where x.ArtistName != null && (oIsAdult ? x.TieUpAgeLimit >= YlCommon.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlCommon.AGE_LIMIT_CERO_Z)
+					orderby x.ArtistRuby, x.ArtistName, x.TieUpRuby, x.TieUpName, x.SongRuby, x.SongName
+					select x;
+			TFound aPrevTFound = null;
+			String aPrevArtistHead = null;
+			String aArtistHead = null;
+
+			foreach (TFound aTFound in aQueryResult)
+			{
+				aArtistHead = !String.IsNullOrEmpty(aTFound.ArtistRuby) ? YlCommon.Head(aTFound.ArtistRuby) : YlCommon.Head(aTFound.ArtistName);
+
+				if (aPrevTFound != null
+						&& aArtistHead != aPrevArtistHead)
+				{
+					// ページが新しくなったので 1 ページ分出力
+					GenerateOneList(aPageInfoTree, aArtistNamesAndTFounds, oIsAdult,
+							KIND_FILE_NAME_ARTIST, "歌手別", aPrevArtistHead, OutputItems.ArtistName);
+				}
+
+				if (/*aPrevTFound == null*/aArtistNamesAndTFounds.Count == 0
+						|| aPrevTFound != null && aTFound.ArtistName != aPrevTFound.ArtistName)
+				{
+					// 歌手名が新しくなった
+					aArtistNamesAndTFounds[aTFound.ArtistName] = new List<TFound>();
+				}
+
+				// 曲情報追加
+				aArtistNamesAndTFounds[aTFound.ArtistName].Add(aTFound);
+
+				// ループ処理
+				aPrevTFound = aTFound;
+				aPrevArtistHead = aArtistHead;
+			}
+
+			if (aPrevTFound != null)
+			{
+				GenerateOneList(aPageInfoTree, aArtistNamesAndTFounds, oIsAdult,
+						KIND_FILE_NAME_ARTIST, "歌手別", aPrevArtistHead, OutputItems.ArtistName);
+			}
+
+			// インデックス
+			GenerateIndexPageContent(aPageInfoTree, oIsAdult, KIND_FILE_NAME_ARTIST);
+
+			return aPageInfoTree;
+		}
+
+		// --------------------------------------------------------------------
+		// グループ＝カテゴリー、ページ＝頭文字、章＝番組名、でページ内容生成
+		// --------------------------------------------------------------------
+		private void GenerateCategoryAndHeads()
+		{
+			ZonePage(false).AddChild(GenerateCategoryAndHeadsCore(false));
+			ZonePage(true).AddChild(GenerateCategoryAndHeadsCore(true));
+		}
+
+		// --------------------------------------------------------------------
+		// グループ＝カテゴリー、ページ＝頭文字、章＝番組名、でページ内容生成
+		// --------------------------------------------------------------------
+		private PageInfoTree GenerateCategoryAndHeadsCore(Boolean oIsAdult)
+		{
+			PageInfoTree aPageInfoTree = new PageInfoTree();
+			aPageInfoTree.Name = "カテゴリー別";
+			aPageInfoTree.FileName = IndexFileName(oIsAdult, KIND_FILE_NAME_CATEGORY);
+
+			// 番組名とそれに紐付く楽曲群
+			Dictionary<String, List<TFound>> aTieUpNamesAndTFounds = new Dictionary<String, List<TFound>>();
+
+			IQueryable<TFound> aQueryResult =
+					from x in TableFound
+					where oIsAdult ? x.TieUpAgeLimit >= YlCommon.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlCommon.AGE_LIMIT_CERO_Z
+					orderby x.Category, x.Head, x.TieUpRuby, x.TieUpName, x.SongRuby, x.SongName
+					select x;
+			TFound aPrevTFound = null;
+
+			foreach (TFound aTFound in aQueryResult)
+			{
+				if (aPrevTFound != null
+						&& (aTFound.Category != aPrevTFound.Category || aTFound.Head != aPrevTFound.Head))
+				{
+					// カテゴリーまたはページが新しくなったので 1 ページ分出力
+					GenerateOneList(aPageInfoTree, aTieUpNamesAndTFounds, oIsAdult,
+							KIND_FILE_NAME_CATEGORY, aPrevTFound.Category, aPrevTFound.Head, OutputItems.TieUpName);
+				}
+
+				if (!String.IsNullOrEmpty(aTFound.TieUpName))
+				{
+					if (aTieUpNamesAndTFounds.Count == 0 || aPrevTFound != null && aTFound.TieUpName != aPrevTFound.TieUpName)
+					{
+						// 番組名が新しくなった
+						aTieUpNamesAndTFounds[aTFound.TieUpName] = new List<TFound>();
+					}
+
+					// 曲情報追加
+					aTieUpNamesAndTFounds[aTFound.TieUpName].Add(aTFound);
+				}
+
+				// ループ処理
+				aPrevTFound = aTFound;
+			}
+
+			if (aPrevTFound != null)
+			{
+				GenerateOneList(aPageInfoTree, aTieUpNamesAndTFounds, oIsAdult,
+						KIND_FILE_NAME_CATEGORY, aPrevTFound.Category, aPrevTFound.Head, OutputItems.TieUpName);
+			}
+
+			// インデックス
+			GenerateIndexPageContent(aPageInfoTree, oIsAdult, KIND_FILE_NAME_CATEGORY);
+
+			return aPageInfoTree;
+		}
+
+		// --------------------------------------------------------------------
+		// グループ＝作曲者別、ページ＝頭文字、章＝作曲者名、でページ内容生成
+		// --------------------------------------------------------------------
+		private void GenerateComposerAndHeads()
+		{
+			ZonePage(false).AddChild(GenerateComposerAndHeadsCore(false));
+			ZonePage(true).AddChild(GenerateComposerAndHeadsCore(true));
+		}
+
+		// --------------------------------------------------------------------
+		// グループ＝作曲者別、ページ＝頭文字、章＝作曲者名、でファイル出力
+		// --------------------------------------------------------------------
+		private PageInfoTree GenerateComposerAndHeadsCore(Boolean oIsAdult)
+		{
+			PageInfoTree aPageInfoTree = new PageInfoTree();
+			aPageInfoTree.Name = "作曲者別";
+			aPageInfoTree.FileName = IndexFileName(oIsAdult, KIND_FILE_NAME_COMPOSER);
+
+			// 作曲者名とそれに紐付く楽曲群
+			Dictionary<String, List<TFound>> aComposerNamesAndTFounds = new Dictionary<String, List<TFound>>();
+
+			IQueryable<TFound> aQueryResult =
+					from x in TableFound
+					where x.ComposerName != null && (oIsAdult ? x.TieUpAgeLimit >= YlCommon.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlCommon.AGE_LIMIT_CERO_Z)
+					orderby x.ComposerRuby, x.ComposerName, x.TieUpRuby, x.TieUpName, x.SongRuby, x.SongName
+					select x;
+			TFound aPrevTFound = null;
+			String aPrevComposerHead = null;
+			String aComposerHead = null;
+
+			foreach (TFound aTFound in aQueryResult)
+			{
+				aComposerHead = !String.IsNullOrEmpty(aTFound.ComposerRuby) ? YlCommon.Head(aTFound.ComposerRuby) : YlCommon.Head(aTFound.ComposerName);
+
+				if (aPrevTFound != null
+						&& aComposerHead != aPrevComposerHead)
+				{
+					// ページが新しくなったので 1 ページ分出力
+					GenerateOneList(aPageInfoTree, aComposerNamesAndTFounds, oIsAdult,
+							KIND_FILE_NAME_COMPOSER, "作曲者別", aPrevComposerHead, OutputItems.ComposerName);
+				}
+
+				if (/*aPrevTFound == null*/aComposerNamesAndTFounds.Count == 0
+						|| aPrevTFound != null && aTFound.ComposerName != aPrevTFound.ComposerName)
+				{
+					// 作曲者名が新しくなった
+					aComposerNamesAndTFounds[aTFound.ComposerName] = new List<TFound>();
+				}
+
+				// 曲情報追加
+				aComposerNamesAndTFounds[aTFound.ComposerName].Add(aTFound);
+
+				// ループ処理
+				aPrevTFound = aTFound;
+				aPrevComposerHead = aComposerHead;
+			}
+
+			if (aPrevTFound != null)
+			{
+				GenerateOneList(aPageInfoTree, aComposerNamesAndTFounds, oIsAdult,
+						KIND_FILE_NAME_COMPOSER, "作曲者別", aPrevComposerHead, OutputItems.ComposerName);
+			}
+
+			// インデックス
+			GenerateIndexPageContent(aPageInfoTree, oIsAdult, KIND_FILE_NAME_COMPOSER);
+
+			return aPageInfoTree;
+		}
+
+		// --------------------------------------------------------------------
+		// インデックスページ（ページは任意の文字列ごと）の内容を生成
+		// --------------------------------------------------------------------
+		private void GenerateFreestyleIndexPageContent(PageInfoTree oIndexPage, Boolean oIsAdult, String oKindFileName)
+		{
+			Int32 aGroupIndex = 0;
+			StringBuilder aSB = new StringBuilder();
+			PageInfoTree aMiscGroup = null;
+
+			// その他以外
+			for (Int32 i = 0; i < oIndexPage.Children.Count; i++)
+			{
+				if (oIndexPage.Children[i].Name == YlCommon.GROUP_MISC)
+				{
+					aMiscGroup = oIndexPage.Children[i];
+					continue;
+				}
+				GenerateFreestyleIndexPageContentOneGroup(aSB, oIndexPage.Children[i], aGroupIndex, oIsAdult, oKindFileName);
+				aGroupIndex++;
+			}
+
+			// その他
+			if (aMiscGroup != null)
+			{
+				GenerateFreestyleIndexPageContentOneGroup(aSB, aMiscGroup, aGroupIndex, oIsAdult, oKindFileName);
+			}
+
+			// インデックスページ
+			String aTopTemplate = LoadTemplate("HtmlIndex");
+			oIndexPage.Content = aTopTemplate.Replace(HTML_VAR_INDICES, aSB.ToString());
+		}
+
+		// --------------------------------------------------------------------
+		// インデックスページ（ページは任意の文字列ごと）の 1 グループ分の内容を生成
+		// --------------------------------------------------------------------
+		private void GenerateFreestyleIndexPageContentOneGroup(StringBuilder oSB, PageInfoTree oGroup, Int32 oGroupIndex,
+				Boolean oIsAdult, String oKindFileName)
+		{
+			StringBuilder aSbPages = new StringBuilder();
+			Int32 aNumSongs = 0;
+
+			String aOneTemplate = LoadTemplate("HtmlFreestyleIndexOneGroup");
+			aOneTemplate = aOneTemplate.Replace(HTML_VAR_CATEGORY, oGroup.Name);
+
+			foreach (PageInfoTree aPageInfo in oGroup.Children)
+			{
+				aSbPages.Append("<tr><td class=\"exist\"><a href=\"" + OutputFileName(oIsAdult, oKindFileName, oGroup.Name, aPageInfo.Name) + mListLinkArg + "\">"
+						+ aPageInfo.Name + " （" + aPageInfo.NumSongs.ToString("#,0") + " 曲）</a></td></tr>");
+				aNumSongs += aPageInfo.NumSongs;
+			}
+
+			aOneTemplate = aOneTemplate.Replace(HTML_VAR_PAGES, aSbPages.ToString());
+			aOneTemplate = aOneTemplate.Replace(HTML_VAR_CATEGORY_INDEX, oGroupIndex.ToString());
+			aOneTemplate = aOneTemplate.Replace(HTML_VAR_NUM_SONGS, "（" + aNumSongs.ToString("#,0") + " 曲）");
+			oSB.Append(aOneTemplate);
+		}
+
+		// --------------------------------------------------------------------
+		// インデックスページ（ページは頭文字ごと）の内容を生成
+		// --------------------------------------------------------------------
+		private void GenerateIndexPageContent(PageInfoTree oIndexPage, Boolean oIsAdult, String oKindFileName)
+		{
+			Int32 aGroupIndex = 0;
+			StringBuilder aSB = new StringBuilder();
+			PageInfoTree aMiscGroup = null;
+
+			// その他以外
+			for (Int32 i = 0; i < oIndexPage.Children.Count; i++)
+			{
+				if (oIndexPage.Children[i].Name == YlCommon.GROUP_MISC)
+				{
+					aMiscGroup = oIndexPage.Children[i];
+					continue;
+				}
+				GenerateIndexPageContentOneGroup(aSB, oIndexPage.Children[i], aGroupIndex, oIsAdult, oKindFileName);
+				aGroupIndex++;
+			}
+
+			// その他
+			if (aMiscGroup != null)
+			{
+				GenerateIndexPageContentOneGroup(aSB, aMiscGroup, aGroupIndex, oIsAdult, oKindFileName);
+			}
+
+			// インデックスページ
+			String aTopTemplate = LoadTemplate("HtmlIndex");
+			oIndexPage.Content = aTopTemplate.Replace(HTML_VAR_INDICES, aSB.ToString());
+		}
+
+		// --------------------------------------------------------------------
+		// インデックスページ（ページは頭文字ごと）の 1 グループ分の内容を生成
+		// --------------------------------------------------------------------
+		private void GenerateIndexPageContentOneGroup(StringBuilder oSB, PageInfoTree oGroup, Int32 oGroupIndex,
+				Boolean oIsAdult, String oKindFileName)
+		{
+			Boolean aHasKana = false;
+			Boolean aHasMisc = false;
+			Int32 aNumSongs = 0;
+
+			String aOneTemplate = LoadTemplate("HtmlIndexOneGroup");
+			aOneTemplate = aOneTemplate.Replace(HTML_VAR_CATEGORY, oGroup.Name);
+
+			foreach (PageInfoTree aPageInfo in oGroup.Children)
+			{
+				aOneTemplate = aOneTemplate.Replace("<td>" + aPageInfo.Name + "</td>", "<td class=\"exist\"><a href=\""
+						+ OutputFileName(oIsAdult, oKindFileName, oGroup.Name, aPageInfo.Name) + mListLinkArg + "\">" + aPageInfo.Name + "</a></td>");
+				aNumSongs += aPageInfo.NumSongs;
+
+				if (aPageInfo.Name == YlCommon.HEAD_MISC)
+				{
+					aHasMisc = true;
+				}
+				else
+				{
+					aHasKana = true;
+				}
+			}
+
+			aOneTemplate = aOneTemplate.Replace(HTML_VAR_CATEGORY_INDEX, oGroupIndex.ToString());
+			aOneTemplate = aOneTemplate.Replace(HTML_VAR_NUM_SONGS, "（" + aNumSongs.ToString("#,0") + " 曲）");
+			aOneTemplate = aOneTemplate.Replace(HTML_VAR_CLASS_OF_KANA, aHasKana ? null : CLASS_NAME_INVISIBLE);
+			aOneTemplate = aOneTemplate.Replace(HTML_VAR_CLASS_OF_MISC, aHasMisc ? null : CLASS_NAME_INVISIBLE);
+			oSB.Append(aOneTemplate);
+		}
+
+		// --------------------------------------------------------------------
+		// グループ＝NEW、ページ＝NEW、章＝番組名、でページ内容生成（新着）
+		// --------------------------------------------------------------------
+		private void GenerateNew()
+		{
+			if (!((WebOutputSettings)OutputSettings).EnableNew)
+			{
+				return;
+			}
+
+			ZonePage(false).AddChild(GenerateNewCore(false));
+			ZonePage(true).AddChild(GenerateNewCore(true));
+		}
+
+		// --------------------------------------------------------------------
+		// グループ＝NEW、ページ＝NEW、章＝番組名、でページ内容生成（新着）
+		// --------------------------------------------------------------------
+		private PageInfoTree GenerateNewCore(Boolean oIsAdult)
+		{
+			PageInfoTree aPageInfoTree = new PageInfoTree();
+			aPageInfoTree.Name = "新着";
+
+			// 番組名とそれに紐付く楽曲群
+			Dictionary<String, List<TFound>> aTieUpNamesAndTFounds = new Dictionary<String, List<TFound>>();
+
+			// 新着とする日付
+			Double aNewDate = JulianDay.DateTimeToModifiedJulianDate(DateTime.Now.AddDays(-((WebOutputSettings)OutputSettings).NewDays));
+
+			StringBuilder aSB = new StringBuilder();
+			IQueryable<TFound> aQueryResult =
+					from x in TableFound
+					where x.LastWriteTime >= aNewDate && (oIsAdult ? x.TieUpAgeLimit >= YlCommon.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlCommon.AGE_LIMIT_CERO_Z)
+					orderby x.Head, x.TieUpRuby, x.TieUpName, x.SongRuby, x.SongName
+					select x;
+			TFound aPrevTFound = null;
+
+			foreach (TFound aTFound in aQueryResult)
+			{
+				if (aPrevTFound == null
+						|| aPrevTFound != null && aTFound.TieUpName != aPrevTFound.TieUpName)
+				{
+					// 番組名が新しくなった
+					aTieUpNamesAndTFounds[aTFound.TieUpName] = new List<TFound>();
+				}
+
+				// 曲情報追加
+				aTieUpNamesAndTFounds[aTFound.TieUpName].Add(aTFound);
+
+				// ループ処理
+				aPrevTFound = aTFound;
+			}
+
+			GenerateOneList(aPageInfoTree, aTieUpNamesAndTFounds, oIsAdult, KIND_FILE_NAME_NEW, "すべて", "すべて", OutputItems.TieUpName);
+
+			return aPageInfoTree;
+		}
+
+		// --------------------------------------------------------------------
+		// リストの 1 ページ分を生成
+		// ＜引数＞ oChaptersAndTFounds: 章（橙色の区切り）ごとの楽曲群
+		// --------------------------------------------------------------------
+		private void GenerateOneList(PageInfoTree oParent, Dictionary<String, List<TFound>> oChaptersAndTFounds,
+				Boolean oIsAdult, String oKindFileName, String oGroupName, String oPageName, OutputItems oChapterItem)
+		{
+			// null を調整
+			if (String.IsNullOrEmpty(oGroupName))
+			{
+				oGroupName = YlCommon.GROUP_MISC;
+			}
+
+			PageInfoTree aPageInfoTree = new PageInfoTree();
+			aPageInfoTree.Name = oPageName;
+			aPageInfoTree.FileName = OutputFileName(oIsAdult, oKindFileName, oGroupName, oPageName);
+
+			String aTemplate = LoadTemplate("HtmlList");
+
+			// リスト本体部分
+			StringBuilder aSB = new StringBuilder();
+			Int32 aNumPageSongs = 0;
+			Int32 aChapterIndex = 0;
+			foreach (KeyValuePair<String, List<TFound>> aChapterAndTFounds in oChaptersAndTFounds)
+			{
+				List<TFound> aList = aChapterAndTFounds.Value;
+				BeginChapter(aSB, oChapterItem, aChapterIndex, oChaptersAndTFounds.Count, aList);
+				for (Int32 i = 0; i < aList.Count; i++)
+				{
+					AppendSongInfo(aSB, oChapterItem, i, aList[i]);
+				}
+				EndChapter(aSB);
+
+				aNumPageSongs += aList.Count;
+				aChapterIndex++;
+			}
+
+			// テンプレート適用
+			aTemplate = aTemplate.Replace(HTML_VAR_ADDITIONAL_DESCRIPTION, mAdditionalDescription);
+			aTemplate = aTemplate.Replace(HTML_VAR_PROGRAMS, aSB.ToString());
+
+			aPageInfoTree.Content = aTemplate;
+			aPageInfoTree.NumSongs = aNumPageSongs;
+
+			// 出力済みの内容をクリア
+			oChaptersAndTFounds.Clear();
+
+			// oParent 配下のどこにぶら下げるかを検索
+			PageInfoTree aGroup = null;
+			for (Int32 i = 0; i < oParent.Children.Count; i++)
+			{
+				if (oParent.Children[i].Name == oGroupName)
+				{
+					aGroup = oParent.Children[i];
+					break;
+				}
+			}
+			if (aGroup == null)
+			{
+				// oParent 配下に oGroupName のページを新規作成
+				aGroup = new PageInfoTree();
+				aGroup.Name = oGroupName;
+				oParent.AddChild(aGroup);
+			}
+
+			// aGroup にぶら下げる
+			aGroup.AddChild(aPageInfoTree);
+		}
+
+		// --------------------------------------------------------------------
+		// グループ＝年代、ページ＝頭文字、章＝番組名、でページ内容生成
+		// --------------------------------------------------------------------
+		private void GeneratePeriodAndHeads()
+		{
+			ZonePage(false).AddChild(GeneratePeriodAndHeadsCore(false));
+			ZonePage(true).AddChild(GeneratePeriodAndHeadsCore(true));
+		}
+
+		// --------------------------------------------------------------------
+		// グループ＝年代、ページ＝頭文字、章＝番組名、でページ内容生成
+		// --------------------------------------------------------------------
+		private PageInfoTree GeneratePeriodAndHeadsCore(Boolean oIsAdult)
+		{
+			PageInfoTree aPageInfoTree = new PageInfoTree();
+			aPageInfoTree.Name = "年代別";
+			aPageInfoTree.FileName = IndexFileName(oIsAdult, KIND_FILE_NAME_PERIOD);
+
+			// 番組名とそれに紐付く楽曲群
+			Dictionary<String, List<TFound>> aTieUpNamesAndTFounds = new Dictionary<String, List<TFound>>();
+
+			// 年月日設定
+			Int32 aSinceYear = DateTime.UtcNow.Year;
+			aSinceYear -= aSinceYear % 10;
+
+			while (aSinceYear > YlCommon.INVALID_YEAR)
+			{
+				Int32 aUntilYear = aSinceYear + 10;
+
+				IQueryable<TFound> aQueryResult =
+						from x in TableFound
+						where JulianDay.DateTimeToModifiedJulianDate(new DateTime(aSinceYear, 1, 1)) <= x.SongReleaseDate
+						&& x.SongReleaseDate < JulianDay.DateTimeToModifiedJulianDate(new DateTime(aUntilYear, 1, 1))
+						&& (oIsAdult ? x.TieUpAgeLimit >= YlCommon.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlCommon.AGE_LIMIT_CERO_Z)
+						orderby x.Head, x.TieUpRuby, x.TieUpName, x.SongRuby, x.SongName
+						select x;
+				TFound aPrevTFound = null;
+
+				foreach (TFound aTFound in aQueryResult)
+				{
+					if (aPrevTFound != null
+							&& aTFound.Head != aPrevTFound.Head)
+					{
+						// 頭文字が新しくなったので 1 ページ分出力
+						GenerateOneList(aPageInfoTree, aTieUpNamesAndTFounds, oIsAdult,
+								KIND_FILE_NAME_PERIOD, aSinceYear.ToString() + " 年代", aPrevTFound.Head, OutputItems.TieUpName);
+					}
+
+					if (aPrevTFound == null
+							|| aPrevTFound != null && aTFound.TieUpName != aPrevTFound.TieUpName)
+					{
+						// 番組名が新しくなった
+						aTieUpNamesAndTFounds[aTFound.TieUpName] = new List<TFound>();
+					}
+
+					// 曲情報追加
+					aTieUpNamesAndTFounds[aTFound.TieUpName].Add(aTFound);
+
+					// ループ処理
+					aPrevTFound = aTFound;
+				}
+
+				if (aPrevTFound != null)
+				{
+					GenerateOneList(aPageInfoTree, aTieUpNamesAndTFounds, oIsAdult,
+							KIND_FILE_NAME_PERIOD, aSinceYear.ToString() + " 年代", aPrevTFound.Head, OutputItems.TieUpName);
+				}
+
+				aSinceYear -= 10;
+			}
+
+			// インデックス
+			GenerateIndexPageContent(aPageInfoTree, oIsAdult, KIND_FILE_NAME_PERIOD);
+
+			return aPageInfoTree;
+		}
+
+		// --------------------------------------------------------------------
+		// グループ＝タイアップグループ名の頭文字、ページ＝タイアップグループ名、章＝番組名、でページ内容生成
+		// --------------------------------------------------------------------
+		private void GenerateTieUpGroupHeadAndTieUpGroups()
+		{
+			ZonePage(false).AddChild(GenerateTieUpGroupHeadAndTieUpGroupsCore(false));
+			ZonePage(true).AddChild(GenerateTieUpGroupHeadAndTieUpGroupsCore(true));
+		}
+
+		// --------------------------------------------------------------------
+		// グループ＝タイアップグループ名の頭文字、ページ＝タイアップグループ名、章＝番組名、でページ内容生成
+		// --------------------------------------------------------------------
+		private PageInfoTree GenerateTieUpGroupHeadAndTieUpGroupsCore(Boolean oIsAdult)
+		{
+			PageInfoTree aPageInfoTree = new PageInfoTree();
+			aPageInfoTree.Name = "シリーズ別";
+			aPageInfoTree.FileName = IndexFileName(oIsAdult, KIND_FILE_NAME_TIE_UP_GROUP);
+
+			// 番組名とそれに紐付く楽曲群
+			Dictionary<String, List<TFound>> aTieUpNamesAndTFounds = new Dictionary<String, List<TFound>>();
+
+			IQueryable<TFound> aQueryResult =
+					from x in TableFound
+					where x.TieUpGroupName != null && (oIsAdult ? x.TieUpAgeLimit >= YlCommon.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlCommon.AGE_LIMIT_CERO_Z)
+					orderby x.TieUpGroupRuby, x.TieUpGroupName, x.Head, x.TieUpRuby, x.TieUpName, x.SongRuby, x.SongName
+					select x;
+			TFound aPrevTFound = null;
+			String aPrevTieUpGroupHead = null;
+
+			foreach (TFound aTFound in aQueryResult)
+			{
+				String aTieUpGroupHead = !String.IsNullOrEmpty(aTFound.TieUpGroupRuby) ? YlCommon.Head(aTFound.TieUpGroupRuby) : YlCommon.Head(aTFound.TieUpGroupName);
+
+				if (aPrevTFound != null
+						&& (aTieUpGroupHead != aPrevTieUpGroupHead || aTFound.TieUpGroupRuby != aPrevTFound.TieUpGroupRuby || aTFound.TieUpGroupName != aPrevTFound.TieUpGroupName))
+				{
+					// 頭文字またはページが新しくなったので 1 ページ分出力
+					GenerateOneList(aPageInfoTree, aTieUpNamesAndTFounds, oIsAdult,
+							KIND_FILE_NAME_TIE_UP_GROUP, aPrevTieUpGroupHead, aPrevTFound.TieUpGroupName + "シリーズ", OutputItems.TieUpName);
+				}
+
+				if (aPrevTFound == null
+						|| aPrevTFound != null && aTFound.TieUpName != aPrevTFound.TieUpName)
+				{
+					// 番組名が新しくなった
+					aTieUpNamesAndTFounds[aTFound.TieUpName] = new List<TFound>();
+				}
+
+				// 曲情報追加
+				aTieUpNamesAndTFounds[aTFound.TieUpName].Add(aTFound);
+
+				// ループ処理
+				aPrevTFound = aTFound;
+				aPrevTieUpGroupHead = aTieUpGroupHead;
+			}
+
+			if (aPrevTFound != null)
+			{
+				GenerateOneList(aPageInfoTree, aTieUpNamesAndTFounds, oIsAdult,
+						KIND_FILE_NAME_TIE_UP_GROUP, aPrevTieUpGroupHead, aPrevTFound.TieUpGroupName + "シリーズ", OutputItems.TieUpName);
+			}
+
+			// インデックス
+			GenerateFreestyleIndexPageContent(aPageInfoTree, oIsAdult, KIND_FILE_NAME_TIE_UP_GROUP);
+
+			return aPageInfoTree;
+		}
+
+		// --------------------------------------------------------------------
+		// グループ＝年、ページ＝季節、章＝番組名、でページ内容生成
+		// 直近 SEASON_YEARS 年分のみ
+		// --------------------------------------------------------------------
+		private void GenerateYearsAndSeasons()
+		{
+			ZonePage(false).AddChild(GenerateYearsAndSeasonsCore(false));
+			ZonePage(true).AddChild(GenerateYearsAndSeasonsCore(true));
+		}
+
+		// --------------------------------------------------------------------
+		// グループ＝年、ページ＝季節、章＝番組名、でページ内容生成
+		// 直近 SEASON_YEARS 年分のみ
+		// --------------------------------------------------------------------
+		private PageInfoTree GenerateYearsAndSeasonsCore(Boolean oIsAdult)
+		{
+			PageInfoTree aPageInfoTree = new PageInfoTree();
+			aPageInfoTree.Name = "期別";
+			aPageInfoTree.FileName = IndexFileName(oIsAdult, KIND_FILE_NAME_SEASON);
+
+			// 年月日設定
+			Int32 aSinceYear = DateTime.UtcNow.Year;
+			Int32 aUntilYear = aSinceYear - SEASON_YEARS;
+
+			while (aSinceYear > aUntilYear)
+			{
+				GenerateYearsAndSeasonsOneSeason(aPageInfoTree, oIsAdult, aSinceYear, 1, aSinceYear, 4, "1 月～3 月：冬");
+				GenerateYearsAndSeasonsOneSeason(aPageInfoTree, oIsAdult, aSinceYear, 4, aSinceYear, 7, "4 月～6 月：春");
+				GenerateYearsAndSeasonsOneSeason(aPageInfoTree, oIsAdult, aSinceYear, 7, aSinceYear, 10, "7 月～9 月：夏");
+				GenerateYearsAndSeasonsOneSeason(aPageInfoTree, oIsAdult, aSinceYear, 10, aSinceYear + 1, 1, "10 月～12 月：秋");
+				aSinceYear--;
+			}
+
+			// インデックス
+			GenerateFreestyleIndexPageContent(aPageInfoTree, oIsAdult, KIND_FILE_NAME_SEASON);
+
+			return aPageInfoTree;
+		}
+
+		// --------------------------------------------------------------------
+		// 1 期分をページ内容生成
+		// --------------------------------------------------------------------
+		private void GenerateYearsAndSeasonsOneSeason(PageInfoTree oPageInfoTree, Boolean oIsAdult,
+				Int32 oSinceYear, Int32 oSinceMonth, Int32 oUntilYear, Int32 oUntilMonth, String oSeasonName)
+		{
+			// 番組名とそれに紐付く楽曲群
+			Dictionary<String, List<TFound>> aTieUpNamesAndTFounds = new Dictionary<String, List<TFound>>();
+
+			IQueryable<TFound> aQueryResult =
+					from x in TableFound
+					where JulianDay.DateTimeToModifiedJulianDate(new DateTime(oSinceYear, oSinceMonth, 1)) <= x.SongReleaseDate
+					&& x.SongReleaseDate < JulianDay.DateTimeToModifiedJulianDate(new DateTime(oUntilYear, oUntilMonth, 1))
+					&& (oIsAdult ? x.TieUpAgeLimit >= YlCommon.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlCommon.AGE_LIMIT_CERO_Z)
+					orderby x.Head, x.TieUpRuby, x.TieUpName, x.SongRuby, x.SongName
+					select x;
+			TFound aPrevTFound = null;
+
+			foreach (TFound aTFound in aQueryResult)
+			{
+				if (aPrevTFound == null
+						|| aPrevTFound != null && aTFound.TieUpName != aPrevTFound.TieUpName)
+				{
+					// 番組名が新しくなった
+					aTieUpNamesAndTFounds[aTFound.TieUpName] = new List<TFound>();
+				}
+
+				// 曲情報追加
+				aTieUpNamesAndTFounds[aTFound.TieUpName].Add(aTFound);
+
+				// ループ処理
+				aPrevTFound = aTFound;
+			}
+
+			if (aPrevTFound != null)
+			{
+				GenerateOneList(oPageInfoTree, aTieUpNamesAndTFounds, oIsAdult, KIND_FILE_NAME_SEASON, oSinceYear.ToString() + " 年",
+						oSeasonName, OutputItems.TieUpName);
+			}
 		}
 
 		// --------------------------------------------------------------------
@@ -622,10 +1296,10 @@ namespace YukaLister.Shared
 		private void GroupNaviCore(StringBuilder oSB, Boolean oIsAdult, Boolean oIsNewExists)
 		{
 			oSB.Append("<tr>");
-			oSB.Append("<td>" + (oIsAdult ? "　アダルト　" : "一般") + "</td>");
+			oSB.Append("<td>　" + ZoneName(oIsAdult) + "　</td>");
 			if (oIsNewExists)
 			{
-				oSB.Append("<td class=\"exist\"><a href=\"" + OutputFileName(oIsAdult, "New", "すべて", null) + mListLinkArg + "\">　新着　</a></td>");
+				oSB.Append("<td class=\"exist\"><a href=\"" + OutputFileName(oIsAdult, KIND_FILE_NAME_NEW, "すべて", "すべて") + mListLinkArg + "\">　新着　</a></td>");
 			}
 			oSB.Append("<td class=\"exist\"><a href=\"" + IndexFileName(oIsAdult, KIND_FILE_NAME_CATEGORY) + mListLinkArg + "\">　カテゴリー別　</a></td>");
 			oSB.Append("<td class=\"exist\"><a href=\"" + IndexFileName(oIsAdult, KIND_FILE_NAME_TIE_UP_GROUP) + mListLinkArg + "\">　シリーズ別　</a></td>");
@@ -727,9 +1401,8 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		private void MoveListNew(Boolean oIsAdult)
 		{
-			String aNewFileName = OutputFileName(oIsAdult, KIND_FILE_NAME_NEW, "すべて", null);
-			WebOutputSettings aWebOutputSettings = (WebOutputSettings)OutputSettings;
-			if (aWebOutputSettings.EnableNew)
+			String aNewFileName = OutputFileName(oIsAdult, KIND_FILE_NAME_NEW, "すべて", "すべて");
+			if (((WebOutputSettings)OutputSettings).EnableNew)
 			{
 				try
 				{
@@ -755,201 +1428,6 @@ namespace YukaLister.Shared
 		}
 
 		// --------------------------------------------------------------------
-		// グループ＝歌手別、ページ＝頭文字、章＝歌手名、でファイル出力
-		// --------------------------------------------------------------------
-		private void OutputArtistAndHeads(Boolean oIsNewExists)
-		{
-			OutputArtistAndHeadsCore(false, oIsNewExists);
-			OutputArtistAndHeadsCore(true, oIsNewExists);
-		}
-
-		// --------------------------------------------------------------------
-		// グループ＝歌手別、ページ＝頭文字、章＝歌手名、でファイル出力
-		// --------------------------------------------------------------------
-		private void OutputArtistAndHeadsCore(Boolean oIsAdult, Boolean oIsNewExists)
-		{
-			// 歌手別（1 要素のみ）とそれに紐付く頭文字群
-			Dictionary<String, List<PageInfo>> aArtistsAndHeads = new Dictionary<String, List<PageInfo>>();
-
-			// 歌手名とそれに紐付く楽曲群
-			Dictionary<String, List<TFound>> aArtistNamesAndTFounds = new Dictionary<String, List<TFound>>();
-
-			IQueryable<TFound> aQueryResult =
-					from x in TableFound
-					where x.ArtistName != null && (oIsAdult ? x.TieUpAgeLimit >= YlCommon.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlCommon.AGE_LIMIT_CERO_Z)
-					orderby x.ArtistRuby, x.ArtistName, x.TieUpRuby, x.TieUpName, x.SongRuby, x.SongName
-					select x;
-			TFound aPrevTFound = null;
-			String aPrevArtistHead = null;
-			String aArtistHead = null;
-
-			foreach (TFound aTFound in aQueryResult)
-			{
-				aArtistHead = !String.IsNullOrEmpty(aTFound.ArtistRuby) ? YlCommon.Head(aTFound.ArtistRuby) : YlCommon.Head(aTFound.ArtistName);
-
-				if (aPrevTFound != null
-						&& aArtistHead != aPrevArtistHead)
-				{
-					// ページが新しくなったので 1 ページ分出力
-					OutputOneList(aArtistsAndHeads, aArtistNamesAndTFounds, oIsAdult, "歌手別", KIND_FILE_NAME_ARTIST, "歌手別", aPrevArtistHead,
-							OutputItems.ArtistName, oIsNewExists);
-				}
-
-				if (/*aPrevTFound == null*/aArtistNamesAndTFounds.Count == 0
-						|| aPrevTFound != null && aTFound.ArtistName != aPrevTFound.ArtistName)
-				{
-					// 歌手名が新しくなった
-					aArtistNamesAndTFounds[aTFound.ArtistName] = new List<TFound>();
-				}
-
-				// 曲情報追加
-				aArtistNamesAndTFounds[aTFound.ArtistName].Add(aTFound);
-
-				// ループ処理
-				aPrevTFound = aTFound;
-				aPrevArtistHead = aArtistHead;
-			}
-
-			if (aPrevTFound != null)
-			{
-				OutputOneList(aArtistsAndHeads, aArtistNamesAndTFounds, oIsAdult, "歌手別", KIND_FILE_NAME_ARTIST, "歌手別", aPrevArtistHead,
-						OutputItems.ArtistName, oIsNewExists);
-			}
-
-			// インデックスページ
-			OutputIndexPage(aArtistsAndHeads, oIsAdult, "歌手別", KIND_FILE_NAME_ARTIST, oIsNewExists);
-		}
-
-		// --------------------------------------------------------------------
-		// グループ＝カテゴリー、ページ＝頭文字、章＝番組名、でファイル出力
-		// --------------------------------------------------------------------
-		private void OutputCategoryAndHeads(Boolean oIsNewExists)
-		{
-			OutputCategoryAndHeadsCore(false, oIsNewExists);
-			OutputCategoryAndHeadsCore(true, oIsNewExists);
-		}
-
-		// --------------------------------------------------------------------
-		// グループ＝カテゴリー、ページ＝頭文字、章＝番組名、でファイル出力
-		// --------------------------------------------------------------------
-		private void OutputCategoryAndHeadsCore(Boolean oIsAdult, Boolean oIsNewExists)
-		{
-			// カテゴリーとそれに紐付く頭文字群
-			Dictionary<String, List<PageInfo>> aCategoriesAndHeads = new Dictionary<String, List<PageInfo>>();
-
-			// 番組名とそれに紐付く楽曲群
-			Dictionary<String, List<TFound>> aTieUpNamesAndTFounds = new Dictionary<String, List<TFound>>();
-
-			IQueryable<TFound> aQueryResult =
-					from x in TableFound
-					where oIsAdult ? x.TieUpAgeLimit >= YlCommon.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlCommon.AGE_LIMIT_CERO_Z
-					orderby x.Category, x.Head, x.TieUpRuby, x.TieUpName, x.SongRuby, x.SongName
-					select x;
-			TFound aPrevTFound = null;
-
-			foreach (TFound aTFound in aQueryResult)
-			{
-				if (aPrevTFound != null
-						&& (aTFound.Category != aPrevTFound.Category || aTFound.Head != aPrevTFound.Head))
-				{
-					// カテゴリーまたはページが新しくなったので 1 ページ分出力
-					OutputOneList(aCategoriesAndHeads, aTieUpNamesAndTFounds, oIsAdult, "カテゴリー別", KIND_FILE_NAME_CATEGORY, aPrevTFound.Category,
-							aPrevTFound.Head, OutputItems.TieUpName, oIsNewExists);
-				}
-
-				if (!String.IsNullOrEmpty(aTFound.TieUpName))
-				{
-					if (aTieUpNamesAndTFounds.Count == 0 || aPrevTFound != null && aTFound.TieUpName != aPrevTFound.TieUpName)
-					{
-						// 番組名が新しくなった
-						aTieUpNamesAndTFounds[aTFound.TieUpName] = new List<TFound>();
-					}
-
-					// 曲情報追加
-					aTieUpNamesAndTFounds[aTFound.TieUpName].Add(aTFound);
-				}
-
-				// ループ処理
-				aPrevTFound = aTFound;
-			}
-
-			if (aPrevTFound != null)
-			{
-				OutputOneList(aCategoriesAndHeads, aTieUpNamesAndTFounds, oIsAdult, "カテゴリー別", KIND_FILE_NAME_CATEGORY, aPrevTFound.Category,
-						aPrevTFound.Head, OutputItems.TieUpName, oIsNewExists);
-			}
-
-			// インデックスページ
-			OutputIndexPage(aCategoriesAndHeads, oIsAdult, "カテゴリー別", KIND_FILE_NAME_CATEGORY, oIsNewExists);
-		}
-
-		// --------------------------------------------------------------------
-		// グループ＝作曲者別、ページ＝頭文字、章＝作曲者名、でファイル出力
-		// --------------------------------------------------------------------
-		private void OutputComposerAndHeads(Boolean oIsNewExists)
-		{
-			OutputComposerAndHeads(false, oIsNewExists);
-			OutputComposerAndHeads(true, oIsNewExists);
-		}
-
-		// --------------------------------------------------------------------
-		// グループ＝作曲者別、ページ＝頭文字、章＝作曲者名、でファイル出力
-		// --------------------------------------------------------------------
-		private void OutputComposerAndHeads(Boolean oIsAdult, Boolean oIsNewExists)
-		{
-			// 作曲者別（1 要素のみ）とそれに紐付く頭文字群
-			Dictionary<String, List<PageInfo>> aComposersAndHeads = new Dictionary<String, List<PageInfo>>();
-
-			// 作曲者名とそれに紐付く楽曲群
-			Dictionary<String, List<TFound>> aComposerNamesAndTFounds = new Dictionary<String, List<TFound>>();
-
-			IQueryable<TFound> aQueryResult =
-					from x in TableFound
-					where x.ComposerName != null && (oIsAdult ? x.TieUpAgeLimit >= YlCommon.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlCommon.AGE_LIMIT_CERO_Z)
-					orderby x.ComposerRuby, x.ComposerName, x.TieUpRuby, x.TieUpName, x.SongRuby, x.SongName
-					select x;
-			TFound aPrevTFound = null;
-			String aPrevComposerHead = null;
-			String aComposerHead = null;
-
-			foreach (TFound aTFound in aQueryResult)
-			{
-				aComposerHead = !String.IsNullOrEmpty(aTFound.ComposerRuby) ? YlCommon.Head(aTFound.ComposerRuby) : YlCommon.Head(aTFound.ComposerName);
-
-				if (aPrevTFound != null
-						&& aComposerHead != aPrevComposerHead)
-				{
-					// ページが新しくなったので 1 ページ分出力
-					OutputOneList(aComposersAndHeads, aComposerNamesAndTFounds, oIsAdult, "作曲者別", KIND_FILE_NAME_COMPOSER, "作曲者別", aPrevComposerHead,
-							OutputItems.ComposerName, oIsNewExists);
-				}
-
-				if (/*aPrevTFound == null*/aComposerNamesAndTFounds.Count == 0
-						|| aPrevTFound != null && aTFound.ComposerName != aPrevTFound.ComposerName)
-				{
-					// 作曲者名が新しくなった
-					aComposerNamesAndTFounds[aTFound.ComposerName] = new List<TFound>();
-				}
-
-				// 曲情報追加
-				aComposerNamesAndTFounds[aTFound.ComposerName].Add(aTFound);
-
-				// ループ処理
-				aPrevTFound = aTFound;
-				aPrevComposerHead = aComposerHead;
-			}
-
-			if (aPrevTFound != null)
-			{
-				OutputOneList(aComposersAndHeads, aComposerNamesAndTFounds, oIsAdult, "作曲者別", KIND_FILE_NAME_COMPOSER, "作曲者別", aPrevComposerHead,
-						OutputItems.ComposerName, oIsNewExists);
-			}
-
-			// インデックスページ
-			OutputIndexPage(aComposersAndHeads, oIsAdult, "作曲者別", KIND_FILE_NAME_COMPOSER, oIsNewExists);
-		}
-
-		// --------------------------------------------------------------------
 		// CSS を出力
 		// --------------------------------------------------------------------
 		private void OutputCss()
@@ -969,157 +1447,6 @@ namespace YukaLister.Shared
 		}
 
 		// --------------------------------------------------------------------
-		// インデックスページ（ページは任意の文字列ごと）を出力
-		// --------------------------------------------------------------------
-		private void OutputFreestyleIndexPage(Dictionary<String, List<PageInfo>> oGroupsAndPages, Boolean oIsAdult, String oKindName, String oKindFileName, Boolean oIsNewExists)
-		{
-			Int32 aNumTotalSongs = 0;
-			Int32 aGroupIndex = 0;
-			StringBuilder aSB = new StringBuilder();
-			KeyValuePair<String, List<PageInfo>> aMiscGroupAndPages = new KeyValuePair<String, List<PageInfo>>(null, null);
-
-			// その他以外
-			foreach (KeyValuePair<String, List<PageInfo>> aGroupAndPages in oGroupsAndPages)
-			{
-				if (aGroupAndPages.Key == YlCommon.GROUP_MISC)
-				{
-					aMiscGroupAndPages = aGroupAndPages;
-					continue;
-				}
-
-				aNumTotalSongs += OutputFreestyleIndexPageOneGroup(aSB, aGroupAndPages, aGroupIndex, oIsAdult, oKindFileName);
-				aGroupIndex++;
-			}
-
-			// その他
-			if (aMiscGroupAndPages.Key != null)
-			{
-				aNumTotalSongs += OutputFreestyleIndexPageOneGroup(aSB, aMiscGroupAndPages, aGroupIndex, oIsAdult, oKindFileName);
-			}
-
-			// インデックスページ
-			List<KeyValuePair<String, String>> aDirectories = new List<KeyValuePair<String, String>>();
-			aDirectories.Add(new KeyValuePair<String, String>(oKindName, IndexFileName(oIsAdult, oKindFileName)));
-			String aTopTemplate = LoadTemplate("HtmlIndex");
-			aTopTemplate = ApplyGeneralVars(aTopTemplate, oIsNewExists);
-			aTopTemplate = aTopTemplate.Replace(HTML_VAR_TITLE, DirectoryText(aDirectories));
-			aTopTemplate = aTopTemplate.Replace(HTML_VAR_DIRECTORY, DirectoryLink(aDirectories));
-			aTopTemplate = aTopTemplate.Replace(HTML_VAR_INDICES, aSB.ToString());
-			aTopTemplate = aTopTemplate.Replace(HTML_VAR_NUM_SONGS, "（合計 " + aNumTotalSongs.ToString("#,0") + " 曲）");
-
-			File.WriteAllText(mTempFolderPath + IndexFileName(oIsAdult, oKindFileName), aTopTemplate, Encoding.UTF8);
-		}
-
-		// --------------------------------------------------------------------
-		// インデックスページの 1 グループ分の文字列を出力
-		// --------------------------------------------------------------------
-		private Int32 OutputFreestyleIndexPageOneGroup(StringBuilder oSB, KeyValuePair<String, List<PageInfo>> oGroupAndPages, Int32 oGroupIndex, Boolean oIsAdult,
-				String oKindFileName)
-		{
-			String aGroupName = oGroupAndPages.Key;
-			StringBuilder aSbPages = new StringBuilder();
-			Int32 aNumSongs = 0;
-
-			String aOneTemplate = LoadTemplate("HtmlFreestyleIndexOneGroup");
-			aOneTemplate = aOneTemplate.Replace(HTML_VAR_CATEGORY, aGroupName);
-
-			foreach (PageInfo aPageInfo in oGroupAndPages.Value)
-			{
-				aSbPages.Append("<tr><td class=\"exist\"><a href=\"" + OutputFileName(oIsAdult, oKindFileName, aGroupName, aPageInfo.Name) + mListLinkArg + "\">"
-						+ aPageInfo.Name + " （" + aPageInfo.NumSongs.ToString("#,0") + " 曲）</a></td></tr>");
-				aNumSongs += aPageInfo.NumSongs;
-			}
-
-			aOneTemplate = aOneTemplate.Replace(HTML_VAR_PAGES, aSbPages.ToString());
-			aOneTemplate = aOneTemplate.Replace(HTML_VAR_CATEGORY_INDEX, oGroupIndex.ToString());
-			aOneTemplate = aOneTemplate.Replace(HTML_VAR_NUM_SONGS, "（" + aNumSongs.ToString("#,0") + " 曲）");
-			oSB.Append(aOneTemplate);
-
-			return aNumSongs;
-		}
-
-		// --------------------------------------------------------------------
-		// インデックスページ（ページは頭文字ごと）を出力
-		// --------------------------------------------------------------------
-		private void OutputIndexPage(Dictionary<String, List<PageInfo>> oGroupsAndPages, Boolean oIsAdult, String oKindName, String oKindFileName, Boolean oIsNewExists)
-		{
-			Int32 aNumTotalSongs = 0;
-			Int32 aGroupIndex = 0;
-			StringBuilder aSB = new StringBuilder();
-			KeyValuePair<String, List<PageInfo>> aMiscGroupAndPages = new KeyValuePair<String, List<PageInfo>>(null, null);
-
-			// その他以外
-			foreach (KeyValuePair<String, List<PageInfo>> aGroupAndPages in oGroupsAndPages)
-			{
-				if (aGroupAndPages.Key == YlCommon.GROUP_MISC)
-				{
-					aMiscGroupAndPages = aGroupAndPages;
-					continue;
-				}
-
-				aNumTotalSongs += OutputIndexPageOneGroup(aSB, aGroupAndPages, aGroupIndex, oIsAdult, oKindFileName);
-				aGroupIndex++;
-			}
-
-			// その他
-			if (aMiscGroupAndPages.Key != null)
-			{
-				aNumTotalSongs += OutputIndexPageOneGroup(aSB, aMiscGroupAndPages, aGroupIndex, oIsAdult, oKindFileName);
-			}
-
-			// インデックスページ
-			List<KeyValuePair<String, String>> aDirectories = new List<KeyValuePair<String, String>>();
-			aDirectories.Add(new KeyValuePair<String, String>(oKindName, IndexFileName(oIsAdult, oKindFileName)));
-			String aTopTemplate = LoadTemplate("HtmlIndex");
-			aTopTemplate = ApplyGeneralVars(aTopTemplate, oIsNewExists);
-			aTopTemplate = aTopTemplate.Replace(HTML_VAR_TITLE, DirectoryText(aDirectories));
-			aTopTemplate = aTopTemplate.Replace(HTML_VAR_DIRECTORY, DirectoryLink(aDirectories));
-			aTopTemplate = aTopTemplate.Replace(HTML_VAR_INDICES, aSB.ToString());
-			aTopTemplate = aTopTemplate.Replace(HTML_VAR_NUM_SONGS, "（合計 " + aNumTotalSongs.ToString("#,0") + " 曲）");
-
-			File.WriteAllText(mTempFolderPath + IndexFileName(oIsAdult, oKindFileName), aTopTemplate, Encoding.UTF8);
-		}
-
-		// --------------------------------------------------------------------
-		// インデックスページの 1 グループ分の文字列を出力
-		// --------------------------------------------------------------------
-		private Int32 OutputIndexPageOneGroup(StringBuilder oSB, KeyValuePair<String, List<PageInfo>> oGroupAndPages, Int32 oGroupIndex,
-				Boolean oIsAdult, String oKindFileName)
-		{
-			String aGroupName = oGroupAndPages.Key;
-			Boolean aHasKana = false;
-			Boolean aHasMisc = false;
-			Int32 aNumSongs = 0;
-
-			String aOneTemplate = LoadTemplate("HtmlIndexOneGroup");
-			aOneTemplate = aOneTemplate.Replace(HTML_VAR_CATEGORY, aGroupName);
-
-			foreach (PageInfo aPageInfo in oGroupAndPages.Value)
-			{
-				aOneTemplate = aOneTemplate.Replace("<td>" + aPageInfo.Name + "</td>", "<td class=\"exist\"><a href=\""
-						+ OutputFileName(oIsAdult, oKindFileName, aGroupName, aPageInfo.Name) + mListLinkArg + "\">" + aPageInfo.Name + "</a></td>");
-				aNumSongs += aPageInfo.NumSongs;
-
-				if (aPageInfo.Name == YlCommon.HEAD_MISC)
-				{
-					aHasMisc = true;
-				}
-				else
-				{
-					aHasKana = true;
-				}
-			}
-
-			aOneTemplate = aOneTemplate.Replace(HTML_VAR_CATEGORY_INDEX, oGroupIndex.ToString());
-			aOneTemplate = aOneTemplate.Replace(HTML_VAR_NUM_SONGS, "（" + aNumSongs.ToString("#,0") + " 曲）");
-			aOneTemplate = aOneTemplate.Replace(HTML_VAR_CLASS_OF_KANA, aHasKana ? null : CLASS_NAME_INVISIBLE);
-			aOneTemplate = aOneTemplate.Replace(HTML_VAR_CLASS_OF_MISC, aHasMisc ? null : CLASS_NAME_INVISIBLE);
-			oSB.Append(aOneTemplate);
-
-			return aNumSongs;
-		}
-
-		// --------------------------------------------------------------------
 		// JS を出力
 		// --------------------------------------------------------------------
 		private void OutputJs()
@@ -1129,59 +1456,21 @@ namespace YukaLister.Shared
 		}
 
 		// --------------------------------------------------------------------
-		// グループ＝NEW、ページ＝NEW、章＝番組名、でファイル出力（新着）
+		// リストを一時フォルダーに出力
 		// --------------------------------------------------------------------
-		private Boolean OutputNew()
+		private void OutputList(PageInfoTree oPageInfoTree)
 		{
-			WebOutputSettings aWebOutputSettings = (WebOutputSettings)OutputSettings;
-			if (!aWebOutputSettings.EnableNew)
+			// oPageInfoTree の内容を出力
+			if (!String.IsNullOrEmpty(oPageInfoTree.FileName))
 			{
-				return false;
+				File.WriteAllText(mTempFolderPath + oPageInfoTree.FileName, oPageInfoTree.Content, Encoding.UTF8);
 			}
 
-			OutputNewCore(false, aWebOutputSettings.NewDays);
-			OutputNewCore(true, aWebOutputSettings.NewDays);
-			return true;
-		}
-
-		// --------------------------------------------------------------------
-		// グループ＝NEW、ページ＝NEW、章＝番組名、でファイル出力（新着）
-		// --------------------------------------------------------------------
-		private void OutputNewCore(Boolean oIsAdult, Int32 oNewDays)
-		{
-			// ダミー
-			Dictionary<String, List<PageInfo>> aDummy = new Dictionary<String, List<PageInfo>>();
-
-			// 番組名とそれに紐付く楽曲群
-			Dictionary<String, List<TFound>> aTieUpNamesAndTFounds = new Dictionary<String, List<TFound>>();
-
-			Double aNewDate = JulianDay.DateTimeToModifiedJulianDate(DateTime.Now.AddDays(-oNewDays));
-
-			StringBuilder aSB = new StringBuilder();
-			IQueryable<TFound> aQueryResult =
-					from x in TableFound
-					where x.LastWriteTime >= aNewDate && (oIsAdult ? x.TieUpAgeLimit >= YlCommon.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlCommon.AGE_LIMIT_CERO_Z)
-					orderby x.Head, x.TieUpRuby, x.TieUpName, x.SongRuby, x.SongName
-					select x;
-			TFound aPrevTFound = null;
-
-			foreach (TFound aTFound in aQueryResult)
+			// 子ページの内容を出力
+			for (Int32 i = 0; i < oPageInfoTree.Children.Count; i++)
 			{
-				if (aPrevTFound == null
-						|| aPrevTFound != null && aTFound.TieUpName != aPrevTFound.TieUpName)
-				{
-					// 番組名が新しくなった
-					aTieUpNamesAndTFounds[aTFound.TieUpName] = new List<TFound>();
-				}
-
-				// 曲情報追加
-				aTieUpNamesAndTFounds[aTFound.TieUpName].Add(aTFound);
-
-				// ループ処理
-				aPrevTFound = aTFound;
+				OutputList(oPageInfoTree.Children[i]);
 			}
-
-			OutputOneList(aDummy, aTieUpNamesAndTFounds, oIsAdult, "新着", KIND_FILE_NAME_NEW, "すべて", null, OutputItems.TieUpName, true);
 		}
 
 		// --------------------------------------------------------------------
@@ -1189,18 +1478,12 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		private void OutputNoticeIndexes()
 		{
-			// ヘッダー部分に新着へのリンクを張るかどうかを調査するために設定を読む
-			WebOutputSettings aWebOutputSettings = (WebOutputSettings)OutputSettings;
-
 			// 内容
 			String aTopTemplate = LoadTemplate("HtmlIndexNotice");
-			aTopTemplate = ApplyGeneralVars(aTopTemplate, aWebOutputSettings.EnableNew);
-			aTopTemplate = aTopTemplate.Replace(HTML_VAR_TITLE, DirectoryText());
-			aTopTemplate = aTopTemplate.Replace(HTML_VAR_DIRECTORY, DirectoryLink());
 
 			// 新着（実際には新着が無い場合でも、更新中リストとしては 404 にならないように新着も出力しておく）
-			File.WriteAllText(FolderPath + OutputFileName(false, KIND_FILE_NAME_NEW, "すべて", null), aTopTemplate, Encoding.UTF8);
-			File.WriteAllText(FolderPath + OutputFileName(true, KIND_FILE_NAME_NEW, "すべて", null), aTopTemplate, Encoding.UTF8);
+			File.WriteAllText(FolderPath + OutputFileName(false, KIND_FILE_NAME_NEW, "すべて", "すべて"), aTopTemplate, Encoding.UTF8);
+			File.WriteAllText(FolderPath + OutputFileName(true, KIND_FILE_NAME_NEW, "すべて", "すべて"), aTopTemplate, Encoding.UTF8);
 
 			// インデックス系
 			File.WriteAllText(FolderPath + IndexFileName(false, KIND_FILE_NAME_CATEGORY), aTopTemplate, Encoding.UTF8);
@@ -1218,287 +1501,20 @@ namespace YukaLister.Shared
 		}
 
 		// --------------------------------------------------------------------
-		// 1 ページ分のリストを出力
-		// ＜引数＞ oChaptersAndTFounds: 章（橙色の区切り）ごとの楽曲群
+		// ページ内容を置換
 		// --------------------------------------------------------------------
-		private void OutputOneList(Dictionary<String, List<PageInfo>> oGroupsAndPages, Dictionary<String, List<TFound>> oChaptersAndTFounds, Boolean oIsAdult,
-				String oKindName, String oKindFileName, String oGroupName, String oPageName, OutputItems oChapterItem, Boolean oIsNewExists)
+		private void ReplaceListContent(PageInfoTree oPageInfoTree, String oOld, String oNew)
 		{
-			String aTemplate = LoadTemplate("HtmlList");
-
-			// null を調整
-			if (String.IsNullOrEmpty(oGroupName))
+			// oPageInfoTree の内容を置換
+			if (!String.IsNullOrEmpty(oPageInfoTree.Content))
 			{
-				oGroupName = YlCommon.GROUP_MISC;
+				oPageInfoTree.Content = oPageInfoTree.Content.Replace(oOld, oNew);
 			}
 
-			// リスト本体部分
-			StringBuilder aSB = new StringBuilder();
-			Int32 aNumPageSongs = 0;
-			Int32 aChapterIndex = 0;
-			foreach (KeyValuePair<String, List<TFound>> aChapterAndTFounds in oChaptersAndTFounds)
+			// 子ページの内容を置換
+			for (Int32 i = 0; i < oPageInfoTree.Children.Count; i++)
 			{
-				List<TFound> aList = aChapterAndTFounds.Value;
-				BeginChapter(aSB, oChapterItem, aChapterIndex, oChaptersAndTFounds.Count, aList);
-				for (Int32 i = 0; i < aList.Count; i++)
-				{
-					AppendSongInfo(aSB, oChapterItem, i, aList[i]);
-				}
-				EndChapter(aSB);
-
-				aNumPageSongs += aList.Count;
-				aChapterIndex++;
-			}
-
-			// テンプレート適用
-			List<KeyValuePair<String, String>> aDirectories = new List<KeyValuePair<String, String>>();
-			aDirectories.Add(new KeyValuePair<String, String>(oKindName, IndexFileName(oIsAdult, oKindFileName)));
-			aDirectories.Add(new KeyValuePair<String, String>(oGroupName, null));
-			if (!String.IsNullOrEmpty(oPageName))
-			{
-				aDirectories.Add(new KeyValuePair<String, String>(oPageName, null));
-			}
-			aTemplate = ApplyGeneralVars(aTemplate, oIsNewExists);
-			aTemplate = aTemplate.Replace(HTML_VAR_TITLE, DirectoryText(aDirectories));
-			aTemplate = aTemplate.Replace(HTML_VAR_DIRECTORY, DirectoryLink(aDirectories));
-			aTemplate = aTemplate.Replace(HTML_VAR_NUM_SONGS, "（" + aNumPageSongs.ToString("#,0") + " 曲）");
-			aTemplate = aTemplate.Replace(HTML_VAR_ADDITIONAL_DESCRIPTION, mAdditionalDescription);
-			aTemplate = aTemplate.Replace(HTML_VAR_PROGRAMS, aSB.ToString());
-
-			File.WriteAllText(mTempFolderPath + OutputFileName(oIsAdult, oKindFileName, oGroupName, oPageName), aTemplate, Encoding.UTF8);
-
-			// 出力済みの内容をクリア
-			oChaptersAndTFounds.Clear();
-
-			// グループとページの情報を追加
-			PageInfo aPageInfo = new PageInfo();
-			aPageInfo.Name = oPageName;
-			aPageInfo.NumSongs = aNumPageSongs;
-			if (oGroupsAndPages.ContainsKey(oGroupName))
-			{
-				oGroupsAndPages[oGroupName].Add(aPageInfo);
-			}
-			else
-			{
-				List<PageInfo> aPageInfos = new List<PageInfo>();
-				aPageInfos.Add(aPageInfo);
-				oGroupsAndPages[oGroupName] = aPageInfos;
-			}
-		}
-
-		// --------------------------------------------------------------------
-		// グループ＝年代、ページ＝頭文字、章＝番組名、でファイル出力
-		// --------------------------------------------------------------------
-		private void OutputPeriodAndHeads(Boolean oIsNewExists)
-		{
-			OutputPeriodAndHeadsCore(false, oIsNewExists);
-			OutputPeriodAndHeadsCore(true, oIsNewExists);
-		}
-
-		// --------------------------------------------------------------------
-		// グループ＝年代、ページ＝頭文字、章＝番組名、でファイル出力
-		// --------------------------------------------------------------------
-		private void OutputPeriodAndHeadsCore(Boolean oIsAdult, Boolean oIsNewExists)
-		{
-			// 年代とそれに紐付く頭文字群
-			Dictionary<String, List<PageInfo>> aPeriodsAndHeads = new Dictionary<String, List<PageInfo>>();
-
-			// 番組名とそれに紐付く楽曲群
-			Dictionary<String, List<TFound>> aTieUpNamesAndTFounds = new Dictionary<String, List<TFound>>();
-
-			// 年月日設定
-			Int32 aSinceYear = DateTime.UtcNow.Year;
-			aSinceYear -= aSinceYear % 10;
-
-			while (aSinceYear > YlCommon.INVALID_YEAR)
-			{
-				Int32 aUntilYear = aSinceYear + 10;
-
-				IQueryable<TFound> aQueryResult =
-						from x in TableFound
-						where JulianDay.DateTimeToModifiedJulianDate(new DateTime(aSinceYear, 1, 1)) <= x.SongReleaseDate
-						&& x.SongReleaseDate < JulianDay.DateTimeToModifiedJulianDate(new DateTime(aUntilYear, 1, 1))
-						&& (oIsAdult ? x.TieUpAgeLimit >= YlCommon.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlCommon.AGE_LIMIT_CERO_Z)
-						orderby x.Head, x.TieUpRuby, x.TieUpName, x.SongRuby, x.SongName
-						select x;
-				TFound aPrevTFound = null;
-
-				foreach (TFound aTFound in aQueryResult)
-				{
-					if (aPrevTFound != null
-							&& aTFound.Head != aPrevTFound.Head)
-					{
-						// 頭文字が新しくなったので 1 ページ分出力
-						OutputOneList(aPeriodsAndHeads, aTieUpNamesAndTFounds, oIsAdult, "年代別", KIND_FILE_NAME_PERIOD, aSinceYear.ToString() + " 年代",
-								aPrevTFound.Head, OutputItems.TieUpName, oIsNewExists);
-					}
-
-					if (aPrevTFound == null
-							|| aPrevTFound != null && aTFound.TieUpName != aPrevTFound.TieUpName)
-					{
-						// 番組名が新しくなった
-						aTieUpNamesAndTFounds[aTFound.TieUpName] = new List<TFound>();
-					}
-
-					// 曲情報追加
-					aTieUpNamesAndTFounds[aTFound.TieUpName].Add(aTFound);
-
-					// ループ処理
-					aPrevTFound = aTFound;
-				}
-
-				if (aPrevTFound != null)
-				{
-					OutputOneList(aPeriodsAndHeads, aTieUpNamesAndTFounds, oIsAdult, "年代別", KIND_FILE_NAME_PERIOD, aSinceYear.ToString() + " 年代",
-							aPrevTFound.Head, OutputItems.TieUpName, oIsNewExists);
-				}
-
-				aSinceYear -= 10;
-			}
-
-			// インデックスページ
-			OutputIndexPage(aPeriodsAndHeads, oIsAdult, "年代別", KIND_FILE_NAME_PERIOD, oIsNewExists);
-		}
-
-		// --------------------------------------------------------------------
-		// グループ＝タイアップグループ名の頭文字、ページ＝タイアップグループ名、章＝番組名、でファイル出力
-		// --------------------------------------------------------------------
-		private void OutputTieUpGroupHeadAndTieUpGroups(Boolean oIsNewExists)
-		{
-			OutputTieUpGroupHeadAndTieUpGroupsCore(false, oIsNewExists);
-			OutputTieUpGroupHeadAndTieUpGroupsCore(true, oIsNewExists);
-		}
-
-		// --------------------------------------------------------------------
-		// グループ＝タイアップグループ名の頭文字、ページ＝タイアップグループ名、章＝番組名、でファイル出力
-		// --------------------------------------------------------------------
-		private void OutputTieUpGroupHeadAndTieUpGroupsCore(Boolean oIsAdult, Boolean oIsNewExists)
-		{
-			// 頭文字とそれに紐付くタイアップグループ群
-			Dictionary<String, List<PageInfo>> aHeadsAndTieUpGroups = new Dictionary<String, List<PageInfo>>();
-
-			// 番組名とそれに紐付く楽曲群
-			Dictionary<String, List<TFound>> aTieUpNamesAndTFounds = new Dictionary<String, List<TFound>>();
-
-			IQueryable<TFound> aQueryResult =
-					from x in TableFound
-					where x.TieUpGroupName != null && (oIsAdult ? x.TieUpAgeLimit >= YlCommon.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlCommon.AGE_LIMIT_CERO_Z)
-					orderby x.TieUpGroupRuby, x.TieUpGroupName, x.Head, x.TieUpRuby, x.TieUpName, x.SongRuby, x.SongName
-					select x;
-			TFound aPrevTFound = null;
-			String aPrevTieUpGroupHead = null;
-
-			foreach (TFound aTFound in aQueryResult)
-			{
-				String aTieUpGroupHead = !String.IsNullOrEmpty(aTFound.TieUpGroupRuby) ? YlCommon.Head(aTFound.TieUpGroupRuby) : YlCommon.Head(aTFound.TieUpGroupName);
-
-				if (aPrevTFound != null
-						&& (aTieUpGroupHead != aPrevTieUpGroupHead || aTFound.TieUpGroupRuby != aPrevTFound.TieUpGroupRuby || aTFound.TieUpGroupName != aPrevTFound.TieUpGroupName))
-				{
-					// 頭文字またはページが新しくなったので 1 ページ分出力
-					OutputOneList(aHeadsAndTieUpGroups, aTieUpNamesAndTFounds, oIsAdult, "シリーズ別", KIND_FILE_NAME_TIE_UP_GROUP, aPrevTieUpGroupHead,
-							aPrevTFound.TieUpGroupName + "シリーズ", OutputItems.TieUpName, oIsNewExists);
-				}
-
-				if (aPrevTFound == null
-						|| aPrevTFound != null && aTFound.TieUpName != aPrevTFound.TieUpName)
-				{
-					// 番組名が新しくなった
-					aTieUpNamesAndTFounds[aTFound.TieUpName] = new List<TFound>();
-				}
-
-				// 曲情報追加
-				aTieUpNamesAndTFounds[aTFound.TieUpName].Add(aTFound);
-
-				// ループ処理
-				aPrevTFound = aTFound;
-				aPrevTieUpGroupHead = aTieUpGroupHead;
-			}
-
-			if (aPrevTFound != null)
-			{
-				OutputOneList(aHeadsAndTieUpGroups, aTieUpNamesAndTFounds, oIsAdult, "シリーズ別", KIND_FILE_NAME_TIE_UP_GROUP, aPrevTieUpGroupHead,
-						aPrevTFound.TieUpGroupName + "シリーズ", OutputItems.TieUpName, oIsNewExists);
-			}
-
-			// インデックスページ
-			OutputFreestyleIndexPage(aHeadsAndTieUpGroups, oIsAdult, "シリーズ別", KIND_FILE_NAME_TIE_UP_GROUP, oIsNewExists);
-		}
-
-		// --------------------------------------------------------------------
-		// グループ＝年、ページ＝季節、章＝番組名、でファイル出力
-		// 直近 SEASON_YEARS 年分のみ
-		// --------------------------------------------------------------------
-		private void OutputYearsAndSeasons(Boolean oIsNewExists)
-		{
-			OutputYearsAndSeasonsCore(false, oIsNewExists);
-			OutputYearsAndSeasonsCore(true, oIsNewExists);
-		}
-
-		// --------------------------------------------------------------------
-		// グループ＝年、ページ＝季節、章＝番組名、でファイル出力
-		// 直近 SEASON_YEARS 年分のみ
-		// --------------------------------------------------------------------
-		private void OutputYearsAndSeasonsCore(Boolean oIsAdult, Boolean oIsNewExists)
-		{
-			// 年とそれに紐付く季節群
-			Dictionary<String, List<PageInfo>> aYearsAndSeasons = new Dictionary<String, List<PageInfo>>();
-
-			// 年月日設定
-			Int32 aSinceYear = DateTime.UtcNow.Year;
-			Int32 aUntilYear = aSinceYear - SEASON_YEARS;
-
-			while (aSinceYear > aUntilYear)
-			{
-				OutputYearsAndSeasonsOneSeason(aYearsAndSeasons, oIsAdult, aSinceYear, 1, aSinceYear, 4, "1 月～3 月：冬", oIsNewExists);
-				OutputYearsAndSeasonsOneSeason(aYearsAndSeasons, oIsAdult, aSinceYear, 4, aSinceYear, 7, "4 月～6 月：春", oIsNewExists);
-				OutputYearsAndSeasonsOneSeason(aYearsAndSeasons, oIsAdult, aSinceYear, 7, aSinceYear, 10, "7 月～9 月：夏", oIsNewExists);
-				OutputYearsAndSeasonsOneSeason(aYearsAndSeasons, oIsAdult, aSinceYear, 10, aSinceYear + 1, 1, "10 月～12 月：秋", oIsNewExists);
-				aSinceYear--;
-			}
-
-			// インデックスページ
-			OutputFreestyleIndexPage(aYearsAndSeasons, oIsAdult, "期別", KIND_FILE_NAME_SEASON, oIsNewExists);
-		}
-
-		// --------------------------------------------------------------------
-		// 1 期分を出力
-		// --------------------------------------------------------------------
-		private void OutputYearsAndSeasonsOneSeason(Dictionary<String, List<PageInfo>> oYearsAndSeasons, Boolean oIsAdult, Int32 oSinceYear, Int32 oSinceMonth,
-				Int32 oUntilYear, Int32 oUntilMonth, String oSeasonName, Boolean oIsNewExists)
-		{
-			// 番組名とそれに紐付く楽曲群
-			Dictionary<String, List<TFound>> aTieUpNamesAndTFounds = new Dictionary<String, List<TFound>>();
-
-			IQueryable<TFound> aQueryResult =
-					from x in TableFound
-					where JulianDay.DateTimeToModifiedJulianDate(new DateTime(oSinceYear, oSinceMonth, 1)) <= x.SongReleaseDate
-					&& x.SongReleaseDate < JulianDay.DateTimeToModifiedJulianDate(new DateTime(oUntilYear, oUntilMonth, 1))
-					&& (oIsAdult ? x.TieUpAgeLimit >= YlCommon.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlCommon.AGE_LIMIT_CERO_Z)
-					orderby x.Head, x.TieUpRuby, x.TieUpName, x.SongRuby, x.SongName
-					select x;
-			TFound aPrevTFound = null;
-
-			foreach (TFound aTFound in aQueryResult)
-			{
-				if (aPrevTFound == null
-						|| aPrevTFound != null && aTFound.TieUpName != aPrevTFound.TieUpName)
-				{
-					// 番組名が新しくなった
-					aTieUpNamesAndTFounds[aTFound.TieUpName] = new List<TFound>();
-				}
-
-				// 曲情報追加
-				aTieUpNamesAndTFounds[aTFound.TieUpName].Add(aTFound);
-
-				// ループ処理
-				aPrevTFound = aTFound;
-			}
-
-			if (aPrevTFound != null)
-			{
-				OutputOneList(oYearsAndSeasons, aTieUpNamesAndTFounds, oIsAdult, "期別", KIND_FILE_NAME_SEASON, oSinceYear.ToString() + " 年",
-						oSeasonName, OutputItems.TieUpName, oIsNewExists);
+				ReplaceListContent(oPageInfoTree.Children[i], oOld, oNew);
 			}
 		}
 
@@ -1519,15 +1535,30 @@ namespace YukaLister.Shared
 			TextBoxNewDays.IsEnabled = (Boolean)CheckBoxEnableNew.IsChecked;
 		}
 
+		// --------------------------------------------------------------------
+		// ゾーニング名称
+		// --------------------------------------------------------------------
+		private String ZoneName(Boolean oIsAdult)
+		{
+			return oIsAdult ? "アダルト " : "一般 ";
+		}
+
+		// --------------------------------------------------------------------
+		// ゾーニングされたページ
+		// --------------------------------------------------------------------
+		private PageInfoTree ZonePage(Boolean oIsAdult)
+		{
+			return oIsAdult ? mTopPage.Children[1] : mTopPage.Children[0];
+		}
 
 	}
-	// public class HtmlOutputWriter ___END___
+	// public abstract class WebOutputWriter ___END___
 
 	// ====================================================================
-	// リスト 1 ページの情報
+	// リスト全体の情報をツリー状に管理
 	// ====================================================================
 
-	public class PageInfo
+	public class PageInfoTree
 	{
 		// ====================================================================
 		// コンストラクター・デストラクター
@@ -1536,8 +1567,9 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		// コンストラクター
 		// --------------------------------------------------------------------
-		public PageInfo()
+		public PageInfoTree()
 		{
+			Children = new List<PageInfoTree>();
 		}
 
 		// ====================================================================
@@ -1547,11 +1579,102 @@ namespace YukaLister.Shared
 		// ページ名
 		public String Name { get; set; }
 
-		// 当該頭文字の曲数
+		// ページファイル名
+		// null の場合、構造表現専用ページなので、ページ内容はディスクに出力されない
+		public String FileName { get; set; }
+
+		// ページ内容
+		public String Content { get; set; }
+
+		// ページ単体の曲数
 		public Int32 NumSongs { get; set; }
 
+		// ページ単体に加え、子ページとその配下を含む曲数
+		public Int32 NumTotalSongs
+		{
+			get
+			{
+				Int32 aSongs = NumSongs;
+				for (Int32 i = 0; i < Children.Count; i++)
+				{
+					aSongs += Children[i].NumTotalSongs;
+				}
+				return aSongs;
+			}
+		}
+
+		// 子ページ
+		// 要素の追加は必ず AddChild() で行うこと
+		public List<PageInfoTree> Children { get; set; }
+
+		// 親ページ
+		public PageInfoTree Parent { get; private set; }
+
+		// ====================================================================
+		// public メンバー関数
+		// ====================================================================
+
+		// --------------------------------------------------------------------
+		// 子ページの追加
+		// --------------------------------------------------------------------
+		public void AddChild(PageInfoTree oPage)
+		{
+			oPage.Parent = this;
+			Children.Add(oPage);
+		}
+
+		// --------------------------------------------------------------------
+		// 階層テキストのリンク
+		// --------------------------------------------------------------------
+		public String DirectoryLink(String oListLinkArg)
+		{
+			if (String.IsNullOrEmpty(mDirectoryLinkCache))
+			{
+				if (Parent != null)
+				{
+					mDirectoryLinkCache = Parent.DirectoryLink(oListLinkArg) + " &gt; ";
+				}
+				if (String.IsNullOrEmpty(FileName))
+				{
+					// 非リンク
+					mDirectoryLinkCache += Name;
+				}
+				else
+				{
+					// リンク
+					mDirectoryLinkCache += "<a href=\"" + FileName + oListLinkArg + "\">" + Name + "</a>";
+				}
+			}
+			return mDirectoryLinkCache;
+		}
+
+		// --------------------------------------------------------------------
+		// 階層テキスト
+		// --------------------------------------------------------------------
+		public String DirectoryText()
+		{
+			if (String.IsNullOrEmpty(mDirectoryTextCache))
+			{
+				if (Parent != null)
+				{
+					mDirectoryTextCache = Parent.DirectoryText() + " &gt; ";
+				}
+				mDirectoryTextCache += Name;
+			}
+			return mDirectoryTextCache;
+		}
+
+		// ====================================================================
+		// private メンバー変数
+		// ====================================================================
+
+		// DirectoryText キャッシュ用
+		private String mDirectoryTextCache;
+
+		// DirectoryLink キャッシュ用
+		private String mDirectoryLinkCache;
 	}
-	// public class PageInfo ___END___
+	// public class PageInfoTree ___END___
 
 }
 // namespace YukaLister.Shared ___END___

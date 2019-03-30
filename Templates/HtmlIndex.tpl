@@ -24,7 +24,7 @@
 <!-- $Indices$ -->
 </div>
 <p>
-<!-- $NumSongs$ -->
+（合計 <!-- $NumSongs$ --> 曲）
 </p>
 <p class="generator">by <!-- $Generator$ --> <!-- $GenerateDate$ --></p>
 </body>

@@ -8,6 +8,7 @@
 // 【アクセス仕様】
 // ・サムネイル画像取得
 //   <アドレス>:<ポート>/thumb?uid=<ファイル番号>[&width=<横幅>][&easypass=<簡易認証キーワード>]
+//   横幅として指定可能な値は YlCommon.THUMB_WIDTH_LIST 参照
 //   http://localhost:13582/thumb?uid=7&width=80
 // ・動画プレビュー
 //   <アドレス>:<ポート>/preview?uid=<ファイル番号>[&easypass=<簡易認証キーワード>]
