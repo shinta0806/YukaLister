@@ -504,6 +504,9 @@ namespace YukaLister.Shared
 		// 頭文字の「その他」
 		public const String HEAD_MISC = GROUP_MISC;
 
+		// タイアップグループ名を表示する際に末尾に付与する文字列
+		public const String TIE_UP_GROUP_SUFFIX = "シリーズ";
+
 		// 日付の書式指定子
 		public const String DATE_FORMAT = "yyyy/MM/dd";
 

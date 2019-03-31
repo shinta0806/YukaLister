@@ -1425,7 +1425,7 @@ namespace YukaLister
 			mOwner.LabelName.Content = "シリーズ" + mOwner.LabelName.Content;
 
 			// ヒント
-			mTextBoxName.ToolTip = "シリーズ名に「シリーズ」は含めないで下さい。";
+			mTextBoxName.ToolTip = "シリーズ名に「" + YlCommon.TIE_UP_GROUP_SUFFIX + "」は含めないで下さい。";
 			HintAssist.SetHint(mTextBoxName, mTextBoxName.ToolTip);
 			ToolTipService.SetShowDuration(mTextBoxName, YlCommon.TOOL_TIP_LONG_INTERVAL);
 

@@ -517,14 +517,23 @@ namespace YukaLister.Shared
 			// 章名挿入
 			oSB.Append("<input type=\"checkbox\" id=\"label" + oChapterIndex + "\" class=\"accparent\"");
 
-			// 章数が 1、かつ、番組名 == 頭文字、の場合（ボカロ等）は、リストが最初から開いた状態にする
+			// 章数が 1、かつ、タイアップ名 == 頭文字、の場合（ボカロ等）は、リストが最初から開いた状態にする
 			if (oNumChapters == 1 && oTFounds[0].TieUpName == oTFounds[0].Head)
 			{
 				oSB.Append(" checked=\"checked\"");
 			}
 			oSB.Append(">\n");
 			oSB.Append("<label for=\"label" + oChapterIndex + "\">" + ChapterValue(oChapterItem, oTFounds[0]) + "　（"
-					+ oTFounds.Count.ToString("#,0") + " 曲）" + "</label>\n");
+					+ oTFounds.Count.ToString("#,0") + " 曲）");
+			if (oChapterItem == OutputItems.TieUpName && !String.IsNullOrEmpty(oTFounds[0].TieUpGroupName))
+			{
+				// 章の区切りがタイアップ名の場合、シリーズがあるなら記載する
+				oSB.Append("　<a class=\"series\" href=\"");
+				oSB.Append(OutputFileName(oTFounds[0].TieUpAgeLimit >= YlCommon.AGE_LIMIT_CERO_Z, KIND_FILE_NAME_TIE_UP_GROUP,
+						TieUpGroupHead(oTFounds[0]), oTFounds[0].TieUpGroupName + YlCommon.TIE_UP_GROUP_SUFFIX));
+				oSB.Append("\">" + oTFounds[0].TieUpGroupName + YlCommon.TIE_UP_GROUP_SUFFIX + "</a>");
+			}
+			oSB.Append("</label>\n");
 			oSB.Append("<div class=\"accchild\">\n");
 
 			// テーブルを開く
@@ -1179,14 +1188,14 @@ namespace YukaLister.Shared
 
 			foreach (TFound aTFound in aQueryResult)
 			{
-				String aTieUpGroupHead = !String.IsNullOrEmpty(aTFound.TieUpGroupRuby) ? YlCommon.Head(aTFound.TieUpGroupRuby) : YlCommon.Head(aTFound.TieUpGroupName);
+				String aTieUpGroupHead = TieUpGroupHead(aTFound);
 
 				if (aPrevTFound != null
 						&& (aTieUpGroupHead != aPrevTieUpGroupHead || aTFound.TieUpGroupRuby != aPrevTFound.TieUpGroupRuby || aTFound.TieUpGroupName != aPrevTFound.TieUpGroupName))
 				{
 					// 頭文字またはページが新しくなったので 1 ページ分出力
 					GenerateOneList(aPageInfoTree, aTieUpNamesAndTFounds, oIsAdult,
-							KIND_FILE_NAME_TIE_UP_GROUP, aPrevTieUpGroupHead, aPrevTFound.TieUpGroupName + "シリーズ", OutputItems.TieUpName);
+							KIND_FILE_NAME_TIE_UP_GROUP, aPrevTieUpGroupHead, aPrevTFound.TieUpGroupName + YlCommon.TIE_UP_GROUP_SUFFIX, OutputItems.TieUpName);
 				}
 
 				if (aPrevTFound == null
@@ -1207,7 +1216,7 @@ namespace YukaLister.Shared
 			if (aPrevTFound != null)
 			{
 				GenerateOneList(aPageInfoTree, aTieUpNamesAndTFounds, oIsAdult,
-						KIND_FILE_NAME_TIE_UP_GROUP, aPrevTieUpGroupHead, aPrevTFound.TieUpGroupName + "シリーズ", OutputItems.TieUpName);
+						KIND_FILE_NAME_TIE_UP_GROUP, aPrevTieUpGroupHead, aPrevTFound.TieUpGroupName + YlCommon.TIE_UP_GROUP_SUFFIX, OutputItems.TieUpName);
 			}
 
 			// インデックス
@@ -1514,6 +1523,14 @@ namespace YukaLister.Shared
 		{
 			Byte[] aByteData = Encoding.UTF8.GetBytes(oString);
 			return BitConverter.ToString(aByteData).Replace("-", String.Empty).ToLower();
+		}
+
+		// --------------------------------------------------------------------
+		// タイアップグループ名の頭文字
+		// --------------------------------------------------------------------
+		private String TieUpGroupHead(TFound oTFound)
+		{
+			return !String.IsNullOrEmpty(oTFound.TieUpGroupRuby) ? YlCommon.Head(oTFound.TieUpGroupRuby) : YlCommon.Head(oTFound.TieUpGroupName);
 		}
 
 		// --------------------------------------------------------------------

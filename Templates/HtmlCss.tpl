@@ -104,6 +104,13 @@ div.indices label:after
 	border-color: #ffffff #ffffff #a8d4ff;
 }
 
+a.series
+{
+	color: #aa4020;
+	font-size: 70%;
+	text-decoration-line: none;
+}
+
 div.indices table
 {
 	margin-bottom: 10px;
