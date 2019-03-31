@@ -584,6 +584,7 @@ namespace YukaLister.Shared
 		{
 			Debug.Assert(!String.IsNullOrEmpty(mListExt), "DeleteOldList() mListExt が初期化されていない");
 
+			DeleteOldListContentsCore(KIND_FILE_NAME_NEW);
 			DeleteOldListContentsCore(KIND_FILE_NAME_CATEGORY);
 			DeleteOldListContentsCore(KIND_FILE_NAME_TIE_UP_GROUP);
 			DeleteOldListContentsCore(KIND_FILE_NAME_PERIOD);
@@ -708,24 +709,35 @@ namespace YukaLister.Shared
 			aPageInfoTree.Name = "カテゴリー別";
 			aPageInfoTree.FileName = IndexFileName(oIsAdult, KIND_FILE_NAME_CATEGORY);
 
-			// 番組名とそれに紐付く楽曲群
-			Dictionary<String, List<TFound>> aTieUpNamesAndTFounds = new Dictionary<String, List<TFound>>();
-
 			IQueryable<TFound> aQueryResult =
 					from x in TableFound
 					where oIsAdult ? x.TieUpAgeLimit >= YlCommon.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlCommon.AGE_LIMIT_CERO_Z
 					orderby x.Category, x.Head, x.TieUpRuby, x.TieUpName, x.SongRuby, x.SongName
 					select x;
+
+			GenerateCategoryAndHeadsCore(aPageInfoTree, aQueryResult, oIsAdult, KIND_FILE_NAME_CATEGORY);
+
+			return aPageInfoTree;
+		}
+
+		// --------------------------------------------------------------------
+		// グループ＝カテゴリー、ページ＝頭文字、章＝番組名、でページ内容生成
+		// --------------------------------------------------------------------
+		private void GenerateCategoryAndHeadsCore(PageInfoTree oPageInfoTree, IQueryable<TFound> oQueryResult, Boolean oIsAdult, String oKindFileName)
+		{
+			// 番組名とそれに紐付く楽曲群
+			Dictionary<String, List<TFound>> aTieUpNamesAndTFounds = new Dictionary<String, List<TFound>>();
+
 			TFound aPrevTFound = null;
 
-			foreach (TFound aTFound in aQueryResult)
+			foreach (TFound aTFound in oQueryResult)
 			{
 				if (aPrevTFound != null
 						&& (aTFound.Category != aPrevTFound.Category || aTFound.Head != aPrevTFound.Head))
 				{
 					// カテゴリーまたはページが新しくなったので 1 ページ分出力
-					GenerateOneList(aPageInfoTree, aTieUpNamesAndTFounds, oIsAdult,
-							KIND_FILE_NAME_CATEGORY, aPrevTFound.Category, aPrevTFound.Head, OutputItems.TieUpName);
+					GenerateOneList(oPageInfoTree, aTieUpNamesAndTFounds, oIsAdult,
+							oKindFileName, aPrevTFound.Category, aPrevTFound.Head, OutputItems.TieUpName);
 				}
 
 				if (!String.IsNullOrEmpty(aTFound.TieUpName))
@@ -746,14 +758,12 @@ namespace YukaLister.Shared
 
 			if (aPrevTFound != null)
 			{
-				GenerateOneList(aPageInfoTree, aTieUpNamesAndTFounds, oIsAdult,
-						KIND_FILE_NAME_CATEGORY, aPrevTFound.Category, aPrevTFound.Head, OutputItems.TieUpName);
+				GenerateOneList(oPageInfoTree, aTieUpNamesAndTFounds, oIsAdult,
+						oKindFileName, aPrevTFound.Category, aPrevTFound.Head, OutputItems.TieUpName);
 			}
 
 			// インデックス
-			GenerateIndexPageContent(aPageInfoTree, oIsAdult, KIND_FILE_NAME_CATEGORY, "カテゴリー名");
-
-			return aPageInfoTree;
+			GenerateIndexPageContent(oPageInfoTree, oIsAdult, oKindFileName, "カテゴリー名");
 		}
 
 		// --------------------------------------------------------------------
@@ -975,38 +985,18 @@ namespace YukaLister.Shared
 		{
 			PageInfoTree aPageInfoTree = new PageInfoTree();
 			aPageInfoTree.Name = "新着";
-
-			// 番組名とそれに紐付く楽曲群
-			Dictionary<String, List<TFound>> aTieUpNamesAndTFounds = new Dictionary<String, List<TFound>>();
+			aPageInfoTree.FileName = IndexFileName(oIsAdult, KIND_FILE_NAME_NEW);
 
 			// 新着とする日付
 			Double aNewDate = JulianDay.DateTimeToModifiedJulianDate(DateTime.Now.AddDays(-((WebOutputSettings)OutputSettings).NewDays));
 
-			StringBuilder aSB = new StringBuilder();
 			IQueryable<TFound> aQueryResult =
 					from x in TableFound
 					where x.LastWriteTime >= aNewDate && (oIsAdult ? x.TieUpAgeLimit >= YlCommon.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlCommon.AGE_LIMIT_CERO_Z)
 					orderby x.Head, x.TieUpRuby, x.TieUpName, x.SongRuby, x.SongName
 					select x;
-			TFound aPrevTFound = null;
 
-			foreach (TFound aTFound in aQueryResult)
-			{
-				if (aPrevTFound == null
-						|| aPrevTFound != null && aTFound.TieUpName != aPrevTFound.TieUpName)
-				{
-					// 番組名が新しくなった
-					aTieUpNamesAndTFounds[aTFound.TieUpName] = new List<TFound>();
-				}
-
-				// 曲情報追加
-				aTieUpNamesAndTFounds[aTFound.TieUpName].Add(aTFound);
-
-				// ループ処理
-				aPrevTFound = aTFound;
-			}
-
-			GenerateOneList(aPageInfoTree, aTieUpNamesAndTFounds, oIsAdult, KIND_FILE_NAME_NEW, "すべて", "すべて", OutputItems.TieUpName);
+			GenerateCategoryAndHeadsCore(aPageInfoTree, aQueryResult, oIsAdult, KIND_FILE_NAME_NEW);
 
 			return aPageInfoTree;
 		}
@@ -1328,7 +1318,7 @@ namespace YukaLister.Shared
 			oSB.Append("<td>　" + ZoneName(oIsAdult) + "　</td>");
 			if (oIsNewExists)
 			{
-				oSB.Append("<td class=\"exist\"><a href=\"" + OutputFileName(oIsAdult, KIND_FILE_NAME_NEW, "すべて", "すべて") + mListLinkArg + "\">　新着　</a></td>");
+				oSB.Append("<td class=\"exist\"><a href=\"" + IndexFileName(oIsAdult, KIND_FILE_NAME_NEW) + mListLinkArg + "\">　新着　</a></td>");
 			}
 			oSB.Append("<td class=\"exist\"><a href=\"" + IndexFileName(oIsAdult, KIND_FILE_NAME_CATEGORY) + mListLinkArg + "\">　カテゴリー別　</a></td>");
 			oSB.Append("<td class=\"exist\"><a href=\"" + IndexFileName(oIsAdult, KIND_FILE_NAME_TIE_UP_GROUP) + mListLinkArg + "\">　シリーズ別　</a></td>");
@@ -1359,8 +1349,9 @@ namespace YukaLister.Shared
 		// --------------------------------------------------------------------
 		private void MoveList()
 		{
-			MoveListNew(false);
-			MoveListNew(true);
+			MoveListContentsCore(KIND_FILE_NAME_NEW);
+			MoveListIndexCore(false, KIND_FILE_NAME_NEW);
+			MoveListIndexCore(true, KIND_FILE_NAME_NEW);
 
 			MoveListContentsCore(KIND_FILE_NAME_CATEGORY);
 			MoveListIndexCore(false, KIND_FILE_NAME_CATEGORY);
@@ -1426,37 +1417,6 @@ namespace YukaLister.Shared
 		}
 
 		// --------------------------------------------------------------------
-		// 一時フォルダーからリスト（新着）を移動
-		// --------------------------------------------------------------------
-		private void MoveListNew(Boolean oIsAdult)
-		{
-			String aNewFileName = OutputFileName(oIsAdult, KIND_FILE_NAME_NEW, "すべて", "すべて");
-			if (((WebOutputSettings)OutputSettings).EnableNew)
-			{
-				try
-				{
-					// File.Move() には上書きフラグが無いので File.Copy() を使う
-					File.Copy(mTempFolderPath + aNewFileName, FolderPath + aNewFileName, true);
-					File.Delete(mTempFolderPath + aNewFileName);
-				}
-				catch (Exception)
-				{
-					LogWriter.ShowLogMessage(TraceEventType.Error, "リストファイル " + aNewFileName + " を移動できませんでした。", true);
-				}
-			}
-			else
-			{
-				try
-				{
-					File.Delete(FolderPath + aNewFileName);
-				}
-				catch (Exception)
-				{
-				}
-			}
-		}
-
-		// --------------------------------------------------------------------
 		// CSS を出力
 		// --------------------------------------------------------------------
 		private void OutputCss()
@@ -1511,8 +1471,8 @@ namespace YukaLister.Shared
 			String aTopTemplate = LoadTemplate("HtmlIndexNotice");
 
 			// 新着（実際には新着が無い場合でも、更新中リストとしては 404 にならないように新着も出力しておく）
-			File.WriteAllText(FolderPath + OutputFileName(false, KIND_FILE_NAME_NEW, "すべて", "すべて"), aTopTemplate, Encoding.UTF8);
-			File.WriteAllText(FolderPath + OutputFileName(true, KIND_FILE_NAME_NEW, "すべて", "すべて"), aTopTemplate, Encoding.UTF8);
+			File.WriteAllText(FolderPath + IndexFileName(false, KIND_FILE_NAME_NEW), aTopTemplate, Encoding.UTF8);
+			File.WriteAllText(FolderPath + IndexFileName(true, KIND_FILE_NAME_NEW), aTopTemplate, Encoding.UTF8);
 
 			// インデックス系
 			File.WriteAllText(FolderPath + IndexFileName(false, KIND_FILE_NAME_CATEGORY), aTopTemplate, Encoding.UTF8);
