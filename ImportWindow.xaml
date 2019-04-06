@@ -7,7 +7,7 @@
         mc:Ignorable="d" Width="730" Height="330" Loaded="Window_Loaded" SourceInitialized="Window_SourceInitialized" Icon="アイコン/YukaListerアイコン_1.ico" ShowInTaskbar="False" ResizeMode="CanResizeWithGrip">
     <DockPanel>
         <DockPanel Margin="20,20,20,0" DockPanel.Dock="Top">
-            <Button x:Name="ButtonAbort" Height="Auto" Content="中止 (_A)" Style="{StaticResource MaterialDesignRaisedLightButton}" Margin="0" DockPanel.Dock="Right" Width="100"/>
+            <Button x:Name="ButtonAbort" Height="Auto" Content="中止 (_A)" Style="{StaticResource MaterialDesignRaisedLightButton}" Margin="0" DockPanel.Dock="Right" Width="100" Click="ButtonAbort_Click"/>
             <Label x:Name="LabelSrc" Content="-"/>
         </DockPanel>
         <DockPanel Margin="20,10,20,20">

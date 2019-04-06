@@ -1138,6 +1138,27 @@ namespace YukaLister
 				mLogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
+
+		private void ButtonAbort_Click(object sender, RoutedEventArgs e)
+		{
+			try
+			{
+				if (MessageBox.Show("インポートを中止してよろしいですか？", "確認",
+						MessageBoxButton.YesNo, MessageBoxImage.Exclamation) == MessageBoxResult.No)
+				{
+					return;
+				}
+
+				mLogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "インポートを中止しています...");
+				mAbortCancellationTokenSource.Cancel();
+				Close();
+			}
+			catch (Exception oExcep)
+			{
+				mLogWriter.ShowLogMessage(TraceEventType.Error, "中止ボタンクリック時エラー：\n" + oExcep.Message);
+				mLogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+			}
+		}
 	}
 	// public partial class ImportWindow ___END___
 }
