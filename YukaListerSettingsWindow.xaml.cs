@@ -857,19 +857,6 @@ namespace YukaLister
 			}
 		}
 
-		private void TabItemImport_DragOver(object sender, DragEventArgs e)
-		{
-			try
-			{
-				AcceptDragEnterIfFileExists(e);
-			}
-			catch (Exception oExcep)
-			{
-				mLogWriter.ShowLogMessage(TraceEventType.Error, "インポートタブドラッグエンター時エラー：\n" + oExcep.Message);
-				mLogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
-			}
-		}
-
 		private void TabItemImport_Drop(object sender, DragEventArgs e)
 		{
 			try
@@ -1111,19 +1098,6 @@ namespace YukaLister
 			}
 		}
 
-		private void TabItemSettings_DragOver(object sender, DragEventArgs e)
-		{
-			try
-			{
-				AcceptDragEnterIfFileExists(e);
-			}
-			catch (Exception oExcep)
-			{
-				mLogWriter.ShowLogMessage(TraceEventType.Error, "設定タブドラッグエンター時エラー：\n" + oExcep.Message);
-				mLogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
-			}
-		}
-
 		private void TabItemSettings_Drop(object sender, DragEventArgs e)
 		{
 			try
@@ -1196,7 +1170,7 @@ namespace YukaLister
 			}
 		}
 
-		private void TabControlYukaListerSettings_DragOver(object sender, DragEventArgs e)
+		private void TabControlYukaListerSettings_PreviewDragOver(object sender, DragEventArgs e)
 		{
 			try
 			{

@@ -302,7 +302,7 @@ namespace YukaLister.Shared
 		public const String APP_ID = "YukaLister";
 		public const String APP_GENERATION = "METEOR";
 		public const String APP_NAME_J = "ゆかりすたー " + APP_GENERATION + " ";
-		public const String APP_VER = "Ver 1.40 β";
+		public const String APP_VER = "Ver 1.50 β";
 		public const String COPYRIGHT_J = "Copyright (C) 2019 by SHINTA";
 
 		// --------------------------------------------------------------------

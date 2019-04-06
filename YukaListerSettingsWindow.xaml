@@ -6,13 +6,13 @@
         xmlns:local="clr-namespace:YukaLister"
         mc:Ignorable="d" ResizeMode="NoResize" ShowInTaskbar="False" SizeToContent="WidthAndHeight" Loaded="Window_Loaded" Closed="Window_Closed" Icon="アイコン/YukaListerアイコン_1.ico">
     <StackPanel>
-        <TabControl x:Name="TabControlYukaListerSettings" Height="480" Width="570" Margin="10,10,10,0" AllowDrop="True" DragOver="TabControlYukaListerSettings_DragOver" Drop="TabControlYukaListerSettings_Drop">
-            <TabItem x:Name="TabItemSettings" Header="設定" DragOver="TabItemSettings_DragOver" Drop="TabItemSettings_Drop" AllowDrop="True">
+        <TabControl x:Name="TabControlYukaListerSettings" Height="480" Width="570" Margin="10,10,10,0" AllowDrop="True" Drop="TabControlYukaListerSettings_Drop" PreviewDragOver="TabControlYukaListerSettings_PreviewDragOver">
+            <TabItem x:Name="TabItemSettings" Header="設定">
                 <StackPanel>
                     <DockPanel Margin="20,20,20,0">
                         <Label Content="ゆかり設定ファイル (_Y)：" VerticalAlignment="Center" />
                         <Button x:Name="ButtonBrowseYukariConfigPathSeed" Height="Auto" Content="参照 (_B)" Style="{StaticResource MaterialDesignRaisedLightButton}" Margin="0" DockPanel.Dock="Right" Width="100" Click="ButtonBrowseYukariConfigPathSeed_Click"/>
-                        <TextBox x:Name="TextBoxYukariConfigPathSeed" VerticalAlignment="Center" Margin="0,0,10,0" TextChanged="TextBoxYukariConfigPathSeed_TextChanged" DragOver="TabItemSettings_DragOver"/>
+                        <TextBox x:Name="TextBoxYukariConfigPathSeed" VerticalAlignment="Center" Margin="0,0,10,0" TextChanged="TextBoxYukariConfigPathSeed_TextChanged"/>
                     </DockPanel>
                 </StackPanel>
             </TabItem>
@@ -111,7 +111,7 @@
                     </StackPanel>
                 </StackPanel>
             </TabItem>
-            <TabItem x:Name="TabItemImport" Header="インポート" DragOver="TabItemImport_DragOver" Drop="TabItemImport_Drop" AllowDrop="True">
+            <TabItem x:Name="TabItemImport" Header="インポート">
                 <StackPanel>
                     <StackPanel Margin="20,20,0,0">
                         <RadioButton x:Name="RadioButtonImportYukaLister" Content="ゆかりすたーでエクスポートしたファイルをインポート (_Y)" GroupName="Import" Checked="RadioButtonImport_Checked"/>
