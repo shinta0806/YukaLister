@@ -103,6 +103,17 @@ namespace YukaLister
 		}
 
 		// --------------------------------------------------------------------
+		// 必要に応じて検索ウィンドウを閉じる
+		// --------------------------------------------------------------------
+		private void CloseFindKeywordWindowIfNeeded()
+		{
+			if (mFindKeywordWindow != null && mFindKeywordWindow.IsVisible)
+			{
+				mFindKeywordWindow.Close();
+			}
+		}
+
+		// --------------------------------------------------------------------
 		// イベントハンドラー
 		// --------------------------------------------------------------------
 		private void ExecutedRoutedCommandCtrlF(object oSender, ExecutedRoutedEventArgs oExecutedRoutedEventArgs)
@@ -154,6 +165,7 @@ namespace YukaLister
 			{
 				return;
 			}
+			CloseFindKeywordWindowIfNeeded();
 
 			String aPath = mTFounds[aRowIndex].Path;
 
@@ -182,6 +194,11 @@ namespace YukaLister
 		private void FindKeyword()
 		{
 			if (String.IsNullOrEmpty(mFindKeywordWindow.Keyword))
+			{
+				throw new Exception("キーワードが指定されていません。");
+			}
+			String aKeyword = mFindKeywordWindow.Keyword.Trim();
+			if (String.IsNullOrEmpty(aKeyword))
 			{
 				throw new Exception("キーワードが指定されていません。");
 			}
@@ -227,7 +244,7 @@ namespace YukaLister
 				{
 					if (mFindKeywordWindow.WholeMatch)
 					{
-						if (String.Compare(CellValue(i, j), mFindKeywordWindow.Keyword, !mFindKeywordWindow.CaseSensitive) == 0)
+						if (String.Compare(CellValue(i, j), aKeyword, !mFindKeywordWindow.CaseSensitive) == 0)
 						{
 							// 発見
 							SelectDataGridCell(i, j);
@@ -237,7 +254,7 @@ namespace YukaLister
 					else
 					{
 						if (!String.IsNullOrEmpty(CellValue(i, j))
-								&& CellValue(i, j).IndexOf(mFindKeywordWindow.Keyword,
+								&& CellValue(i, j).IndexOf(aKeyword,
 								mFindKeywordWindow.CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase) >= 0)
 						{
 							// 発見
@@ -248,7 +265,7 @@ namespace YukaLister
 				}
 			}
 
-			throw new Exception("キーワード「" + mFindKeywordWindow.Keyword + "」は\n見つかりませんでした。");
+			throw new Exception("キーワード「" + aKeyword + "」は\n見つかりませんでした。");
 		}
 
 		// --------------------------------------------------------------------
@@ -763,6 +780,7 @@ namespace YukaLister
 				{
 					return;
 				}
+				CloseFindKeywordWindowIfNeeded();
 
 				FolderSettingsWindow aFolderSettingsWindow = new FolderSettingsWindow(Path.GetDirectoryName(mTFounds[aRowIndex].Path), mYukaListerSettings, mLogWriter);
 				aFolderSettingsWindow.Owner = this;
@@ -805,6 +823,7 @@ namespace YukaLister
 		{
 			try
 			{
+				CloseFindKeywordWindowIfNeeded();
 				DialogResult = false;
 			}
 			catch (Exception oExcep)

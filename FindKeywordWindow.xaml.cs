@@ -111,6 +111,7 @@ namespace YukaLister
 
 			// 設定を反映
 			TextBoxKeyword.Text = Keyword;
+			TextBoxKeyword.SelectAll();
 			CheckBoxCaseSensitive.IsChecked = CaseSensitive;
 			CheckBoxWholeMatch.IsChecked = WholeMatch;
 
