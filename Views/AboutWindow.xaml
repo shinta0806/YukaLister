@@ -1,0 +1,91 @@
+﻿<Window x:Class="YukaLister.Views.AboutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
+        xmlns:l="http://schemas.livet-mvvm.net/2011/wpf"
+        xmlns:mb="clr-namespace:YukaLister.Models.Behaviors"
+        xmlns:vm="clr-namespace:YukaLister.ViewModels"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        Title="{Binding Title}" ShowInTaskbar="False" ResizeMode="NoResize" SizeToContent="WidthAndHeight">
+
+    <Window.DataContext>
+        <vm:AboutWindowViewModel/>
+    </Window.DataContext>
+
+    <i:Interaction.Triggers>
+
+        <!--Viewに特別な要件が存在しない限りは、トリガーやアクションの自作にこだわらず積極的にコードビハインドを使いましょう -->
+        <!--Viewのコードビハインドは、基本的にView内で完結するロジックとViewModelからのイベントの受信(専用リスナを使用する)に限るとトラブルが少なくなります -->
+        <!--Livet1.1からはコードビハインドでViewModelのイベントを受信するためのWeakEventLisnterサポートが追加されています -->
+
+        <!--WindowのContentRenderedイベントのタイミングでViewModelのInitializeメソッドが呼ばれます-->
+        <i:EventTrigger EventName="ContentRendered">
+            <l:LivetCallMethodAction MethodTarget="{Binding}" MethodName="Initialize"/>
+        </i:EventTrigger>
+
+        <!--Windowが閉じたタイミングでViewModelのDisposeメソッドが呼ばれます-->
+        <i:EventTrigger EventName="Closed">
+            <l:DataContextDisposeAction/>
+        </i:EventTrigger>
+
+        <!--WindowのCloseキャンセル処理に対応する場合は、WindowCloseCancelBehaviorの使用を検討してください-->
+
+    </i:Interaction.Triggers>
+
+    <StackPanel>
+        <DockPanel Margin="20,20,20,0">
+            <Image HorizontalAlignment="Left" Height="120" Margin="0" VerticalAlignment="Top" Width="120" Source="pack://siteoforigin:,,,/アイコン/YukaListerアイコン_1.ico"/>
+            <StackPanel VerticalAlignment="Center">
+                <Label x:Name="LabelAppName" Content="{Binding AppName}" FontSize="16" HorizontalContentAlignment="Center"/>
+                <Label x:Name="LabelAppVer" Content="{Binding AppVer}" Margin="0,10,0,0" HorizontalContentAlignment="Center"/>
+                <Label x:Name="LabelCopyright" Content="{Binding Copyright}" Margin="0,10,0,0" HorizontalContentAlignment="Center"/>
+            </StackPanel>
+        </DockPanel>
+        <GroupBox Header="作者情報" Margin="20,20,20,0" materialDesign:ColorZoneAssist.Mode="Accent" Width="460">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="E メール：" HorizontalContentAlignment="Right" Width="90"/>
+                    <Label Content="shinta.0806@gmail.com"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="ホームページ：" HorizontalContentAlignment="Right" Width="90"/>
+                    <Label>
+                        <Hyperlink Command="{Binding LinkClickedCommand}" CommandParameter="{Binding Text, ElementName=TextBlockAutherWeb}" >
+                            <TextBlock x:Name="TextBlockAutherWeb" Text="http://shinta.coresv.com"/>
+                        </Hyperlink>
+                    </Label>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="Twitter：" HorizontalContentAlignment="Right" Width="90"/>
+                    <Label>
+                        <Hyperlink Command="{Binding LinkClickedCommand}" CommandParameter="{Binding Text, ElementName=TextBlockAutherTwitter}" >
+                            <TextBlock x:Name="TextBlockAutherTwitter" Text="https://twitter.com/shinta0806"/>
+                        </Hyperlink>
+                    </Label>
+                </StackPanel>
+            </StackPanel>
+        </GroupBox>
+        <GroupBox Header="アプリケーション情報" Margin="20,20,20,0" materialDesign:ColorZoneAssist.Mode="Accent" Width="460">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="配布ページ：" HorizontalContentAlignment="Right" Width="90"/>
+                    <Label>
+                        <Hyperlink Command="{Binding LinkClickedCommand}" CommandParameter="{Binding Text, ElementName=AppWeb}">
+                            <TextBlock x:Name="AppWeb" Text="http://shinta.coresv.com/software/yukalister-meteor-jpn/"/>
+                        </Hyperlink>
+                    </Label>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="サポートページ：" HorizontalContentAlignment="Right" Width="90"/>
+                    <Label>
+                        <Hyperlink Command="{Binding LinkClickedCommand}" CommandParameter="{Binding Text, ElementName=AppWebSupport}" >
+                            <TextBlock x:Name="AppWebSupport" Text="http://shinta.coresv.com/software/yukalister-meteor-jpn/#Support"/>
+                        </Hyperlink>
+                    </Label>
+                </StackPanel>
+            </StackPanel>
+        </GroupBox>
+        <Button x:Name="ButtonOK" Content="OK" HorizontalAlignment="Center" Margin="0,20" Width="100" Height="Auto" IsDefault="True" IsCancel="True" />
+    </StackPanel>
+</Window>

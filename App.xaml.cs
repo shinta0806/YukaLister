@@ -1,13 +1,11 @@
-﻿using Shinta;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
-using YukaLister.Shared;
+
+using Livet;
 
 namespace YukaLister
 {
@@ -16,27 +14,23 @@ namespace YukaLister
 	/// </summary>
 	public partial class App : Application
 	{
-		[STAThread]
-		public static void Main()
+		private void Application_Startup(object sender, StartupEventArgs e)
 		{
-			const String SEMAPHORE_NAME = Common.SHINTA + "." + YlCommon.APP_ID;
-
-			// Semaphore クラスのインスタンスを生成し、アプリケーション終了まで保持する
-			Boolean aCreatedNew;
-			using (Semaphore aSemaphore = new Semaphore(1, 1, SEMAPHORE_NAME, out aCreatedNew))
-			{
-				if (!aCreatedNew)
-				{
-					// 既存プロセスが先にセマフォを作っていた場合はそちらをアクティベートしてこちらは終了する
-					Common.ActivateSameNameProcessWindow();
-					return;
-				}
-
-				// 既存プロセスが無いため実行開始
-				App app = new App();
-				app.InitializeComponent();
-				app.Run();
-			}
+			DispatcherHelper.UIDispatcher = Dispatcher;
+			//AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
 		}
+
+		//集約エラーハンドラ
+		//private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+		//{
+		//    //TODO:ロギング処理など
+		//    MessageBox.Show(
+		//        "不明なエラーが発生しました。アプリケーションを終了します。",
+		//        "エラー",
+		//        MessageBoxButton.OK,
+		//        MessageBoxImage.Error);
+		//
+		//    Environment.Exit(1);
+		//}
 	}
 }
