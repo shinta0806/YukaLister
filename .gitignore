@@ -265,6 +265,7 @@ __pycache__/
 desktop.ini
 *.dll
 *.exe
+*.old
 *.xlsx
 
 # 設定

@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.28307.271
+VisualStudioVersion = 15.0.28307.572
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YukaLister", "YukaLister.csproj", "{8BBAA61F-5B5D-49AF-AE18-50C0EAEDE84B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YukaLister", "YukaLister.csproj", "{9D588FAB-3698-4999-82C9-19B891CFAED9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{8BBAA61F-5B5D-49AF-AE18-50C0EAEDE84B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8BBAA61F-5B5D-49AF-AE18-50C0EAEDE84B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8BBAA61F-5B5D-49AF-AE18-50C0EAEDE84B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8BBAA61F-5B5D-49AF-AE18-50C0EAEDE84B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9D588FAB-3698-4999-82C9-19B891CFAED9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D588FAB-3698-4999-82C9-19B891CFAED9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D588FAB-3698-4999-82C9-19B891CFAED9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D588FAB-3698-4999-82C9-19B891CFAED9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {0A878834-E847-4A88-8AB4-3F7AB3485720}
+		SolutionGuid = {3A50C026-D183-4942-860E-05A0FB25FD3E}
 	EndGlobalSection
 EndGlobal
