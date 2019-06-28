@@ -16,10 +16,8 @@ using System.Data.Linq;
 using System.Data.SQLite;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+
 using YukaLister.Models.SharedMisc;
 
 namespace YukaLister.Models.Database
@@ -104,10 +102,10 @@ namespace YukaLister.Models.Database
 			return new TCategory
 			{
 				// IRcBase
-				Id = YlCommon.MUSIC_INFO_SYSTEM_ID_PREFIX + YlCommon.MUSIC_INFO_ID_SECOND_PREFIXES[(Int32)MusicInfoDbTables.TCategory] + oIdNumber.ToString("D3"),
+				Id = YlConstants.MUSIC_INFO_SYSTEM_ID_PREFIX + YlConstants.MUSIC_INFO_ID_SECOND_PREFIXES[(Int32)MusicInfoDbTables.TCategory] + oIdNumber.ToString("D3"),
 				Import = false,
 				Invalid = false,
-				UpdateTime = YlCommon.INVALID_MJD,
+				UpdateTime = YlConstants.INVALID_MJD,
 				Dirty = true,
 
 				// IRcMaster

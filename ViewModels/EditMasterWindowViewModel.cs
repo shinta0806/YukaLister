@@ -12,9 +12,6 @@
 
 using Livet;
 using Livet.Commands;
-using Livet.Messaging;
-using Livet.Messaging.IO;
-using Livet.EventListeners;
 using Livet.Messaging.Windows;
 
 using Shinta;
@@ -23,11 +20,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Data.SQLite;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Windows;
 
 using YukaLister.Models;
@@ -124,7 +118,7 @@ namespace YukaLister.ViewModels
 					catch (Exception oExcep)
 					{
 						Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "SelectedId 設定時エラー：\n" + oExcep.Message);
-						Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+						Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 					}
 				}
 			}
@@ -258,7 +252,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "OK ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -306,7 +300,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "Master 編集ウィンドウビューモデル初期化時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 
@@ -416,7 +410,7 @@ namespace YukaLister.ViewModels
 			oMaster.Id = SelectedId;
 			oMaster.Import = false;
 			oMaster.Invalid = false;
-			oMaster.UpdateTime = YlCommon.INVALID_MJD;
+			oMaster.UpdateTime = YlConstants.INVALID_MJD;
 			oMaster.Dirty = true;
 
 			// IRcMaster

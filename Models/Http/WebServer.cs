@@ -16,10 +16,10 @@
 // ----------------------------------------------------------------------------
 
 using Shinta;
+
 using System;
 using System.Collections.Generic;
 using System.Data.Linq;
-using System.Data.SQLite;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -33,6 +33,7 @@ using System.Web;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+
 using YukaLister.Models.Database;
 using YukaLister.Models.SharedMisc;
 
@@ -78,8 +79,8 @@ namespace YukaLister.Models.Http
 					TcpClient aClient = new TcpClient("localhost", mEnvironment.YukaListerSettings.WebServerPort);
 					using (NetworkStream aNetworkStream = aClient.GetStream())
 					{
-						aNetworkStream.ReadTimeout = YlCommon.TCP_TIMEOUT;
-						aNetworkStream.WriteTimeout = YlCommon.TCP_TIMEOUT;
+						aNetworkStream.ReadTimeout = YlConstants.TCP_TIMEOUT;
+						aNetworkStream.WriteTimeout = YlConstants.TCP_TIMEOUT;
 						Byte[] aSendBytes = Encoding.UTF8.GetBytes("End");
 						aNetworkStream.Write(aSendBytes, 0, aSendBytes.Length);
 					}
@@ -204,7 +205,7 @@ namespace YukaLister.Models.Http
 			{
 				// 動画を開いてすぐに一時停止する
 				// Uri は extended-length パスをサポートしていない模様なので短くする
-				aPlayer.Open(new Uri("file://" + YlCommon.ShortenPath(oPathExLen), UriKind.Absolute));
+				aPlayer.Open(new Uri("file://" + mEnvironment.ShortenPath(oPathExLen), UriKind.Absolute));
 				aPlayer.Play();
 				aPlayer.Pause();
 
@@ -395,7 +396,7 @@ namespace YukaLister.Models.Http
 			else
 			{
 				oWidth = Int32.Parse(oOptions[OPTION_NAME_WIDTH]);
-				if (oWidth < YlCommon.THUMB_WIDTH_LIST[0] || oWidth > YlCommon.THUMB_WIDTH_LIST[YlCommon.THUMB_WIDTH_LIST.Length - 1])
+				if (oWidth < YlConstants.THUMB_WIDTH_LIST[0] || oWidth > YlConstants.THUMB_WIDTH_LIST[YlConstants.THUMB_WIDTH_LIST.Length - 1])
 				{
 					throw new Exception("Bad width.");
 				}
@@ -403,15 +404,15 @@ namespace YukaLister.Models.Http
 
 			// 既定の横幅に調整
 			Int32 aIndex = 0;
-			for (Int32 i = YlCommon.THUMB_WIDTH_LIST.Length - 1; i >= 0; i--)
+			for (Int32 i = YlConstants.THUMB_WIDTH_LIST.Length - 1; i >= 0; i--)
 			{
-				if (oWidth >= YlCommon.THUMB_WIDTH_LIST[i])
+				if (oWidth >= YlConstants.THUMB_WIDTH_LIST[i])
 				{
 					aIndex = i;
 					break;
 				}
 			}
-			oWidth = YlCommon.THUMB_WIDTH_LIST[aIndex];
+			oWidth = YlConstants.THUMB_WIDTH_LIST[aIndex];
 		}
 
 		// --------------------------------------------------------------------
@@ -555,7 +556,7 @@ namespace YukaLister.Models.Http
 					}
 
 					Int32 aNumRetries = 0;
-					while (aNumRetries < YlCommon.TCP_NUM_RETRIES)
+					while (aNumRetries < YlConstants.TCP_NUM_RETRIES)
 					{
 						try
 						{
@@ -565,7 +566,7 @@ namespace YukaLister.Models.Http
 						catch (Exception oExcep)
 						{
 							mEnvironment.LogWriter.ShowLogMessage(TraceEventType.Error, "プレビュー内容送信エラー：\n" + oExcep.Message + "\nリトライ回数：" + aNumRetries, true);
-							mEnvironment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+							mEnvironment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 						}
 						aNumRetries++;
 						mEnvironment.AppCancellationTokenSource.Token.ThrowIfCancellationRequested();
@@ -573,7 +574,7 @@ namespace YukaLister.Models.Http
 						// 少し待ってみる
 						Thread.Sleep(5 * 1000);
 					}
-					if (aNumRetries >= YlCommon.TCP_NUM_RETRIES)
+					if (aNumRetries >= YlConstants.TCP_NUM_RETRIES)
 					{
 						throw new OperationCanceledException();
 					}
@@ -601,8 +602,8 @@ namespace YukaLister.Models.Http
 				using (StreamWriter aWriter = new StreamWriter(aNetworkStream))
 				{
 					// ネットワークストリームの設定
-					aNetworkStream.ReadTimeout = YlCommon.TCP_TIMEOUT;
-					aNetworkStream.WriteTimeout = YlCommon.TCP_TIMEOUT;
+					aNetworkStream.ReadTimeout = YlConstants.TCP_TIMEOUT;
+					aNetworkStream.WriteTimeout = YlConstants.TCP_TIMEOUT;
 
 					// ヘッダー部分を読み込む
 					//Debug.WriteLine("[" + Thread.CurrentThread.ManagedThreadId + "] SendResponse() header");
@@ -687,7 +688,7 @@ namespace YukaLister.Models.Http
 			catch (Exception oExcep)
 			{
 				mEnvironment.LogWriter.ShowLogMessage(TraceEventType.Error, "クライアントへの応答時エラー：\n" + oExcep.Message, true);
-				mEnvironment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				mEnvironment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 			finally
 			{
@@ -825,7 +826,7 @@ namespace YukaLister.Models.Http
 					catch (Exception oExcep)
 					{
 						mEnvironment.LogWriter.ShowLogMessage(TraceEventType.Error, "プレビュー接続ループエラー（リトライします）：\n" + oExcep.Message, true);
-						mEnvironment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+						mEnvironment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 					}
 
 					mEnvironment.AppCancellationTokenSource.Token.ThrowIfCancellationRequested();
@@ -838,7 +839,7 @@ namespace YukaLister.Models.Http
 			catch (Exception oExcep)
 			{
 				mEnvironment.LogWriter.ShowLogMessage(TraceEventType.Error, "プレビュー処理エラー：\n" + oExcep.Message, true);
-				mEnvironment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				mEnvironment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 			finally
 			{

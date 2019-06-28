@@ -5,12 +5,12 @@
         xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
         xmlns:l="http://schemas.livet-mvvm.net/2011/wpf"
         xmlns:s="clr-namespace:Shinta"
-        xmlns:mb="clr-namespace:YukaLister.Models.Behaviors"
+        xmlns:sb="clr-namespace:Shinta.Behaviors"
         xmlns:msm="clr-namespace:YukaLister.Models.SharedMisc"
         xmlns:v="clr-namespace:YukaLister.Views"
         xmlns:vm="clr-namespace:YukaLister.ViewModels"
         x:Name="SettingsWindow" Title="{Binding Title}" ResizeMode="NoResize" ShowInTaskbar="False" SizeToContent="WidthAndHeight" 
-        mb:LaunchUpdaterAttachedBehavior.UpdaterLauncher="{Binding UpdaterLauncher}" mb:LaunchUpdaterAttachedBehavior.Command="{Binding UpdaterUiDisplayedCommand}">
+        sb:LaunchUpdaterAttachedBehavior.UpdaterLauncher="{Binding UpdaterLauncher}" sb:LaunchUpdaterAttachedBehavior.Command="{Binding UpdaterUiDisplayedCommand}">
     
     <Window.DataContext>
         <vm:YukaListerSettingsWindowViewModel/>
@@ -54,7 +54,7 @@
     </i:Interaction.Triggers>
 
     <StackPanel>
-        <TabControl x:Name="TabControlYukaListerSettings" Height="480" Width="570" Margin="10,10,10,0" SelectedIndex="{Binding SelectedTabIndex}" mb:FileDropAttachedBehavior.Command="{Binding TabControlFileDropCommand}">
+        <TabControl x:Name="TabControlYukaListerSettings" Height="480" Width="570" Margin="10,10,10,0" SelectedIndex="{Binding SelectedTabIndex}" sb:FileDropAttachedBehavior.Command="{Binding TabControlFileDropCommand}">
             <TabItem x:Name="TabItemSettings" Header="設定" >
                 <StackPanel >
                     <DockPanel Margin="20,20,20,0">
@@ -225,7 +225,7 @@
         </TabControl>
         <DockPanel Margin="20">
             <Button x:Name="ButtonCancel" Content="キャンセル" Margin="0" Height="Auto" Style="{StaticResource MaterialDesignRaisedLightButton}" IsCancel="True" Width="100" DockPanel.Dock="Right" Padding="4"/>
-            <Button x:Name="ButtonOk" Content="OK" Margin="0,0,20,0" Height="Auto" IsDefault="True" Width="100" DockPanel.Dock="Right" Command="{Binding ButtonOkClickedCommand}" mb:IsFocusedAttachedBehavior.IsFocused="{Binding IsButtonOkFocused}"/>
+            <Button x:Name="ButtonOk" Content="OK" Margin="0,0,20,0" Height="Auto" IsDefault="True" Width="100" DockPanel.Dock="Right" Command="{Binding ButtonOkClickedCommand}" sb:IsFocusedAttachedBehavior.IsFocused="{Binding IsButtonOkFocused}"/>
             <Label Content="設定やデータベースメンテナンス等を行います。" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Center"/>
             <Label x:Name="LabelHelp" Grid.Column="1" Margin="0" VerticalAlignment="Center" HorizontalAlignment="Left">
                 <Hyperlink Command="{Binding HelpClickedCommand}" CommandParameter="Kankyousettei" >

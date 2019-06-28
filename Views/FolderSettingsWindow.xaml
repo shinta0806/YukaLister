@@ -4,7 +4,7 @@
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
         xmlns:l="http://schemas.livet-mvvm.net/2011/wpf"
-        xmlns:mb="clr-namespace:YukaLister.Models.Behaviors"
+        xmlns:sb="clr-namespace:Shinta.Behaviors"
         xmlns:mvc="clr-namespace:YukaLister.Models.ValueConverters"
         xmlns:v="clr-namespace:YukaLister.Views"
         xmlns:vm="clr-namespace:YukaLister.ViewModels"
@@ -78,7 +78,7 @@
                             </Button.ContextMenu>
                             <materialDesign:PackIcon Kind="Tag" Height="18" Width="18" />
                         </Button>
-                        <TextBox x:Name="TextBoxFileNameRule" materialDesign:HintAssist.Hint="ここに命名規則を入力して下さい。右側のタグボタンでタグを追加できます。" VerticalAlignment="Center" Margin="0,0,10,0" Text="{Binding FileNameRule, UpdateSourceTrigger=PropertyChanged}" mb:IsFocusedAttachedBehavior.IsFocused="{Binding IsFileNameRuleFocused}" >
+                        <TextBox x:Name="TextBoxFileNameRule" materialDesign:HintAssist.Hint="ここに命名規則を入力して下さい。右側のタグボタンでタグを追加できます。" VerticalAlignment="Center" Margin="0,0,10,0" Text="{Binding FileNameRule, UpdateSourceTrigger=PropertyChanged}" sb:IsFocusedAttachedBehavior.IsFocused="{Binding IsFileNameRuleFocused}" >
                             <i:Interaction.Behaviors>
                                 <l:TextBoxBindingSupportBehavior SelectionStart="{Binding FileNameRuleSelectionStart}" SelectionLength="{Binding FileNameRuleSelectionLength}" />
                             </i:Interaction.Behaviors>
@@ -160,7 +160,7 @@
                   materialDesign:DataGridAssist.ColumnHeaderPadding="3 5 3 5" materialDesign:DataGridAssist.CellPadding="3" DockPanel.Dock="Top" ItemsSource="{Binding PreviewInfos}" SelectedItem="{Binding SelectedPreviewInfo}" 
                   IsEnabled="{Binding IsExcluded, Converter={StaticResource BooleanInvertConverter}}">
             <i:Interaction.Behaviors>
-                <mb:DataGridBindingSupportBehavior SelectedItem="{Binding SelectedPreviewInfo}" />
+                <sb:DataGridBindingSupportBehavior SelectedItem="{Binding SelectedPreviewInfo}" />
             </i:Interaction.Behaviors>
             <DataGrid.Columns>
                 <DataGridTextColumn Header="ファイル" Width="250" Binding="{Binding FileName}" />

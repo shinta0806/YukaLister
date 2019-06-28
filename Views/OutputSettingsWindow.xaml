@@ -4,7 +4,7 @@
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
         xmlns:l="http://schemas.livet-mvvm.net/2011/wpf"
-        xmlns:mb="clr-namespace:YukaLister.Models.Behaviors"
+        xmlns:sb="clr-namespace:Shinta.Behaviors"
         xmlns:v="clr-namespace:YukaLister.Views"
         xmlns:vm="clr-namespace:YukaLister.ViewModels"
         Title="{Binding Title}" ResizeMode="NoResize" ShowInTaskbar="False" SizeToContent="WidthAndHeight" >
@@ -41,13 +41,13 @@
         <StackPanel>
             <TabControl x:Name="TabControlOutputSettings" ItemsSource="{Binding TabItems}" SelectedIndex="{Binding SelectedTabIndex}" MinHeight="{Binding MinTabControlHeight}" MinWidth="{Binding MinTabControlWidth}" Margin="0,5,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" >
                 <i:Interaction.Behaviors>
-                    <mb:FrameworkElementBindingSupportBehavior ActualHeight="{Binding ActualTabControlHeight}" ActualWidth="{Binding ActualTabControlWidth}" />
+                    <sb:FrameworkElementBindingSupportBehavior ActualHeight="{Binding ActualTabControlHeight}" ActualWidth="{Binding ActualTabControlWidth}" />
                 </i:Interaction.Behaviors>
             </TabControl>
         </StackPanel>
         <StackPanel Orientation="Horizontal" FlowDirection="RightToLeft" Margin="0,20,20,20">
             <Button x:Name="ButtonCancel" Content="キャンセル" Margin="0" Height="Auto" Style="{StaticResource MaterialDesignRaisedLightButton}" IsCancel="True" Width="100" Padding="4"/>
-            <Button x:Name="ButtonOK" Content="OK" Margin="20,0,0,0" Height="Auto" IsDefault="True" Width="100" Command="{Binding ButtonOkClickedCommand}" mb:IsFocusedAttachedBehavior.IsFocused="{Binding IsButtonOkFocused}"/>
+            <Button x:Name="ButtonOK" Content="OK" Margin="20,0,0,0" Height="Auto" IsDefault="True" Width="100" Command="{Binding ButtonOkClickedCommand}" sb:IsFocusedAttachedBehavior.IsFocused="{Binding IsButtonOkFocused}"/>
         </StackPanel>
     </StackPanel>
 </Window>

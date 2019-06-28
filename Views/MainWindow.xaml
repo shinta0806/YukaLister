@@ -4,14 +4,14 @@
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
         xmlns:l="http://schemas.livet-mvvm.net/2011/wpf"
-        xmlns:mb="clr-namespace:YukaLister.Models.Behaviors"
+        xmlns:sb="clr-namespace:Shinta.Behaviors"
         xmlns:msm="clr-namespace:YukaLister.Models.SharedMisc"
         xmlns:v="clr-namespace:YukaLister.Views"
         xmlns:vm="clr-namespace:YukaLister.ViewModels"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         x:Name="YukaListerMainWindow" Title="{Binding Title}" Height="480" Width="810" ResizeMode="CanResizeWithGrip" 
-        mb:FileDropAttachedBehavior.Command="{Binding WindowFileDropCommand}"
-        mb:DeviceChangeAttachedBehavior.Command="{Binding WindowDeviceChangeCommand}">
+        sb:FileDropAttachedBehavior.Command="{Binding WindowFileDropCommand}"
+        sb:DeviceChangeAttachedBehavior.Command="{Binding WindowDeviceChangeCommand}">
 
     <Window.DataContext>
         <vm:MainWindowViewModel/>
@@ -140,6 +140,9 @@
         </DockPanel>
         <DataGrid x:Name="DataGridTargetFolders" AutoGenerateColumns="False" CanUserReorderColumns="False" CanUserSortColumns="False" CanUserResizeRows="False" SelectionMode="Single" 
                   Margin="20,10,20,20" materialDesign:DataGridAssist.ColumnHeaderPadding="3 5 3 5" materialDesign:DataGridAssist.CellPadding="3" ItemsSource="{Binding TargetFolderInfosVisible}" SelectedItem="{Binding SelectedTargetFolderInfo}" CanUserAddRows="False" CanUserDeleteRows="False" >
+            <DataGrid.InputBindings>
+                <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding DataGridDoubleClickedCommand}" />
+            </DataGrid.InputBindings>
             <DataGrid.ItemContainerStyle>
                 <Style TargetType="DataGridRow">
                     <Style.Triggers>

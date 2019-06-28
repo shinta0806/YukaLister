@@ -17,7 +17,9 @@
 
 using Livet;
 using Livet.Messaging;
+
 using Shinta;
+using Shinta.Behaviors;
 
 using System;
 using System.Collections.Generic;
@@ -31,7 +33,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
-using YukaLister.Models.Behaviors;
+
 using YukaLister.Models.Database;
 using YukaLister.Models.Http;
 using YukaLister.Models.OutputWriters;
@@ -54,10 +56,9 @@ namespace YukaLister.Models
 			mEnvironment = oEnvironment;
 			mMainWindowViewModel = oMainWindowViewModel;
 
-			// ゆかり用リストデータベース構築状況取得用設定（TargetFolderInfo 用）
+			// TargetFolderInfo スタティックプロパティー設定
+			TargetFolderInfo.Environment = mEnvironment;
 			TargetFolderInfo.YukariDbYukaListerStatus = YukariDbYukaListerStatusFunc;
-
-			// IsOpen 変更時イベントハンドラー設定（TargetFolderInfo 用）
 			TargetFolderInfo.IsOpenChanged = TargetFolderInfoIsOpenChangedFunc;
 		}
 
@@ -132,7 +133,7 @@ namespace YukaLister.Models
 				return;
 			}
 
-			if (MessageBox.Show(YlCommon.ShortenPath(aTargetFolderInfo.ParentPath) + "\nおよびサブフォルダーをゆかり検索対象から削除しますか？",
+			if (MessageBox.Show(mEnvironment.ShortenPath(aTargetFolderInfo.ParentPath) + "\nおよびサブフォルダーをゆかり検索対象から削除しますか？",
 					"確認", MessageBoxButton.YesNo, MessageBoxImage.Exclamation) != MessageBoxResult.Yes)
 			{
 				return;
@@ -274,7 +275,7 @@ namespace YukaLister.Models
 			{
 				// アプリケーション構成ファイルエラー
 				mMainWindowViewModel.YukaListerDbStatus = YukaListerStatus.Error;
-				mMainWindowViewModel.YukaListerStatusMessage = "アプリケーション構成ファイルが見つかりません。\n" + YlCommon.APP_NAME_J + "を再インストールして下さい。";
+				mMainWindowViewModel.YukaListerStatusMessage = "アプリケーション構成ファイルが見つかりません。\n" + YlConstants.APP_NAME_J + "を再インストールして下さい。";
 			}
 			else if (mIsMusicInfoDbInDiskCreating)
 			{
@@ -286,7 +287,7 @@ namespace YukaLister.Models
 			{
 				// エラーがなかったので、一旦待機中を仮定
 				mMainWindowViewModel.YukaListerDbStatus = YukaListerStatus.Ready;
-				mMainWindowViewModel.YukaListerStatusMessage = YlCommon.APP_NAME_J + "は正常に動作しています。";
+				mMainWindowViewModel.YukaListerStatusMessage = YlConstants.APP_NAME_J + "は正常に動作しています。";
 
 				// 実行中のものがある場合は実行中にする
 				for (Int32 i = 0; i < (Int32)YukaListerStatusRunningMessage.__End__; i++)
@@ -294,7 +295,7 @@ namespace YukaLister.Models
 					if (mEnabledYukaListerStatusRunningMessages[i])
 					{
 						mMainWindowViewModel.YukaListerDbStatus = YukaListerStatus.Running;
-						mMainWindowViewModel.YukaListerStatusMessage = YlCommon.YUKA_LISTER_STATUS_RUNNING_MESSAGES[i];
+						mMainWindowViewModel.YukaListerStatusMessage = YlConstants.YUKA_LISTER_STATUS_RUNNING_MESSAGES[i];
 						break;
 					}
 				}
@@ -379,7 +380,7 @@ namespace YukaLister.Models
 		private const String FILE_NAME_APP_CONFIG = "YukaLister.exe.config";
 
 		// 自動追加情報記録ファイル名
-		private const String FILE_NAME_AUTO_TARGET_INFO = YlCommon.APP_ID + "AutoTarget" + Common.FILE_EXT_CONFIG;
+		private const String FILE_NAME_AUTO_TARGET_INFO = YlConstants.APP_ID + "AutoTarget" + Common.FILE_EXT_CONFIG;
 
 		// スマートトラック判定用の単語（小文字表記、両端を | で括る）
 		private const String OFF_VOCAL_WORDS = "|cho|cut|dam|guide|guidevocal|inst|joy|off|offcho|offvocal|offのみ|vc|オフ|オフボ|オフボーカル|ボイキャン|ボーカルキャンセル|配信|";
@@ -434,7 +435,7 @@ namespace YukaLister.Models
 			// フォルダー設定を読み込む
 			FolderSettingsInDisk aFolderSettingsInDisk = YlCommon.LoadFolderSettings2Ex(oFolderPathExLen);
 			FolderSettingsInMemory aFolderSettingsInMemory = YlCommon.CreateFolderSettingsInMemory(aFolderSettingsInDisk);
-			String aFolderPathLower = YlCommon.ShortenPath(oFolderPathExLen).ToLower();
+			String aFolderPathLower = mEnvironment.ShortenPath(oFolderPathExLen).ToLower();
 
 			using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(mEnvironment))
 			using (SQLiteCommand aMusicInfoDbCmd = new SQLiteCommand(aMusicInfoDbInDisk.Connection))
@@ -481,7 +482,7 @@ namespace YukaLister.Models
 					return;
 				}
 
-				Debug.Assert(!oParentFolderShLen.StartsWith(YlCommon.EXTENDED_LENGTH_PATH_PREFIX), "AddTargetFolderByWorker() not ShLen");
+				Debug.Assert(!oParentFolderShLen.StartsWith(YlConstants.EXTENDED_LENGTH_PATH_PREFIX), "AddTargetFolderByWorker() not ShLen");
 
 				// "E:" のような '\\' 無しのドライブ名は挙動が変なので 3 文字以上を対象とする
 				if (oParentFolderShLen.Length < 3)
@@ -615,7 +616,7 @@ namespace YukaLister.Models
 			catch (Exception oExcep)
 			{
 				mEnvironment.LogWriter.ShowLogMessage(TraceEventType.Error, "フォルダー追加タスク実行時エラー：\n" + oExcep.Message);
-				mEnvironment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				mEnvironment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 			finally
 			{
@@ -645,7 +646,7 @@ namespace YukaLister.Models
 					if (mTargetFolderInfos[i].IsParent && mTargetFolderInfos[i].FolderTask != FolderTask.Remove
 							&& mTargetFolderInfos[i].Path.StartsWith(aDriveRootExLen, StringComparison.OrdinalIgnoreCase))
 					{
-						aAutoTargetInfo.Folders.Add(YlCommon.ShortenPath(mTargetFolderInfos[i].Path).Substring(2));
+						aAutoTargetInfo.Folders.Add(mEnvironment.ShortenPath(mTargetFolderInfos[i].Path).Substring(2));
 					}
 				}
 			}
@@ -695,7 +696,7 @@ namespace YukaLister.Models
 		// --------------------------------------------------------------------
 		private String AutoTargetInfoPath2Sh(String oFolderShLen)
 		{
-			Debug.Assert(!oFolderShLen.StartsWith(YlCommon.EXTENDED_LENGTH_PATH_PREFIX), "AutoTargetInfoPath2Sh() not ShLen");
+			Debug.Assert(!oFolderShLen.StartsWith(YlConstants.EXTENDED_LENGTH_PATH_PREFIX), "AutoTargetInfoPath2Sh() not ShLen");
 
 			return oFolderShLen.Substring(0, 3) + FILE_NAME_AUTO_TARGET_INFO;
 		}
@@ -953,7 +954,7 @@ namespace YukaLister.Models
 			catch (Exception oExcep)
 			{
 				mEnvironment.LogWriter.ShowLogMessage(TraceEventType.Error, "フォルダータスク実行時エラー：\n" + oExcep.Message);
-				mEnvironment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				mEnvironment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 			finally
 			{
@@ -1145,7 +1146,7 @@ namespace YukaLister.Models
 			// フォルダー設定を読み込む
 			FolderSettingsInDisk aFolderSettingsInDisk = YlCommon.LoadFolderSettings2Ex(oFolderPathExLen);
 			FolderSettingsInMemory aFolderSettingsInMemory = YlCommon.CreateFolderSettingsInMemory(aFolderSettingsInDisk);
-			String aFolderPathLower = YlCommon.ShortenPath(oFolderPathExLen).ToLower();
+			String aFolderPathLower = mEnvironment.ShortenPath(oFolderPathExLen).ToLower();
 
 			using (DataContext aYukariDbContext = new DataContext(YukariListDbInMemory.Connection))
 			{
@@ -1176,7 +1177,7 @@ namespace YukaLister.Models
 
 					TFound aRecord = new TFound();
 					aRecord.Uid = aUid;
-					aRecord.Path = YlCommon.ShortenPath(aPath);
+					aRecord.Path = mEnvironment.ShortenPath(aPath);
 					aRecord.Folder = aFolderPathLower;
 
 					// 楽曲名とファイルサイズが両方とも初期値だと、ゆかりが検索結果をまとめてしまうため、ダミーのファイルサイズを入れる
@@ -1219,7 +1220,7 @@ namespace YukaLister.Models
 
 			// 指定フォルダー
 			oFolders.Add(oFolderExLen);
-			mMainWindowViewModel.YukaListerStatusSubMessage = YlCommon.ShortenPath(oFolderExLen);
+			mMainWindowViewModel.YukaListerStatusSubMessage = mEnvironment.ShortenPath(oFolderExLen);
 
 			// 指定フォルダーのサブフォルダー
 			try
@@ -1321,7 +1322,7 @@ namespace YukaLister.Models
 		// --------------------------------------------------------------------
 		private Boolean IsAutoTargetDrive2Sh(String oFolderShLen)
 		{
-			Debug.Assert(!oFolderShLen.StartsWith(YlCommon.EXTENDED_LENGTH_PATH_PREFIX), "IsAutoTargetDrive2Sh() not ShLen");
+			Debug.Assert(!oFolderShLen.StartsWith(YlConstants.EXTENDED_LENGTH_PATH_PREFIX), "IsAutoTargetDrive2Sh() not ShLen");
 
 			String aDriveLetter = oFolderShLen.Substring(0, 1);
 			DriveInfo aDriveInfo = new DriveInfo(aDriveLetter);
@@ -1351,7 +1352,7 @@ namespace YukaLister.Models
 		// --------------------------------------------------------------------
 		private AutoTargetInfo LoadAutoTargetInfo2Sh(String oFolderShLen)
 		{
-			Debug.Assert(!oFolderShLen.StartsWith(YlCommon.EXTENDED_LENGTH_PATH_PREFIX), "LoadAutoTargetInfo2Sh() not ShLen");
+			Debug.Assert(!oFolderShLen.StartsWith(YlConstants.EXTENDED_LENGTH_PATH_PREFIX), "LoadAutoTargetInfo2Sh() not ShLen");
 
 			AutoTargetInfo aAutoTargetInfo = new AutoTargetInfo();
 
@@ -1428,7 +1429,7 @@ namespace YukaLister.Models
 			catch (Exception oExcep)
 			{
 				mEnvironment.LogWriter.ShowLogMessage(TraceEventType.Error, "リストタスク実行時エラー：\n" + oExcep.Message);
-				mEnvironment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				mEnvironment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 			finally
 			{
@@ -1475,7 +1476,7 @@ namespace YukaLister.Models
 				Table<TFound> aTableFound = aYukariDbContext.GetTable<TFound>();
 				IQueryable<TFound> aQueryResult =
 						from x in aTableFound
-						where x.Folder == YlCommon.ShortenPath(oFolderPathExLen).ToLower()
+						where x.Folder == mEnvironment.ShortenPath(oFolderPathExLen).ToLower()
 						select x;
 				aTableFound.DeleteAllOnSubmit(aQueryResult);
 				aYukariDbContext.SubmitChanges();
@@ -1493,7 +1494,7 @@ namespace YukaLister.Models
 				// 準備
 				mEnabledYukaListerStatusRunningMessages[(Int32)YukaListerStatusRunningMessage.RemoveTargetFolder] = true;
 				SetYukaListerStatus();
-				mEnvironment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, YlCommon.ShortenPath(oParentFolderExLen) + " とそのサブフォルダーを検索対象から削除予定としています...");
+				mEnvironment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, mEnvironment.ShortenPath(oParentFolderExLen) + " とそのサブフォルダーを検索対象から削除予定としています...");
 
 				Int32 aNumRemoveFolders;
 				lock (mTargetFolderInfos)
@@ -1526,7 +1527,7 @@ namespace YukaLister.Models
 #endif
 
 				// 自動対象情報更新
-				AdjustAutoTargetInfoIfNeeded2Sh(YlCommon.ShortenPath(oParentFolderExLen));
+				AdjustAutoTargetInfoIfNeeded2Sh(mEnvironment.ShortenPath(oParentFolderExLen));
 
 				// フォルダータスク実行（async を待機しない）
 				Task aSuppressWarning = YlCommon.LaunchTaskAsync<Object>(DoFolderTaskByWorker, mFolderTaskLock, null, mEnvironment.LogWriter);
@@ -1537,7 +1538,7 @@ namespace YukaLister.Models
 			catch (Exception oExcep)
 			{
 				mEnvironment.LogWriter.ShowLogMessage(TraceEventType.Error, "フォルダー削除タスク実行時エラー：\n" + oExcep.Message);
-				mEnvironment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				mEnvironment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 			finally
 			{
@@ -1591,13 +1592,13 @@ namespace YukaLister.Models
 		{
 			// ファイル名・フォルダー固定値と合致する命名規則を探す
 			Dictionary<String, String> aDicByFile = YlCommon.MatchFileNameRulesAndFolderRule(Path.GetFileNameWithoutExtension(oRecord.Path), oFolderSettingsInMemory);
-			aDicByFile[YlCommon.RULE_VAR_PROGRAM] = ProgramOrigin(aDicByFile[YlCommon.RULE_VAR_PROGRAM], oMusicInfoDbCmd);
-			aDicByFile[YlCommon.RULE_VAR_TITLE] = SongOrigin(aDicByFile[YlCommon.RULE_VAR_TITLE], oMusicInfoDbCmd);
-			if (aDicByFile[YlCommon.RULE_VAR_CATEGORY] != null)
+			aDicByFile[YlConstants.RULE_VAR_PROGRAM] = ProgramOrigin(aDicByFile[YlConstants.RULE_VAR_PROGRAM], oMusicInfoDbCmd);
+			aDicByFile[YlConstants.RULE_VAR_TITLE] = SongOrigin(aDicByFile[YlConstants.RULE_VAR_TITLE], oMusicInfoDbCmd);
+			if (aDicByFile[YlConstants.RULE_VAR_CATEGORY] != null)
 			{
-				if (oCategoryNames.IndexOf(aDicByFile[YlCommon.RULE_VAR_CATEGORY]) < 0)
+				if (oCategoryNames.IndexOf(aDicByFile[YlConstants.RULE_VAR_CATEGORY]) < 0)
 				{
-					aDicByFile[YlCommon.RULE_VAR_CATEGORY] = null;
+					aDicByFile[YlConstants.RULE_VAR_CATEGORY] = null;
 				}
 			}
 
@@ -1605,29 +1606,29 @@ namespace YukaLister.Models
 			SetTFoundValueByMusicInfoDb(oRecord, aDicByFile, oMusicInfoDbCmd, oMusicInfoDbContext);
 
 			// 楽曲情報データベースに無かった項目をファイル名・フォルダー固定値から取得
-			oRecord.Category = oRecord.Category == null ? aDicByFile[YlCommon.RULE_VAR_CATEGORY] : oRecord.Category;
-			oRecord.TieUpName = oRecord.TieUpName == null ? aDicByFile[YlCommon.RULE_VAR_PROGRAM] : oRecord.TieUpName;
-			oRecord.TieUpAgeLimit = oRecord.TieUpAgeLimit == 0 ? Common.StringToInt32(aDicByFile[YlCommon.RULE_VAR_AGE_LIMIT]) : oRecord.TieUpAgeLimit;
-			oRecord.SongOpEd = oRecord.SongOpEd == null ? aDicByFile[YlCommon.RULE_VAR_OP_ED] : oRecord.SongOpEd;
-			oRecord.SongName = oRecord.SongName == null ? aDicByFile[YlCommon.RULE_VAR_TITLE] : oRecord.SongName;
-			if (oRecord.ArtistName == null && aDicByFile[YlCommon.RULE_VAR_ARTIST] != null)
+			oRecord.Category = oRecord.Category == null ? aDicByFile[YlConstants.RULE_VAR_CATEGORY] : oRecord.Category;
+			oRecord.TieUpName = oRecord.TieUpName == null ? aDicByFile[YlConstants.RULE_VAR_PROGRAM] : oRecord.TieUpName;
+			oRecord.TieUpAgeLimit = oRecord.TieUpAgeLimit == 0 ? Common.StringToInt32(aDicByFile[YlConstants.RULE_VAR_AGE_LIMIT]) : oRecord.TieUpAgeLimit;
+			oRecord.SongOpEd = oRecord.SongOpEd == null ? aDicByFile[YlConstants.RULE_VAR_OP_ED] : oRecord.SongOpEd;
+			oRecord.SongName = oRecord.SongName == null ? aDicByFile[YlConstants.RULE_VAR_TITLE] : oRecord.SongName;
+			if (oRecord.ArtistName == null && aDicByFile[YlConstants.RULE_VAR_ARTIST] != null)
 			{
 				// ファイル名から歌手名を取得できている場合は、楽曲情報データベースからフリガナを探す
 				List<TPerson> aArtists;
-				aArtists = YlCommon.SelectMastersByName<TPerson>(oMusicInfoDbContext, aDicByFile[YlCommon.RULE_VAR_ARTIST]);
+				aArtists = YlCommon.SelectMastersByName<TPerson>(oMusicInfoDbContext, aDicByFile[YlConstants.RULE_VAR_ARTIST]);
 				if (aArtists.Count > 0)
 				{
 					// 歌手名が楽曲情報データベースに登録されていた場合はその情報を使う
-					oRecord.ArtistName = aDicByFile[YlCommon.RULE_VAR_ARTIST];
+					oRecord.ArtistName = aDicByFile[YlConstants.RULE_VAR_ARTIST];
 					oRecord.ArtistRuby = aArtists[0].Ruby;
 				}
 				else
 				{
 					// 歌手名そのままでは楽曲情報データベースに登録されていない場合
-					if (aDicByFile[YlCommon.RULE_VAR_ARTIST].IndexOf(YlCommon.VAR_VALUE_DELIMITER) >= 0)
+					if (aDicByFile[YlConstants.RULE_VAR_ARTIST].IndexOf(YlConstants.VAR_VALUE_DELIMITER) >= 0)
 					{
 						// 区切り文字で区切られた複数の歌手名が記載されている場合は分解して解析する
-						String[] aArtistNames = aDicByFile[YlCommon.RULE_VAR_ARTIST].Split(YlCommon.VAR_VALUE_DELIMITER[0]);
+						String[] aArtistNames = aDicByFile[YlConstants.RULE_VAR_ARTIST].Split(YlConstants.VAR_VALUE_DELIMITER[0]);
 						foreach (String aArtistName in aArtistNames)
 						{
 							List<TPerson> aArtistsTmp = YlCommon.SelectMastersByName<TPerson>(oMusicInfoDbContext, aArtistName);
@@ -1653,16 +1654,16 @@ namespace YukaLister.Models
 					else
 					{
 						// 楽曲情報データベースに登録されていないので漢字のみ格納
-						oRecord.ArtistName = aDicByFile[YlCommon.RULE_VAR_ARTIST];
+						oRecord.ArtistName = aDicByFile[YlConstants.RULE_VAR_ARTIST];
 					}
 				}
 			}
-			oRecord.SongRuby = oRecord.SongRuby == null ? aDicByFile[YlCommon.RULE_VAR_TITLE_RUBY] : oRecord.SongRuby;
-			oRecord.Worker = oRecord.Worker == null ? aDicByFile[YlCommon.RULE_VAR_WORKER] : oRecord.Worker;
-			oRecord.Track = oRecord.Track == null ? aDicByFile[YlCommon.RULE_VAR_TRACK] : oRecord.Track;
-			oRecord.SmartTrackOnVocal = !oRecord.SmartTrackOnVocal ? aDicByFile[YlCommon.RULE_VAR_ON_VOCAL] != null : oRecord.SmartTrackOnVocal;
-			oRecord.SmartTrackOffVocal = !oRecord.SmartTrackOffVocal ? aDicByFile[YlCommon.RULE_VAR_OFF_VOCAL] != null : oRecord.SmartTrackOffVocal;
-			oRecord.Comment = oRecord.Comment == null ? aDicByFile[YlCommon.RULE_VAR_COMMENT] : oRecord.Comment;
+			oRecord.SongRuby = oRecord.SongRuby == null ? aDicByFile[YlConstants.RULE_VAR_TITLE_RUBY] : oRecord.SongRuby;
+			oRecord.Worker = oRecord.Worker == null ? aDicByFile[YlConstants.RULE_VAR_WORKER] : oRecord.Worker;
+			oRecord.Track = oRecord.Track == null ? aDicByFile[YlConstants.RULE_VAR_TRACK] : oRecord.Track;
+			oRecord.SmartTrackOnVocal = !oRecord.SmartTrackOnVocal ? aDicByFile[YlConstants.RULE_VAR_ON_VOCAL] != null : oRecord.SmartTrackOnVocal;
+			oRecord.SmartTrackOffVocal = !oRecord.SmartTrackOffVocal ? aDicByFile[YlConstants.RULE_VAR_OFF_VOCAL] != null : oRecord.SmartTrackOffVocal;
+			oRecord.Comment = oRecord.Comment == null ? aDicByFile[YlConstants.RULE_VAR_COMMENT] : oRecord.Comment;
 
 			// トラック情報からスマートトラック解析
 			Boolean aHasOn;
@@ -1704,23 +1705,23 @@ namespace YukaLister.Models
 		// --------------------------------------------------------------------
 		private void SetTFoundValueByMusicInfoDb(TFound oRecord, Dictionary<String, String> oDicByFile, SQLiteCommand oMusicInfoDbCmd, DataContext oMusicInfoDbContext)
 		{
-			if (oDicByFile[YlCommon.RULE_VAR_TITLE] == null)
+			if (oDicByFile[YlConstants.RULE_VAR_TITLE] == null)
 			{
 				return;
 			}
 
 			List<TSong> aSongs;
 			// 楽曲名で検索
-			aSongs = YlCommon.SelectMastersByName<TSong>(oMusicInfoDbContext, oDicByFile[YlCommon.RULE_VAR_TITLE]);
+			aSongs = YlCommon.SelectMastersByName<TSong>(oMusicInfoDbContext, oDicByFile[YlConstants.RULE_VAR_TITLE]);
 
 			// タイアップ名で絞り込み
-			if (aSongs.Count > 1 && oDicByFile[YlCommon.RULE_VAR_PROGRAM] != null)
+			if (aSongs.Count > 1 && oDicByFile[YlConstants.RULE_VAR_PROGRAM] != null)
 			{
 				List<TSong> aSongsWithTieUp = new List<TSong>();
 				foreach (TSong aSong in aSongs)
 				{
 					TTieUp aTieUp = YlCommon.SelectMasterById<TTieUp>(oMusicInfoDbContext, aSong.TieUpId);
-					if (aTieUp != null && aTieUp.Name == oDicByFile[YlCommon.RULE_VAR_PROGRAM])
+					if (aTieUp != null && aTieUp.Name == oDicByFile[YlConstants.RULE_VAR_PROGRAM])
 					{
 						aSongsWithTieUp.Add(aSong);
 					}
@@ -1732,13 +1733,13 @@ namespace YukaLister.Models
 			}
 
 			// カテゴリーで絞り込み
-			if (aSongs.Count > 1 && oDicByFile[YlCommon.RULE_VAR_CATEGORY] != null)
+			if (aSongs.Count > 1 && oDicByFile[YlConstants.RULE_VAR_CATEGORY] != null)
 			{
 				List<TSong> aSongsWithCategory = new List<TSong>();
 				foreach (TSong aSong in aSongs)
 				{
 					TCategory aCategory = YlCommon.SelectMasterById<TCategory>(oMusicInfoDbContext, aSong.CategoryId);
-					if (aCategory != null && aCategory.Name == oDicByFile[YlCommon.RULE_VAR_CATEGORY])
+					if (aCategory != null && aCategory.Name == oDicByFile[YlConstants.RULE_VAR_CATEGORY])
 					{
 						aSongsWithCategory.Add(aSong);
 					}
@@ -1750,7 +1751,7 @@ namespace YukaLister.Models
 			}
 
 			// 歌手名で絞り込み
-			if (aSongs.Count > 1 && oDicByFile[YlCommon.RULE_VAR_ARTIST] != null)
+			if (aSongs.Count > 1 && oDicByFile[YlConstants.RULE_VAR_ARTIST] != null)
 			{
 				List<TSong> aSongsWithArtist = new List<TSong>();
 				foreach (TSong aSong in aSongs)
@@ -1758,7 +1759,7 @@ namespace YukaLister.Models
 					String aArtistName;
 					String aArtistRuby;
 					ConcatPersonNameAndRuby(YlCommon.SelectSequencePeopleBySongId<TArtistSequence>(oMusicInfoDbContext, aSong.Id), out aArtistName, out aArtistRuby);
-					if (!String.IsNullOrEmpty(aArtistName) && aArtistName == oDicByFile[YlCommon.RULE_VAR_ARTIST])
+					if (!String.IsNullOrEmpty(aArtistName) && aArtistName == oDicByFile[YlConstants.RULE_VAR_ARTIST])
 					{
 						aSongsWithArtist.Add(aSong);
 					}
@@ -1774,9 +1775,9 @@ namespace YukaLister.Models
 			if (aSongs.Count == 0)
 			{
 				// 楽曲情報データベース内に曲情報が無い場合は、タイアップ情報があるか検索
-				if (oDicByFile[YlCommon.RULE_VAR_PROGRAM] != null)
+				if (oDicByFile[YlConstants.RULE_VAR_PROGRAM] != null)
 				{
-					List<TTieUp> aTieUps = YlCommon.SelectMastersByName<TTieUp>(oMusicInfoDbContext, oDicByFile[YlCommon.RULE_VAR_PROGRAM]);
+					List<TTieUp> aTieUps = YlCommon.SelectMastersByName<TTieUp>(oMusicInfoDbContext, oDicByFile[YlConstants.RULE_VAR_PROGRAM]);
 					if (aTieUps.Count > 0)
 					{
 						aTieUpOfSong = aTieUps[0];
@@ -1852,7 +1853,7 @@ namespace YukaLister.Models
 			oRecord.SongName = aSelectedSong.Name;
 			oRecord.SongRuby = aSelectedSong.Ruby;
 			oRecord.SongOpEd = aSelectedSong.OpEd;
-			if (oRecord.SongReleaseDate <= YlCommon.INVALID_MJD && aSelectedSong.ReleaseDate > YlCommon.INVALID_MJD)
+			if (oRecord.SongReleaseDate <= YlConstants.INVALID_MJD && aSelectedSong.ReleaseDate > YlConstants.INVALID_MJD)
 			{
 				oRecord.SongReleaseDate = aSelectedSong.ReleaseDate;
 			}
@@ -1911,7 +1912,7 @@ namespace YukaLister.Models
 			{
 				mTimerUpdateDg.IsEnabled = false;
 				mEnvironment.LogWriter.ShowLogMessage(TraceEventType.Error, "タイマー時エラー：\n" + oExcep.Message);
-				mEnvironment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				mEnvironment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 

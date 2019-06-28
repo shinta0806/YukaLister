@@ -12,11 +12,7 @@ using Shinta;
 
 using System;
 using System.Collections.Generic;
-using System.Data.Linq;
 using System.Data.SQLite;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace YukaLister.Models.Database
 {

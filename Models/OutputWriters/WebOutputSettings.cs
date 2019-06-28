@@ -9,7 +9,9 @@
 // ----------------------------------------------------------------------------
 
 using Shinta;
+
 using System;
+
 using YukaLister.Models.SharedMisc;
 
 namespace YukaLister.Models.OutputWriters
@@ -105,7 +107,7 @@ namespace YukaLister.Models.OutputWriters
 		// --------------------------------------------------------------------
 		private void InitIfNeeded()
 		{
-			if (NewDays < YlCommon.NEW_DAYS_MIN)
+			if (NewDays < YlConstants.NEW_DAYS_MIN)
 			{
 				NewDays = NEW_DAYS_DEFAULT;
 			}

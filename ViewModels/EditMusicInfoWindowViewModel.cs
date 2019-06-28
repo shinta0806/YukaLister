@@ -10,21 +10,16 @@
 
 using Livet;
 using Livet.Commands;
-using Livet.EventListeners;
 using Livet.Messaging;
-using Livet.Messaging.IO;
 using Livet.Messaging.Windows;
 
 using Shinta;
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data.Linq;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Windows;
 
 using YukaLister.Models;
@@ -115,7 +110,7 @@ namespace YukaLister.ViewModels
 				}
 				using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
 				{
-					return YlCommon.SelectMastersByName<TTieUp>(aMusicInfoDbInDisk.Connection, DicByFile[YlCommon.RULE_VAR_PROGRAM]).Count > 0;
+					return YlCommon.SelectMastersByName<TTieUp>(aMusicInfoDbInDisk.Connection, DicByFile[YlConstants.RULE_VAR_PROGRAM]).Count > 0;
 				}
 			}
 		}
@@ -131,7 +126,7 @@ namespace YukaLister.ViewModels
 				}
 				using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
 				{
-					return YlCommon.SelectMastersByName<TSong>(aMusicInfoDbInDisk.Connection, DicByFile[YlCommon.RULE_VAR_TITLE]).Count > 0;
+					return YlCommon.SelectMastersByName<TSong>(aMusicInfoDbInDisk.Connection, DicByFile[YlConstants.RULE_VAR_TITLE]).Count > 0;
 				}
 			}
 		}
@@ -264,7 +259,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "タイアップ名検索ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -291,7 +286,7 @@ namespace YukaLister.ViewModels
 				using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
 				{
 					// ファイル名から取得したタイアップ名が未登録でかつ未検索は検索を促す
-					if (YlCommon.SelectMastersByName<TTieUp>(aMusicInfoDbInDisk.Connection, DicByFile[YlCommon.RULE_VAR_PROGRAM]).Count == 0 && String.IsNullOrEmpty(TieUpOrigin))
+					if (YlCommon.SelectMastersByName<TTieUp>(aMusicInfoDbInDisk.Connection, DicByFile[YlConstants.RULE_VAR_PROGRAM]).Count == 0 && String.IsNullOrEmpty(TieUpOrigin))
 					{
 						if (!mIsTieUpSearched)
 						{
@@ -315,7 +310,7 @@ namespace YukaLister.ViewModels
 				}
 				else
 				{
-					aTieUpName = DicByFile[YlCommon.RULE_VAR_PROGRAM];
+					aTieUpName = DicByFile[YlConstants.RULE_VAR_PROGRAM];
 				}
 
 				// 情報準備
@@ -324,7 +319,7 @@ namespace YukaLister.ViewModels
 				using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
 				{
 					aTieUps = YlCommon.SelectMastersByName<TTieUp>(aMusicInfoDbInDisk.Connection, aTieUpName);
-					aCategories = YlCommon.SelectMastersByName<TCategory>(aMusicInfoDbInDisk.Connection, DicByFile[YlCommon.RULE_VAR_CATEGORY]);
+					aCategories = YlCommon.SelectMastersByName<TCategory>(aMusicInfoDbInDisk.Connection, DicByFile[YlConstants.RULE_VAR_CATEGORY]);
 				}
 
 				// 新規作成用の追加
@@ -334,7 +329,7 @@ namespace YukaLister.ViewModels
 					Id = null,
 					Import = false,
 					Invalid = false,
-					UpdateTime = YlCommon.INVALID_MJD,
+					UpdateTime = YlConstants.INVALID_MJD,
 					Dirty = true,
 
 					// IRcMaster
@@ -345,8 +340,8 @@ namespace YukaLister.ViewModels
 					// TTieUp
 					CategoryId = aCategories.Count > 0 ? aCategories[0].Id : null,
 					MakerId = null,
-					AgeLimit = Common.StringToInt32(DicByFile[YlCommon.RULE_VAR_AGE_LIMIT]),
-					ReleaseDate = YlCommon.INVALID_MJD,
+					AgeLimit = Common.StringToInt32(DicByFile[YlConstants.RULE_VAR_AGE_LIMIT]),
+					ReleaseDate = YlConstants.INVALID_MJD,
 				};
 				aTieUps.Insert(0, aNewTieUp);
 
@@ -370,7 +365,7 @@ namespace YukaLister.ViewModels
 						TTieUp aTieUp = YlCommon.SelectMasterById<TTieUp>(aMusicInfoDbInDisk.Connection, aEditTieUpWindowViewModel.OkSelectedId);
 						if (aTieUp != null)
 						{
-							if (String.IsNullOrEmpty(DicByFile[YlCommon.RULE_VAR_PROGRAM]) || aTieUp.Name == DicByFile[YlCommon.RULE_VAR_PROGRAM])
+							if (String.IsNullOrEmpty(DicByFile[YlConstants.RULE_VAR_PROGRAM]) || aTieUp.Name == DicByFile[YlConstants.RULE_VAR_PROGRAM])
 							{
 								UseTieUpAlias = false;
 							}
@@ -387,7 +382,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "タイアップ詳細編集ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -434,7 +429,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "タイアップ名検索ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -461,7 +456,7 @@ namespace YukaLister.ViewModels
 				using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
 				{
 					// ファイル名から取得した楽曲名が未登録でかつ未検索は検索を促す
-					if (YlCommon.SelectMastersByName<TSong>(aMusicInfoDbInDisk.Connection, DicByFile[YlCommon.RULE_VAR_TITLE]).Count == 0 && String.IsNullOrEmpty(SongOrigin))
+					if (YlCommon.SelectMastersByName<TSong>(aMusicInfoDbInDisk.Connection, DicByFile[YlConstants.RULE_VAR_TITLE]).Count == 0 && String.IsNullOrEmpty(SongOrigin))
 					{
 						if (!mIsSongSearched)
 						{
@@ -485,7 +480,7 @@ namespace YukaLister.ViewModels
 				}
 				else
 				{
-					aSongName = DicByFile[YlCommon.RULE_VAR_TITLE];
+					aSongName = DicByFile[YlConstants.RULE_VAR_TITLE];
 				}
 
 				// タイアップ名の選択（null もありえる）
@@ -496,7 +491,7 @@ namespace YukaLister.ViewModels
 				}
 				else
 				{
-					aTieUpName = DicByFile[YlCommon.RULE_VAR_PROGRAM];
+					aTieUpName = DicByFile[YlConstants.RULE_VAR_PROGRAM];
 				}
 
 				// 情報準備
@@ -507,7 +502,7 @@ namespace YukaLister.ViewModels
 				{
 					aSongs = YlCommon.SelectMastersByName<TSong>(aMusicInfoDbInDisk.Connection, aSongName);
 					aTieUps = YlCommon.SelectMastersByName<TTieUp>(aMusicInfoDbInDisk.Connection, aTieUpName);
-					aCategories = YlCommon.SelectMastersByName<TCategory>(aMusicInfoDbInDisk.Connection, DicByFile[YlCommon.RULE_VAR_CATEGORY]);
+					aCategories = YlCommon.SelectMastersByName<TCategory>(aMusicInfoDbInDisk.Connection, DicByFile[YlConstants.RULE_VAR_CATEGORY]);
 				}
 
 				// 新規作成用の追加
@@ -517,19 +512,19 @@ namespace YukaLister.ViewModels
 					Id = null,
 					Import = false,
 					Invalid = false,
-					UpdateTime = YlCommon.INVALID_MJD,
+					UpdateTime = YlConstants.INVALID_MJD,
 					Dirty = true,
 
 					// IRcMaster
 					Name = aSongName,
-					Ruby = DicByFile[YlCommon.RULE_VAR_TITLE_RUBY],
+					Ruby = DicByFile[YlConstants.RULE_VAR_TITLE_RUBY],
 					Keyword = null,
 
 					// TSong
-					ReleaseDate = YlCommon.INVALID_MJD,
+					ReleaseDate = YlConstants.INVALID_MJD,
 					TieUpId = aTieUps.Count > 0 ? aTieUps[0].Id : null,
 					CategoryId = aTieUps.Count == 0 && aCategories.Count > 0 ? aCategories[0].Id : null,
-					OpEd = DicByFile[YlCommon.RULE_VAR_OP_ED],
+					OpEd = DicByFile[YlConstants.RULE_VAR_OP_ED],
 				};
 				aSongs.Insert(0, aNewSong);
 
@@ -576,7 +571,7 @@ namespace YukaLister.ViewModels
 						TSong aSong = YlCommon.SelectMasterById<TSong>(aMusicInfoDbInDisk.Connection, aEditSongWindowViewModel.OkSelectedId);
 						if (aSong != null)
 						{
-							if (aSong.Name == DicByFile[YlCommon.RULE_VAR_TITLE])
+							if (aSong.Name == DicByFile[YlConstants.RULE_VAR_TITLE])
 							{
 								UseSongAlias = false;
 							}
@@ -593,37 +588,15 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "楽曲詳細編集ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
 
 		#region ヘルプリンクの制御
-		private ListenerCommand<String> mHelpClickedCommand;
-
 		public ListenerCommand<String> HelpClickedCommand
 		{
-			get
-			{
-				if (mHelpClickedCommand == null)
-				{
-					mHelpClickedCommand = new ListenerCommand<String>(HelpClicked);
-				}
-				return mHelpClickedCommand;
-			}
-		}
-
-		public void HelpClicked(String oParameter)
-		{
-			try
-			{
-				YlCommon.ShowHelp(Environment, oParameter);
-			}
-			catch (Exception oExcep)
-			{
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "詳細情報リンククリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
-			}
+			get => Environment?.HelpClickedCommand;
 		}
 		#endregion
 
@@ -655,7 +628,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "OK ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -685,7 +658,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "楽曲情報等編集ウィンドウビューモデル初期化時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 
@@ -708,14 +681,14 @@ namespace YukaLister.ViewModels
 		// --------------------------------------------------------------------
 		private void ApplySongAlias()
 		{
-			if (String.IsNullOrEmpty(DicByFile[YlCommon.RULE_VAR_TITLE]))
+			if (String.IsNullOrEmpty(DicByFile[YlConstants.RULE_VAR_TITLE]))
 			{
 				return;
 			}
 
 			using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
 			{
-				List<TSongAlias> aSongAliases = YlCommon.SelectAliasesByAlias<TSongAlias>(aMusicInfoDbInDisk.Connection, DicByFile[YlCommon.RULE_VAR_TITLE]);
+				List<TSongAlias> aSongAliases = YlCommon.SelectAliasesByAlias<TSongAlias>(aMusicInfoDbInDisk.Connection, DicByFile[YlConstants.RULE_VAR_TITLE]);
 				if (aSongAliases.Count > 0)
 				{
 					TSong aSong = YlCommon.SelectMasterById<TSong>(aMusicInfoDbInDisk.Connection, aSongAliases[0].OriginalId);
@@ -727,7 +700,7 @@ namespace YukaLister.ViewModels
 					}
 				}
 
-				if (YlCommon.SelectMastersByName<TSong>(aMusicInfoDbInDisk.Connection, DicByFile[YlCommon.RULE_VAR_TITLE]).Count == 0)
+				if (YlCommon.SelectMastersByName<TSong>(aMusicInfoDbInDisk.Connection, DicByFile[YlConstants.RULE_VAR_TITLE]).Count == 0)
 				{
 					UseSongAlias = true;
 					SongOrigin = null;
@@ -740,14 +713,14 @@ namespace YukaLister.ViewModels
 		// --------------------------------------------------------------------
 		private void ApplyTieUpAlias()
 		{
-			if (String.IsNullOrEmpty(DicByFile[YlCommon.RULE_VAR_PROGRAM]))
+			if (String.IsNullOrEmpty(DicByFile[YlConstants.RULE_VAR_PROGRAM]))
 			{
 				return;
 			}
 
 			using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
 			{
-				List<TTieUpAlias> aTieUpAliases = YlCommon.SelectAliasesByAlias<TTieUpAlias>(aMusicInfoDbInDisk.Connection, DicByFile[YlCommon.RULE_VAR_PROGRAM]);
+				List<TTieUpAlias> aTieUpAliases = YlCommon.SelectAliasesByAlias<TTieUpAlias>(aMusicInfoDbInDisk.Connection, DicByFile[YlConstants.RULE_VAR_PROGRAM]);
 				if (aTieUpAliases.Count > 0)
 				{
 					TTieUp aTieUp = YlCommon.SelectMasterById<TTieUp>(aMusicInfoDbInDisk.Connection, aTieUpAliases[0].OriginalId);
@@ -759,7 +732,7 @@ namespace YukaLister.ViewModels
 					}
 				}
 
-				if (YlCommon.SelectMastersByName<TTieUp>(aMusicInfoDbInDisk.Connection, DicByFile[YlCommon.RULE_VAR_PROGRAM]).Count == 0)
+				if (YlCommon.SelectMastersByName<TTieUp>(aMusicInfoDbInDisk.Connection, DicByFile[YlConstants.RULE_VAR_PROGRAM]).Count == 0)
 				{
 					UseTieUpAlias = true;
 					TieUpOrigin = null;
@@ -786,7 +759,7 @@ namespace YukaLister.ViewModels
 					{
 						throw new Exception("楽曲名の正式名称を検索して指定して下さい。");
 					}
-					if (SongOrigin == DicByFile[YlCommon.RULE_VAR_TITLE])
+					if (SongOrigin == DicByFile[YlConstants.RULE_VAR_TITLE])
 					{
 						throw new Exception("ファイル名・フォルダー固定値から取得した楽曲名と正式名称が同じです。\n"
 								+ "楽曲名を揃えるのが不要の場合は、「楽曲名を揃える」のチェックを外して下さい。");
@@ -806,7 +779,7 @@ namespace YukaLister.ViewModels
 					{
 						throw new Exception("タイアップ名の正式名称を検索して指定して下さい。");
 					}
-					if (TieUpOrigin == DicByFile[YlCommon.RULE_VAR_PROGRAM])
+					if (TieUpOrigin == DicByFile[YlConstants.RULE_VAR_PROGRAM])
 					{
 						throw new Exception("ファイル名・フォルダー固定値から取得したタイアップ名と正式名称が同じです。\n"
 								+ "タイアップ名を揃えるのが不要の場合は、「タイアップ名を揃える」のチェックを外して下さい。");
@@ -833,18 +806,18 @@ namespace YukaLister.ViewModels
 				Table<TSongAlias> aTableSongAlias = aContext.GetTable<TSongAlias>();
 				if (UseSongAlias)
 				{
-					List<TSongAlias> aSongAliases = YlCommon.SelectAliasesByAlias<TSongAlias>(aContext, DicByFile[YlCommon.RULE_VAR_TITLE], true);
+					List<TSongAlias> aSongAliases = YlCommon.SelectAliasesByAlias<TSongAlias>(aContext, DicByFile[YlConstants.RULE_VAR_TITLE], true);
 					TSongAlias aNewSongAlias = new TSongAlias
 					{
 						// TBase
 						Id = null,
 						Import = false,
 						Invalid = false,
-						UpdateTime = YlCommon.INVALID_MJD,
+						UpdateTime = YlConstants.INVALID_MJD,
 						Dirty = true,
 
 						// TAlias
-						Alias = DicByFile[YlCommon.RULE_VAR_TITLE],
+						Alias = DicByFile[YlConstants.RULE_VAR_TITLE],
 						OriginalId = oSongOriginalId,
 					};
 
@@ -867,7 +840,7 @@ namespace YukaLister.ViewModels
 				}
 				else
 				{
-					List<TSongAlias> aSongAliases = YlCommon.SelectAliasesByAlias<TSongAlias>(aContext, DicByFile[YlCommon.RULE_VAR_TITLE], false);
+					List<TSongAlias> aSongAliases = YlCommon.SelectAliasesByAlias<TSongAlias>(aContext, DicByFile[YlConstants.RULE_VAR_TITLE], false);
 					if (aSongAliases.Count > 0)
 					{
 						// 無効化
@@ -880,18 +853,18 @@ namespace YukaLister.ViewModels
 				Table<TTieUpAlias> aTableTieUpAlias = aContext.GetTable<TTieUpAlias>();
 				if (UseTieUpAlias)
 				{
-					List<TTieUpAlias> aTieUpAliases = YlCommon.SelectAliasesByAlias<TTieUpAlias>(aContext, DicByFile[YlCommon.RULE_VAR_PROGRAM], true);
+					List<TTieUpAlias> aTieUpAliases = YlCommon.SelectAliasesByAlias<TTieUpAlias>(aContext, DicByFile[YlConstants.RULE_VAR_PROGRAM], true);
 					TTieUpAlias aNewTieUpAlias = new TTieUpAlias
 					{
 						// TBase
 						Id = null,
 						Import = false,
 						Invalid = false,
-						UpdateTime = YlCommon.INVALID_MJD,
+						UpdateTime = YlConstants.INVALID_MJD,
 						Dirty = true,
 
 						// TAlias
-						Alias = DicByFile[YlCommon.RULE_VAR_PROGRAM],
+						Alias = DicByFile[YlConstants.RULE_VAR_PROGRAM],
 						OriginalId = oTieUpOriginalId,
 					};
 
@@ -914,7 +887,7 @@ namespace YukaLister.ViewModels
 				}
 				else
 				{
-					List<TTieUpAlias> aTieUpAliases = YlCommon.SelectAliasesByAlias<TTieUpAlias>(aContext, DicByFile[YlCommon.RULE_VAR_PROGRAM], false);
+					List<TTieUpAlias> aTieUpAliases = YlCommon.SelectAliasesByAlias<TTieUpAlias>(aContext, DicByFile[YlConstants.RULE_VAR_PROGRAM], false);
 					if (aTieUpAliases.Count > 0)
 					{
 						// 無効化

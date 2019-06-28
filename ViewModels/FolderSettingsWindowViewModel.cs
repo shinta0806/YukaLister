@@ -11,8 +11,6 @@
 using Livet;
 using Livet.Commands;
 using Livet.Messaging;
-using Livet.Messaging.IO;
-using Livet.EventListeners;
 using Livet.Messaging.Windows;
 
 using Shinta;
@@ -357,33 +355,10 @@ namespace YukaLister.ViewModels
 		// --------------------------------------------------------------------
 
 		#region ヘルプリンクの制御
-		private ListenerCommand<String> mHelpClickedCommand;
-
 		public ListenerCommand<String> HelpClickedCommand
 		{
-			get
-			{
-				if (mHelpClickedCommand == null)
-				{
-					mHelpClickedCommand = new ListenerCommand<String>(HelpClicked);
-				}
-				return mHelpClickedCommand;
-			}
+			get => Environment?.HelpClickedCommand;
 		}
-
-		public void HelpClicked(String oParameter)
-		{
-			try
-			{
-				YlCommon.ShowHelp(Environment, oParameter);
-			}
-			catch (Exception oExcep)
-			{
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "詳細情報リンククリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
-			}
-		}
-
 		#endregion
 
 		#region ファイル命名規則追加ボタンの制御
@@ -415,7 +390,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "ファイル名命名規則追加時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -455,7 +430,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "ファイル名命名規則置換時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -490,7 +465,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "ファイル名命名規則削除時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -528,7 +503,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "ファイル名命名規則順番繰り上げ時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -566,7 +541,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "ファイル名命名規則順番繰り下げ時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -607,7 +582,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "固定値項目追加時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -642,7 +617,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "固定値項目削除時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -680,7 +655,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "フォルダー固定値順番繰り上げ時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -718,7 +693,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "フォルダー固定値順番繰り下げ時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -759,7 +734,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "ファイル検索時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -797,7 +772,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "未登録検出クリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -841,7 +816,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "名称の編集ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -876,17 +851,17 @@ namespace YukaLister.ViewModels
 					return;
 				}
 
-				if (File.Exists(PathExLen + "\\" + YlCommon.FILE_NAME_YUKA_LISTER_CONFIG))
+				if (File.Exists(PathExLen + "\\" + YlConstants.FILE_NAME_YUKA_LISTER_CONFIG))
 				{
-					File.Delete(PathExLen + "\\" + YlCommon.FILE_NAME_YUKA_LISTER_CONFIG);
+					File.Delete(PathExLen + "\\" + YlConstants.FILE_NAME_YUKA_LISTER_CONFIG);
 				}
-				if (File.Exists(PathExLen + "\\" + YlCommon.FILE_NAME_NICO_KARA_LISTER_CONFIG))
+				if (File.Exists(PathExLen + "\\" + YlConstants.FILE_NAME_NICO_KARA_LISTER_CONFIG))
 				{
-					File.Delete(PathExLen + "\\" + YlCommon.FILE_NAME_NICO_KARA_LISTER_CONFIG);
+					File.Delete(PathExLen + "\\" + YlConstants.FILE_NAME_NICO_KARA_LISTER_CONFIG);
 				}
-				if (File.Exists(PathExLen + "\\" + YlCommon.FILE_NAME_YUKA_LISTER_EXCLUDE_CONFIG))
+				if (File.Exists(PathExLen + "\\" + YlConstants.FILE_NAME_YUKA_LISTER_EXCLUDE_CONFIG))
 				{
-					File.Delete(PathExLen + "\\" + YlCommon.FILE_NAME_YUKA_LISTER_EXCLUDE_CONFIG);
+					File.Delete(PathExLen + "\\" + YlConstants.FILE_NAME_YUKA_LISTER_EXCLUDE_CONFIG);
 				}
 
 				// UI に反映
@@ -895,7 +870,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "設定削除ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -925,7 +900,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "OK ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -955,8 +930,8 @@ namespace YukaLister.ViewModels
 				foreach (String aLabel in aLabels)
 				{
 					// オンボーカル・オフボーカルは除外
-					if (aLabel.IndexOf(YlCommon.RULE_VAR_ON_VOCAL, StringComparison.OrdinalIgnoreCase) < 0
-							&& aLabel.IndexOf(YlCommon.RULE_VAR_OFF_VOCAL, StringComparison.OrdinalIgnoreCase) < 0)
+					if (aLabel.IndexOf(YlConstants.RULE_VAR_ON_VOCAL, StringComparison.OrdinalIgnoreCase) < 0
+							&& aLabel.IndexOf(YlConstants.RULE_VAR_OFF_VOCAL, StringComparison.OrdinalIgnoreCase) < 0)
 					{
 						AddContextMenuItemToButtonVar(aLabel);
 					}
@@ -973,7 +948,7 @@ namespace YukaLister.ViewModels
 				foreach (String aLabel in aLabels)
 				{
 					// * は除外
-					if (aLabel.IndexOf(YlCommon.RULE_VAR_ANY) < 0)
+					if (aLabel.IndexOf(YlConstants.RULE_VAR_ANY) < 0)
 					{
 						FolderNameRuleNames.Add(aLabel);
 					}
@@ -988,7 +963,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "フォルダー設定ウィンドウビューモデル初期化時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 
@@ -1071,7 +1046,7 @@ namespace YukaLister.ViewModels
 			}
 
 			// 変数が含まれているか
-			if (FileNameRule.IndexOf(YlCommon.RULE_VAR_BEGIN) < 0)
+			if (FileNameRule.IndexOf(YlConstants.RULE_VAR_BEGIN) < 0)
 			{
 				throw new Exception("命名規則に <変数> が含まれていません。");
 			}
@@ -1084,9 +1059,9 @@ namespace YukaLister.ViewModels
 
 			// 変数・ワイルドカードが隣り合っているとうまく解析できない
 			String aNormalizedNewRule = NormalizeRule(FileNameRule);
-			if (aNormalizedNewRule.IndexOf(YlCommon.RULE_VAR_ANY + YlCommon.RULE_VAR_ANY) >= 0)
+			if (aNormalizedNewRule.IndexOf(YlConstants.RULE_VAR_ANY + YlConstants.RULE_VAR_ANY) >= 0)
 			{
-				throw new Exception("<変数> や " + YlCommon.RULE_VAR_ANY + " が連続していると正常にファイル名を解析できません。");
+				throw new Exception("<変数> や " + YlConstants.RULE_VAR_ANY + " が連続していると正常にファイル名を解析できません。");
 			}
 
 			// 競合する命名規則が無いか
@@ -1139,7 +1114,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "変数メニュークリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 
@@ -1154,13 +1129,13 @@ namespace YukaLister.ViewModels
 			foreach (KeyValuePair<String, String> aVar in aVarMap)
 			{
 				String aKey;
-				if (aVar.Key == YlCommon.RULE_VAR_ANY)
+				if (aVar.Key == YlConstants.RULE_VAR_ANY)
 				{
 					aKey = aVar.Key;
 				}
 				else
 				{
-					aKey = YlCommon.RULE_VAR_BEGIN + aTextInfo.ToTitleCase(aVar.Key) + YlCommon.RULE_VAR_END;
+					aKey = YlConstants.RULE_VAR_BEGIN + aTextInfo.ToTitleCase(aVar.Key) + YlConstants.RULE_VAR_END;
 				}
 				aLabels.Add(aKey + "（" + aVar.Value + "）");
 			}
@@ -1177,14 +1152,14 @@ namespace YukaLister.ViewModels
 			Dictionary<String, String> aVarMap = YlCommon.CreateRuleDictionary();
 			foreach (String aKey in aVarMap.Keys)
 			{
-				if (oString.IndexOf(YlCommon.RULE_VAR_BEGIN + aKey + YlCommon.RULE_VAR_END, StringComparison.CurrentCultureIgnoreCase) >= 0)
+				if (oString.IndexOf(YlConstants.RULE_VAR_BEGIN + aKey + YlConstants.RULE_VAR_END, StringComparison.CurrentCultureIgnoreCase) >= 0)
 				{
 					return aKey;
 				}
 			}
-			if (oString.IndexOf(YlCommon.RULE_VAR_ANY) >= 0)
+			if (oString.IndexOf(YlConstants.RULE_VAR_ANY) >= 0)
 			{
-				return YlCommon.RULE_VAR_ANY;
+				return YlConstants.RULE_VAR_ANY;
 			}
 			return null;
 		}
@@ -1260,14 +1235,14 @@ namespace YukaLister.ViewModels
 									Path.GetFileNameWithoutExtension(PreviewInfos[aRowIndex].FileName), aFolderSettingsInMemory);
 
 						// 楽曲名が空かどうか
-						if (String.IsNullOrEmpty(aDic[YlCommon.RULE_VAR_TITLE]))
+						if (String.IsNullOrEmpty(aDic[YlConstants.RULE_VAR_TITLE]))
 						{
 							break;
 						}
 
 						// 楽曲名が楽曲情報データベースと不一致かどうか
-						String aSongNameOrigin = aDic[YlCommon.RULE_VAR_TITLE];
-						List<TSongAlias> aSongAliases = YlCommon.SelectAliasesByAlias<TSongAlias>(aContext, aDic[YlCommon.RULE_VAR_TITLE]);
+						String aSongNameOrigin = aDic[YlConstants.RULE_VAR_TITLE];
+						List<TSongAlias> aSongAliases = YlCommon.SelectAliasesByAlias<TSongAlias>(aContext, aDic[YlConstants.RULE_VAR_TITLE]);
 						if (aSongAliases.Count > 0)
 						{
 							TSong aSongOrigin = YlCommon.SelectMasterById<TSong>(aContext, aSongAliases[0].OriginalId);
@@ -1283,10 +1258,10 @@ namespace YukaLister.ViewModels
 						}
 
 						// 番組名がある場合、番組名が楽曲情報データベースと不一致かどうか
-						if (!String.IsNullOrEmpty(aDic[YlCommon.RULE_VAR_PROGRAM]))
+						if (!String.IsNullOrEmpty(aDic[YlConstants.RULE_VAR_PROGRAM]))
 						{
-							String aProgramNameOrigin = aDic[YlCommon.RULE_VAR_PROGRAM];
-							List<TTieUpAlias> aTieUpAliases = YlCommon.SelectAliasesByAlias<TTieUpAlias>(aContext, aDic[YlCommon.RULE_VAR_PROGRAM]);
+							String aProgramNameOrigin = aDic[YlConstants.RULE_VAR_PROGRAM];
+							List<TTieUpAlias> aTieUpAliases = YlCommon.SelectAliasesByAlias<TTieUpAlias>(aContext, aDic[YlConstants.RULE_VAR_PROGRAM]);
 							if (aTieUpAliases.Count > 0)
 							{
 								TTieUp aTieUpOrigin = YlCommon.SelectMasterById<TTieUp>(aContext, aTieUpAliases[0].OriginalId);
@@ -1313,7 +1288,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "未登録検出時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 
@@ -1322,7 +1297,7 @@ namespace YukaLister.ViewModels
 		// --------------------------------------------------------------------
 		private String NormalizeRule(String oRule)
 		{
-			return Regex.Replace(oRule, @"\<.*?\>", YlCommon.RULE_VAR_ANY);
+			return Regex.Replace(oRule, @"\<.*?\>", YlConstants.RULE_VAR_ANY);
 		}
 
 		// --------------------------------------------------------------------
@@ -1332,8 +1307,8 @@ namespace YukaLister.ViewModels
 		{
 			FolderSettingsInDisk aFolderSettings = new FolderSettingsInDisk();
 
-			aFolderSettings.AppGeneration = YlCommon.APP_GENERATION;
-			aFolderSettings.AppVer = YlCommon.APP_VER;
+			aFolderSettings.AppGeneration = YlConstants.APP_GENERATION;
+			aFolderSettings.AppVer = YlConstants.APP_VER;
 
 			aFolderSettings.FileNameRules = FileNameRules.ToList();
 			aFolderSettings.FolderNameRules = FolderNameRules.ToList();
@@ -1387,7 +1362,7 @@ namespace YukaLister.ViewModels
 			FolderSettingsInDisk aFolderSettings = PropertiesToSettings();
 
 			// 保存
-			String aYukaListerConfigPath = PathExLen + "\\" + YlCommon.FILE_NAME_YUKA_LISTER_CONFIG;
+			String aYukaListerConfigPath = PathExLen + "\\" + YlConstants.FILE_NAME_YUKA_LISTER_CONFIG;
 			FileAttributes aPrevAttr = new FileAttributes();
 			Boolean aHasPrevAttr = false;
 			if (File.Exists(aYukaListerConfigPath))
@@ -1405,11 +1380,11 @@ namespace YukaLister.ViewModels
 			}
 
 			// ニコカラりすたーの設定ファイルがある場合は削除
-			if (File.Exists(PathExLen + "\\" + YlCommon.FILE_NAME_NICO_KARA_LISTER_CONFIG))
+			if (File.Exists(PathExLen + "\\" + YlConstants.FILE_NAME_NICO_KARA_LISTER_CONFIG))
 			{
 				try
 				{
-					File.Delete(PathExLen + "\\" + YlCommon.FILE_NAME_NICO_KARA_LISTER_CONFIG);
+					File.Delete(PathExLen + "\\" + YlConstants.FILE_NAME_NICO_KARA_LISTER_CONFIG);
 				}
 				catch (Exception)
 				{
@@ -1417,7 +1392,7 @@ namespace YukaLister.ViewModels
 			}
 
 			// 除外設定の保存
-			String aYukaListerExcludeConfigPath = PathExLen + "\\" + YlCommon.FILE_NAME_YUKA_LISTER_EXCLUDE_CONFIG;
+			String aYukaListerExcludeConfigPath = PathExLen + "\\" + YlConstants.FILE_NAME_YUKA_LISTER_EXCLUDE_CONFIG;
 			if (IsExcluded)
 			{
 				if (!File.Exists(aYukaListerExcludeConfigPath))
@@ -1500,7 +1475,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "固定値入力反映時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 
@@ -1535,7 +1510,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "設定読み込み時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 
@@ -1558,7 +1533,7 @@ namespace YukaLister.ViewModels
 			SelectedFolderNameRule = SelectedFolderNameRuleFromSelectedFolderNameRuleName();
 
 			String aRuleName = FindRuleVarName(SelectedFolderNameRuleName);
-			if (aRuleName == YlCommon.RULE_VAR_CATEGORY || aRuleName == YlCommon.RULE_VAR_ON_VOCAL || aRuleName == YlCommon.RULE_VAR_OFF_VOCAL)
+			if (aRuleName == YlConstants.RULE_VAR_CATEGORY || aRuleName == YlConstants.RULE_VAR_ON_VOCAL || aRuleName == YlConstants.RULE_VAR_OFF_VOCAL)
 			{
 				// ルール値の入力は選択式
 				SelectedFolderNameRuleValueVisibility = Visibility.Visible;
@@ -1567,13 +1542,13 @@ namespace YukaLister.ViewModels
 				// 選択肢の準備
 				switch (aRuleName)
 				{
-					case YlCommon.RULE_VAR_CATEGORY:
+					case YlConstants.RULE_VAR_CATEGORY:
 						FolderNameRuleValues = mCachedCategoryNames;
 						break;
-					case YlCommon.RULE_VAR_ON_VOCAL:
-					case YlCommon.RULE_VAR_OFF_VOCAL:
+					case YlConstants.RULE_VAR_ON_VOCAL:
+					case YlConstants.RULE_VAR_OFF_VOCAL:
 						List<String> aOnOffVocalValues = new List<String>();
-						aOnOffVocalValues.Add(YlCommon.RULE_VALUE_VOCAL_DEFAULT.ToString());
+						aOnOffVocalValues.Add(YlConstants.RULE_VALUE_VOCAL_DEFAULT.ToString());
 						FolderNameRuleValues = aOnOffVocalValues;
 						break;
 					default:
@@ -1629,7 +1604,7 @@ namespace YukaLister.ViewModels
 					StringBuilder aSB = new StringBuilder();
 					foreach (KeyValuePair<String, String> aKvp in aDic)
 					{
-						if (aKvp.Key != YlCommon.RULE_VAR_ANY && !String.IsNullOrEmpty(aKvp.Value))
+						if (aKvp.Key != YlConstants.RULE_VAR_ANY && !String.IsNullOrEmpty(aKvp.Value))
 						{
 							aSB.Append(aRuleMap[aKvp.Key] + "=" + aKvp.Value + ", ");
 						}
@@ -1652,7 +1627,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "ファイル検索結果更新更新時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 			finally
 			{
@@ -1666,14 +1641,14 @@ namespace YukaLister.ViewModels
 		// --------------------------------------------------------------------
 		private String WrapVarName(String oVarName)
 		{
-			if (oVarName == YlCommon.RULE_VAR_ANY)
+			if (oVarName == YlConstants.RULE_VAR_ANY)
 			{
-				return YlCommon.RULE_VAR_ANY;
+				return YlConstants.RULE_VAR_ANY;
 			}
 			else
 			{
 				TextInfo aTextInfo = Thread.CurrentThread.CurrentCulture.TextInfo;
-				return YlCommon.RULE_VAR_BEGIN + aTextInfo.ToTitleCase(oVarName) + YlCommon.RULE_VAR_END;
+				return YlConstants.RULE_VAR_BEGIN + aTextInfo.ToTitleCase(oVarName) + YlConstants.RULE_VAR_END;
 			}
 		}
 

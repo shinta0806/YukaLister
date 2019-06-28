@@ -10,20 +10,14 @@
 
 using Livet;
 using Livet.Commands;
-using Livet.Messaging;
-using Livet.Messaging.IO;
-using Livet.EventListeners;
 using Livet.Messaging.Windows;
 
+using Shinta;
+
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.ComponentModel;
 
 using YukaLister.Models;
-using YukaLister.Models.SharedMisc;
 
 namespace YukaLister.ViewModels
 {
@@ -128,31 +122,9 @@ namespace YukaLister.ViewModels
 		// --------------------------------------------------------------------
 
 		#region ヘルプリンクの制御
-		private ListenerCommand<String> mHelpClickedCommand;
-
 		public ListenerCommand<String> HelpClickedCommand
 		{
-			get
-			{
-				if (mHelpClickedCommand == null)
-				{
-					mHelpClickedCommand = new ListenerCommand<String>(HelpClicked);
-				}
-				return mHelpClickedCommand;
-			}
-		}
-
-		public void HelpClicked(String oParameter)
-		{
-			try
-			{
-				YlCommon.ShowHelp(Environment, oParameter);
-			}
-			catch (Exception oExcep)
-			{
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "詳細情報リンククリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
-			}
+			get => Environment?.HelpClickedCommand;
 		}
 		#endregion
 
@@ -193,7 +165,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "OK ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -224,7 +196,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "ID 接頭辞入力ウィンドウビューモデル初期化時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 	}

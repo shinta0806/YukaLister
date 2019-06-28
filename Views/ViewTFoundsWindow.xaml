@@ -4,7 +4,7 @@
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
         xmlns:l="http://schemas.livet-mvvm.net/2011/wpf"
-        xmlns:mb="clr-namespace:YukaLister.Models.Behaviors"
+        xmlns:sb="clr-namespace:Shinta.Behaviors"
         xmlns:v="clr-namespace:YukaLister.Views"
         xmlns:vm="clr-namespace:YukaLister.ViewModels"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
@@ -71,8 +71,11 @@
         <DataGrid x:Name="DataGridList" Margin="20,10,20,20" AutoGenerateColumns="False" CanUserReorderColumns="False" SelectionMode="Single" IsReadOnly="True" DockPanel.Dock="Top" 
                   ItemsSource="{Binding TFounds}" SelectedItem="{Binding SelectedTFound}"
                   materialDesign:DataGridAssist.ColumnHeaderPadding="3 5 3 5" materialDesign:DataGridAssist.CellPadding="3" >
+            <DataGrid.InputBindings>
+                <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding DataGridDoubleClickedCommand}" />
+            </DataGrid.InputBindings>
             <i:Interaction.Behaviors>
-                <mb:DataGridBindingSupportBehavior Columns="{Binding Columns}" CurrentCellLocation="{Binding CurrentCellLocation}" SortingCommand="{Binding DataGridListSortingCommand}"/>
+                <sb:DataGridBindingSupportBehavior Columns="{Binding Columns}" CurrentCellLocation="{Binding CurrentCellLocation}" SortingCommand="{Binding DataGridListSortingCommand}"/>
             </i:Interaction.Behaviors>
         </DataGrid>
     </DockPanel>

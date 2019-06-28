@@ -8,26 +8,24 @@
 // 
 // ----------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.ComponentModel;
-
 using Livet;
 using Livet.Commands;
 using Livet.Messaging;
-using Livet.Messaging.IO;
-using Livet.EventListeners;
 using Livet.Messaging.Windows;
 
-using YukaLister.Models;
-using System.Diagnostics;
+using Shinta;
+
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using YukaLister.Models.Database;
 using System.Data.Linq;
-using YukaLister.Models.SharedMisc;
+using System.Diagnostics;
+using System.Linq;
 using System.Windows;
+
+using YukaLister.Models;
+using YukaLister.Models.Database;
+using YukaLister.Models.SharedMisc;
 
 namespace YukaLister.ViewModels
 {
@@ -141,30 +139,37 @@ namespace YukaLister.ViewModels
 		// --------------------------------------------------------------------
 
 		#region ヘルプリンクの制御
-		private ListenerCommand<String> mHelpClickedCommand;
-
 		public ListenerCommand<String> HelpClickedCommand
+		{
+			get => Environment?.HelpClickedCommand;
+		}
+		#endregion
+
+		#region データグリッドダブルクリックの制御
+		private ViewModelCommand mDataGridDoubleClickedCommand;
+
+		public ViewModelCommand DataGridDoubleClickedCommand
 		{
 			get
 			{
-				if (mHelpClickedCommand == null)
+				if (mDataGridDoubleClickedCommand == null)
 				{
-					mHelpClickedCommand = new ListenerCommand<String>(HelpClicked);
+					mDataGridDoubleClickedCommand = new ViewModelCommand(DataGridDoubleClicked);
 				}
-				return mHelpClickedCommand;
+				return mDataGridDoubleClickedCommand;
 			}
 		}
 
-		public void HelpClicked(String oParameter)
+		public void DataGridDoubleClicked()
 		{
 			try
 			{
-				YlCommon.ShowHelp(Environment, oParameter);
+				Edit();
 			}
 			catch (Exception oExcep)
 			{
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "詳細情報リンククリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "データグリッドダブルクリック時エラー：\n" + oExcep.Message);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -222,7 +227,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "追加ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -256,7 +261,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "削除ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -299,7 +304,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "上へボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -342,7 +347,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "下へボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -376,7 +381,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "編集ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -419,7 +424,7 @@ namespace YukaLister.ViewModels
 					Id = null,
 					Import = false,
 					Invalid = false,
-					UpdateTime = YlCommon.INVALID_MJD,
+					UpdateTime = YlConstants.INVALID_MJD,
 					Dirty = true,
 
 					// IRcMaster
@@ -459,7 +464,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "新規人物作成ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -489,7 +494,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "OK ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -536,7 +541,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "複数人物編集ウィンドウビューモデル初期化時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 
@@ -575,7 +580,7 @@ namespace YukaLister.ViewModels
 				Id = null,
 				Import = false,
 				Invalid = false,
-				UpdateTime = YlCommon.INVALID_MJD,
+				UpdateTime = YlConstants.INVALID_MJD,
 				Dirty = true,
 
 				// IRcMaster

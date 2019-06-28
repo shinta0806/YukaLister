@@ -1,6 +1,6 @@
 ﻿// ============================================================================
 // 
-// ゆかりすたー共通で使用する、定数・関数
+// ゆかりすたー共通で使用する関数
 // 
 // ============================================================================
 
@@ -9,9 +9,12 @@
 // ----------------------------------------------------------------------------
 
 using Hnx8.ReadJEnc;
+
 using Livet;
 using Livet.Messaging;
+
 using Shinta;
+
 using System;
 using System.Collections.Generic;
 using System.Data.Linq;
@@ -19,7 +22,6 @@ using System.Data.SQLite;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -27,526 +29,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
+
 using YukaLister.Models.Database;
 using YukaLister.Models.OutputWriters;
 using YukaLister.ViewModels;
 
 namespace YukaLister.Models.SharedMisc
 {
-	// ====================================================================
-	// public 列挙子
-	// ====================================================================
-
-	// --------------------------------------------------------------------
-	// CSV ファイルの文字コード
-	// --------------------------------------------------------------------
-	public enum CsvEncoding
-	{
-		AutoDetect,
-		ShiftJis,
-		Jis,
-		EucJp,
-		Utf16Le,
-		Utf16Be,
-		Utf8,
-		__End__,
-	}
-
-	// --------------------------------------------------------------------
-	// フォルダー除外設定の状態
-	// --------------------------------------------------------------------
-	public enum FolderExcludeSettingsStatus
-	{
-		False,      // 除外しない
-		True,       // 除外する
-		Unchecked,  // 未確認
-		__End__
-	}
-
-	// --------------------------------------------------------------------
-	// フォルダー設定の状態
-	// --------------------------------------------------------------------
-	public enum FolderSettingsStatus
-	{
-		None,       // 設定ファイルが存在しない
-		Set,        // 当該フォルダーに設定ファイルが存在する
-		Inherit,    // 親フォルダーの設定を引き継ぐ
-		Unchecked,  // 未確認
-		__End__
-	}
-
-	// --------------------------------------------------------------------
-	// フォルダーに対する操作
-	// --------------------------------------------------------------------
-	public enum FolderTask
-	{
-		FindSubFolders, // サブフォルダーの検索（親の場合のみ）
-		AddFileName,    // 追加（ファイル名のみ）
-		AddInfo,        // 追加（ファイルが追加されたレコードに対してその他の情報を付与）
-		Remove,         // 削除
-		Update,         // 更新
-		__End__
-	}
-
-	// --------------------------------------------------------------------
-	// フォルダーに対する操作の動作状況
-	// --------------------------------------------------------------------
-	public enum FolderTaskStatus
-	{
-		Queued,         // 待機
-		Running,        // 実行中
-		Error,          // エラー
-		DoneInMemory,   // 完了（インメモリデータベースへの反映）
-		DoneInDisk,     // 完了（ゆかり用データベースへの反映）
-	}
-
-	// --------------------------------------------------------------------
-	// ゆかり検索対象フォルダー DGV の列
-	// --------------------------------------------------------------------
-	public enum FolderColumns
-	{
-		Acc,            // アコーディオン
-		Status,         // 状態
-		Folder,         // フォルダー
-		SettingsExist,  // 設定有無
-	}
-
-	// --------------------------------------------------------------------
-	// 楽曲情報データベースのテーブル
-	// --------------------------------------------------------------------
-	public enum MusicInfoDbTables
-	{
-		TSong,
-		TPerson,
-		TTieUp,
-		TCategory,
-		TTieUpGroup,
-		TMaker,
-		TSongAlias,
-		TPersonAlias,
-		TTieUpAlias,
-		TCategoryAlias,
-		TTieUpGroupAlias,
-		TMakerAlias,
-		TArtistSequence,
-		TLyristSequence,
-		TComposerSequence,
-		TArrangerSequence,
-		TTieUpGroupSequence,
-		__End__,
-	}
-
-	// --------------------------------------------------------------------
-	// リスト出力する項目（ほぼ TFound 準拠）
-	// --------------------------------------------------------------------
-	public enum OutputItems
-	{
-		Path,                   // フルパス
-		FileName,               // ファイル名
-		Head,                   // 頭文字
-		Worker,                 // ニコカラ制作者
-		Track,                  // トラック
-		SmartTrack,             // スマートトラック
-		Comment,                // 備考
-		LastWriteTime,          // 最終更新日時
-		FileSize,               // ファイルサイズ
-		SongName,               // 楽曲名
-		SongRuby,               // 楽曲フリガナ
-		SongOpEd,               // 摘要
-		SongReleaseDate,        // リリース日
-		ArtistName,             // 歌手名
-		ArtistRuby,             // 歌手フリガナ
-		LyristName,             // 作詞者名
-		LyristRuby,             // 作詞者フリガナ
-		ComposerName,           // 作曲者名
-		ComposerRuby,           // 作曲者フリガナ
-		ArrangerName,           // 編曲者名
-		ArrangerRuby,           // 編曲者フリガナ
-		TieUpName,              // タイアップ名
-		TieUpRuby,              // タイアップフリガナ
-		TieUpAgeLimit,          // 年齢制限
-		Category,               // カテゴリー
-		TieUpGroupName,         // タイアップグループ名
-		TieUpGroupRuby,         // タイアップグループフリガナ
-		MakerName,              // 制作会社名
-		MakerRuby,              // 制作会社フリガナ
-		__End__,
-	}
-
-	// --------------------------------------------------------------------
-	// プレビュー DGV の列
-	// --------------------------------------------------------------------
-	public enum PreviewColumns
-	{
-		File,
-		Matches,
-		Edit,
-	}
-
-	// --------------------------------------------------------------------
-	// program_alias.csv の列インデックス
-	// --------------------------------------------------------------------
-	public enum ProgramAliasCsvColumns
-	{
-		LineIndex,  // CSV には列が無く、プログラム側で付与
-		NameOrId,
-		Alias,
-		ForceId,
-		__End__,
-	}
-
-	// --------------------------------------------------------------------
-	// program.csv の列インデックス
-	// --------------------------------------------------------------------
-	public enum ProgramCsvColumns
-	{
-		LineIndex,  // CSV には列が無く、プログラム側で付与
-		Id,
-		Category,
-		GameCategory,
-		Name,
-		Ruby,
-		SubName,
-		SubRuby,
-		NumStories,
-		AgeLimit,
-		BeginDate,
-		__End__,
-	}
-
-	// --------------------------------------------------------------------
-	// anison_alias.csv 等の列インデックス
-	// --------------------------------------------------------------------
-	public enum SongAliasCsvColumns
-	{
-		LineIndex,  // CSV には列が無く、プログラム側で付与
-		NameOrId,
-		Alias,
-		ForceId,
-		__End__,
-	}
-
-	// --------------------------------------------------------------------
-	// anison.csv 等の列インデックス
-	// --------------------------------------------------------------------
-	public enum SongCsvColumns
-	{
-		LineIndex,  // CSV には列が無く、プログラム側で付与
-		ProgramId,
-		Category,
-		ProgramName,
-		OpEd,
-		CastSeq,
-		Id,
-		Name,
-		Artist,
-		__End__,
-	}
-
-	// --------------------------------------------------------------------
-	// メッセージ定数
-	// --------------------------------------------------------------------
-	public enum Wm : UInt32
-	{
-		// タスク系
-		LaunchFolderTaskRequested = WindowsApi.WM_APP,
-		LaunchListTaskRequested,
-
-		// メインウィンドウ
-		UpdateYukaListerStatusRequested,
-		UpdateDataGridItemSourceRequested,
-
-		// 一覧ウィンドウ
-		FindKeywordRequested,
-		FindCellRequested,
-	}
-
-	// --------------------------------------------------------------------
-	// ゆかりすたーの動作状況
-	// --------------------------------------------------------------------
-	public enum YukaListerStatus
-	{
-		Ready,      // 待機
-		Running,    // 実行中
-		Error,      // エラー
-		__End__
-	}
-
-	// --------------------------------------------------------------------
-	// ゆかりすたー実行中に表示するメッセージ
-	// --------------------------------------------------------------------
-	public enum YukaListerStatusRunningMessage
-	{
-		AddTargetFolder,
-		RemoveTargetFolder,
-		DoFolderTask,
-		ListTask,
-		__End__
-	}
-
-	// ====================================================================
-	// public デリゲート
-	// ====================================================================
-	public delegate void TaskAsyncDelegate<T>(T oVar);
-	public delegate YukaListerStatus YukaListerStatusDelegate();
-	public delegate void TargetFolderInfoIsOpenChangedDelegate(TargetFolderInfo oTargetFolderInfo);
-
-	// ====================================================================
-	// ゆかりすたー共通
-	// ====================================================================
-
 	public class YlCommon
 	{
-		// ====================================================================
-		// public 定数
-		// ====================================================================
-
-		// --------------------------------------------------------------------
-		// アプリの基本情報
-		// --------------------------------------------------------------------
-		public const String APP_ID = "YukaLister";
-		public const String APP_GENERATION = "METEOR";
-		public const String APP_NAME_J = "ゆかりすたー " + APP_GENERATION + " ";
-		public const String APP_VER = "Ver 2.00 α";
-		public const String COPYRIGHT_J = "Copyright (C) 2019 by SHINTA";
-
-		// --------------------------------------------------------------------
-		// フォルダー名
-		// --------------------------------------------------------------------
-		public const String FOLDER_NAME_TEMPLATES = "Templates\\";
-		public const String FOLDER_NAME_YUKA_LISTER = APP_ID + "\\";
-
-		// --------------------------------------------------------------------
-		// ファイル名
-		// --------------------------------------------------------------------
-		public const String FILE_BODY_ANISON_INFO_CSV_ANISON = "anison";
-		public const String FILE_BODY_ANISON_INFO_CSV_ANISON_ALIAS = "anison_alias";
-		public const String FILE_BODY_ANISON_INFO_CSV_GAME = "game";
-		public const String FILE_BODY_ANISON_INFO_CSV_GAME_ALIAS = "game_alias";
-		public const String FILE_BODY_ANISON_INFO_CSV_MISC = "misc";
-		public const String FILE_BODY_ANISON_INFO_CSV_MISC_ALIAS = "misc_alias";
-		public const String FILE_BODY_ANISON_INFO_CSV_PROGRAM = "program";
-		public const String FILE_BODY_ANISON_INFO_CSV_PROGRAM_ALIAS = "program_alias";
-		public const String FILE_BODY_ANISON_INFO_CSV_SF = "sf";
-		public const String FILE_BODY_ANISON_INFO_CSV_SF_ALIAS = "sf_alias";
-		public const String FILE_NAME_NICO_KARA_LISTER_CONFIG = "NicoKaraLister" + Common.FILE_EXT_CONFIG;
-		public const String FILE_NAME_YUKARI_CONFIG = "config" + Common.FILE_EXT_INI;
-		public const String FILE_NAME_YUKA_LISTER_CONFIG = APP_ID + Common.FILE_EXT_CONFIG;
-		public const String FILE_NAME_YUKA_LISTER_EXCLUDE_CONFIG = APP_ID + "Exclude" + Common.FILE_EXT_CONFIG;
-		public const String FILE_PREFIX_INFO = "Info";
-
-		// --------------------------------------------------------------------
-		// 拡張子
-		// --------------------------------------------------------------------
-		public const String FILE_EXT_NKLINFO = ".nklinfo";
-
-		// --------------------------------------------------------------------
-		// 楽曲情報データベース
-		// --------------------------------------------------------------------
-
-		// 楽曲情報データベースのテーブル名
-		public static readonly String[] MUSIC_INFO_DB_TABLE_NAMES =
-		{
-			TSong.TABLE_NAME_SONG, TPerson.TABLE_NAME_PERSON, TTieUp.TABLE_NAME_TIE_UP,
-			TCategory.TABLE_NAME_CATEGORY, TTieUpGroup.TABLE_NAME_TIE_UP_GROUP, TMaker.TABLE_NAME_MAKER,
-			TSongAlias.TABLE_NAME_SONG_ALIAS, TPersonAlias.TABLE_NAME_PERSON_ALIAS, TTieUpAlias.TABLE_NAME_TIE_UP_ALIAS,
-			TCategoryAlias.TABLE_NAME_CATEGORY_ALIAS, TTieUpGroupAlias.TABLE_NAME_TIE_UP_GROUP_ALIAS, TMakerAlias.TABLE_NAME_MAKER_ALIAS,
-			TArtistSequence.TABLE_NAME_ARTIST_SEQUENCE, TLyristSequence.TABLE_NAME_LYRIST_SEQUENCE, TComposerSequence.TABLE_NAME_COMPOSER_SEQUENCE,
-			TArrangerSequence.TABLE_NAME_ARRANGER_SEQUENCE, TTieUpGroupSequence.TABLE_NAME_TIE_UP_GROUP_SEQUENCE,
-		};
-
-		// 楽曲情報データベースの ID 列名
-		public static readonly String[] MUSIC_INFO_DB_ID_COLUMN_NAMES =
-		{
-			TSong.FIELD_NAME_SONG_ID, TPerson.FIELD_NAME_PERSON_ID, TTieUp.FIELD_NAME_TIE_UP_ID,
-			TCategory.FIELD_NAME_CATEGORY_ID, TTieUpGroup.FIELD_NAME_TIE_UP_GROUP_ID, TMaker.FIELD_NAME_MAKER_ID,
-			TSongAlias.FIELD_NAME_SONG_ALIAS_ID, TPersonAlias.FIELD_NAME_PERSON_ALIAS_ID, TTieUpAlias.FIELD_NAME_TIE_UP_ALIAS_ID,
-			TCategoryAlias.FIELD_NAME_CATEGORY_ALIAS_ID, TTieUpGroupAlias.FIELD_NAME_TIE_UP_GROUP_ALIAS_ID, TMakerAlias.FIELD_NAME_MAKER_ALIAS_ID,
-			TArtistSequence.FIELD_NAME_ARTIST_SEQUENCE_ID, TLyristSequence.FIELD_NAME_LYRIST_SEQUENCE_ID, TComposerSequence.FIELD_NAME_COMPOSER_SEQUENCE_ID,
-			TArrangerSequence.FIELD_NAME_ARRANGER_SEQUENCE_ID, TTieUpGroupSequence.FIELD_NAME_TIE_UP_GROUP_SEQUENCE_ID,
-		};
-
-		// 楽曲情報データベースの名前列名
-		public static readonly String[] MUSIC_INFO_DB_NAME_COLUMN_NAMES =
-		{
-			TSong.FIELD_NAME_SONG_NAME, TPerson.FIELD_NAME_PERSON_NAME, TTieUp.FIELD_NAME_TIE_UP_NAME,
-			TCategory.FIELD_NAME_CATEGORY_NAME, TTieUpGroup.FIELD_NAME_TIE_UP_GROUP_NAME, TMaker.FIELD_NAME_MAKER_NAME,
-			null, null, null, null, null, null,
-			null, null, null, null, null,
-		};
-
-		// 楽曲情報データベースのフリガナ列名
-		public static readonly String[] MUSIC_INFO_DB_RUBY_COLUMN_NAMES =
-		{
-			TSong.FIELD_NAME_SONG_RUBY, TPerson.FIELD_NAME_PERSON_RUBY, TTieUp.FIELD_NAME_TIE_UP_RUBY,
-			TCategory.FIELD_NAME_CATEGORY_RUBY, TTieUpGroup.FIELD_NAME_TIE_UP_GROUP_RUBY, TMaker.FIELD_NAME_MAKER_RUBY,
-			null, null, null, null, null, null,
-			null, null, null, null, null,
-		};
-
-		// 楽曲情報データベースの検索ワード列名
-		public static readonly String[] MUSIC_INFO_DB_KEYWORD_COLUMN_NAMES =
-		{
-			TSong.FIELD_NAME_SONG_KEYWORD, TPerson.FIELD_NAME_PERSON_KEYWORD, TTieUp.FIELD_NAME_TIE_UP_KEYWORD,
-			TCategory.FIELD_NAME_CATEGORY_KEYWORD, TTieUpGroup.FIELD_NAME_TIE_UP_GROUP_KEYWORD, TMaker.FIELD_NAME_MAKER_KEYWORD,
-			null, null, null, null, null, null,
-			null, null, null, null, null,
-		};
-
-		// 楽曲情報データベースの無効列名
-		public static readonly String[] MUSIC_INFO_DB_INVALID_COLUMN_NAMES =
-		{
-			TSong.FIELD_NAME_SONG_INVALID, TPerson.FIELD_NAME_PERSON_INVALID, TTieUp.FIELD_NAME_TIE_UP_INVALID,
-			TCategory.FIELD_NAME_CATEGORY_INVALID, TTieUpGroup.FIELD_NAME_TIE_UP_GROUP_INVALID, TMaker.FIELD_NAME_MAKER_INVALID,
-			TSongAlias.FIELD_NAME_SONG_ALIAS_INVALID, TPersonAlias.FIELD_NAME_PERSON_ALIAS_INVALID, TTieUpAlias.FIELD_NAME_TIE_UP_ALIAS_INVALID,
-			TCategoryAlias.FIELD_NAME_CATEGORY_ALIAS_INVALID, TTieUpGroupAlias.FIELD_NAME_TIE_UP_GROUP_ALIAS_INVALID, TMakerAlias.FIELD_NAME_MAKER_ALIAS_INVALID,
-			TArtistSequence.FIELD_NAME_ARTIST_SEQUENCE_INVALID, TLyristSequence.FIELD_NAME_LYRIST_SEQUENCE_INVALID, TComposerSequence.FIELD_NAME_COMPOSER_SEQUENCE_INVALID,
-			TArrangerSequence.FIELD_NAME_ARRANGER_SEQUENCE_INVALID, TTieUpGroupSequence.FIELD_NAME_TIE_UP_GROUP_SEQUENCE_INVALID,
-		};
-
-		// 楽曲情報データベースのシステム ID 接頭辞（ユーザーは指定できない文字 '_' を含める）
-		public const String MUSIC_INFO_SYSTEM_ID_PREFIX = "_SYS";
-
-		// 楽曲情報データベースの各テーブルの ID 第二接頭辞
-		public static readonly String[] MUSIC_INFO_ID_SECOND_PREFIXES =
-		{
-			"_S_", "_P_", "_T_","_C_", "_G_", "_M_",
-			"_SA_", "_PA_", "_TA_","_CA_", "_GA_", "_MA_",
-			null, null, null, null, null,
-		};
-
-		// --------------------------------------------------------------------
-		// アプリ独自ルールでの変数名（小文字で表記）
-		// --------------------------------------------------------------------
-
-		// 番組マスターにも同様の項目があるもの
-		public const String RULE_VAR_CATEGORY = "category";
-		public const String RULE_VAR_GAME_CATEGORY = "gamecategory";
-		public const String RULE_VAR_PROGRAM = "program";
-		//public const String RULE_VAR_PROGRAM_SUB = "programsub";
-		//public const String RULE_VAR_NUM_STORIES = "numstories";
-		public const String RULE_VAR_AGE_LIMIT = "agelimit";
-		//public const String RULE_VAR_BEGINDATE = "begindate";
-
-		// 楽曲マスターにも同様の項目があるもの
-		public const String RULE_VAR_OP_ED = "oped";
-		//public const String RULE_VAR_CAST_SEQ = "castseq";
-		public const String RULE_VAR_TITLE = "title";
-		public const String RULE_VAR_ARTIST = "artist";
-
-		// ファイル名からのみ取得可能なもの
-		public const String RULE_VAR_TITLE_RUBY = "titleruby";
-		public const String RULE_VAR_WORKER = "worker";
-		public const String RULE_VAR_TRACK = "track";
-		public const String RULE_VAR_ON_VOCAL = "onvocal";
-		public const String RULE_VAR_OFF_VOCAL = "offvocal";
-		//public const String RULE_VAR_COMPOSER = "composer";
-		//public const String RULE_VAR_LYRIST = "lyrist";
-		public const String RULE_VAR_COMMENT = "comment";
-
-		// その他
-		public const String RULE_VAR_ANY = "*";
-
-		// 開始終了
-		public const String RULE_VAR_BEGIN = "<";
-		public const String RULE_VAR_END = ">";
-
-		// --------------------------------------------------------------------
-		// 出力設定
-		// --------------------------------------------------------------------
-
-		// 新着日数の最小値
-		public const Int32 NEW_DAYS_MIN = 1;
-
-		// enum.OutputItems の表示名
-		public static readonly String[] OUTPUT_ITEM_NAMES = new String[] { "フルパス", "ファイル名", "頭文字", "ニコカラ制作者", "トラック", "スマートトラック",
-				"備考", "最終更新日時", "ファイルサイズ", "楽曲名", "楽曲フリガナ", "摘要", "リリース日",
-				"歌手名", "歌手フリガナ", "作詞者名", "作詞者フリガナ", "作曲者名", "作曲者フリガナ", "編曲者名", "編曲者フリガナ",
-				"タイアップ名", "タイアップフリガナ", "年齢制限", "カテゴリー", "タイアップグループ名", "タイアップグループフリガナ", "制作会社名", "制作会社フリガナ" };
-
-		// --------------------------------------------------------------------
-		// 年齢制限
-		// --------------------------------------------------------------------
-
-		public const Int32 AGE_LIMIT_CERO_B = 12;
-		public const Int32 AGE_LIMIT_CERO_C = 15;
-		public const Int32 AGE_LIMIT_CERO_D = 17;
-		public const Int32 AGE_LIMIT_CERO_Z = 18;
-
-		// --------------------------------------------------------------------
-		// リソース名
-		// --------------------------------------------------------------------
-
-		public const String RSRC_NAME_RAISED_LIGHT_BUTTON = "MaterialDesignRaisedLightButton";
-
-		// --------------------------------------------------------------------
-		// その他
-		// --------------------------------------------------------------------
-
-		// extended-length なパス表記の先頭に付与する文字列
-		public const String EXTENDED_LENGTH_PATH_PREFIX = @"\\?\";
-
-		// FolderSettingsStatus に対応する文字列
-		public static readonly String[] FOLDER_SETTINGS_STATUS_TEXTS = { "無", "有", "親に有", "未確認" };
-
-		// YukaListerStatusRunningMessage に対応する文字列
-		public static readonly String[] YUKA_LISTER_STATUS_RUNNING_MESSAGES =
-		{
-			"検索対象フォルダーを追加しています...\n",
-			"検索対象フォルダーから削除しています...",
-			"フォルダー情報を更新しています...",
-			"リストを更新しています...",
-		};
-
-		// グループの「その他」
-		public const String GROUP_MISC = "その他";
-
-		// 番組分類の「NEW」
-		public const String CATEGORY_NEW = "NEW";
-
-		// 頭文字の「その他」
-		public const String HEAD_MISC = GROUP_MISC;
-
-		// タイアップグループ名を表示する際に末尾に付与する文字列
-		public const String TIE_UP_GROUP_SUFFIX = "シリーズ";
-
-		// 日付の書式指定子
-		public const String DATE_FORMAT = "yyyy/MM/dd";
-
-		// 時刻の書式指定子
-		public const String TIME_FORMAT = "HH:mm:ss";
-
-		// RULE_VAR_ON_VOCAL / RULE_VAR_OFF_VOCAL のデフォルト値
-		public const Int32 RULE_VALUE_VOCAL_DEFAULT = 1;
-
-		// 変数の値を区切る文字
-		public const String VAR_VALUE_DELIMITER = ",";
-
-		// スマートトラックでトラック有りの場合の印
-		public const String SMART_TRACK_VALID_MARK = "○";
-
-		// スマートトラックでトラック無しの場合の印
-		public const String SMART_TRACK_INVALID_MARK = "×";
-
-		// 日付が指定されていない場合はこの年にする
-		public const Int32 INVALID_YEAR = 1900;
-
-		// 日付が指定されていない場合の修正ユリウス日
-		public static readonly Double INVALID_MJD = JulianDay.DateTimeToModifiedJulianDate(new DateTime(INVALID_YEAR, 1, 1));
-
-		// TCP タイムアウト [ms]
-		public const Int32 TCP_TIMEOUT = 10 * 1000;
-
-		// TCP リトライ回数
-		public const Int32 TCP_NUM_RETRIES = 5;
-
-		// ツールチップの長めの表示時間 [ms]
-		public const Int32 TOOL_TIP_LONG_INTERVAL = 10 * 1000;
-
-		// サムネイルの横幅として指定可能なサイズ [px]
-		public static readonly Int32[] THUMB_WIDTH_LIST = new Int32[] { 80, 128, 160, 240, 320 };
-
 		// ====================================================================
 		// public メンバー関数
 		// ====================================================================
@@ -631,11 +122,11 @@ namespace YukaLister.Models.SharedMisc
 				{
 					continue;
 				}
-				if (aInDisk[0] != RULE_VAR_BEGIN[0])
+				if (aInDisk[0] != YlConstants.RULE_VAR_BEGIN[0])
 				{
 					continue;
 				}
-				if (aInDisk[aEqualPos - 1] != RULE_VAR_END[0])
+				if (aInDisk[aEqualPos - 1] != YlConstants.RULE_VAR_END[0])
 				{
 					continue;
 				}
@@ -647,7 +138,8 @@ namespace YukaLister.Models.SharedMisc
 			for (Int32 i = 0; i < oFolderSettingsInDisk.FileNameRules.Count; i++)
 			{
 				// ワイルドカードのみ <> で囲まれていないので、処理をやりやすくするために <> で囲む
-				String aFileNameRule = oFolderSettingsInDisk.FileNameRules[i].Replace(RULE_VAR_ANY, RULE_VAR_BEGIN + RULE_VAR_ANY + RULE_VAR_END);
+				String aFileNameRule = oFolderSettingsInDisk.FileNameRules[i].Replace(YlConstants.RULE_VAR_ANY,
+						YlConstants.RULE_VAR_BEGIN + YlConstants.RULE_VAR_ANY + YlConstants.RULE_VAR_END);
 
 				MakeRegexPattern(aFileNameRule, out aRule, out aGroups);
 				aFolderSettingsInMemory.FileNameRules.Add(aRule);
@@ -656,89 +148,6 @@ namespace YukaLister.Models.SharedMisc
 
 			return aFolderSettingsInMemory;
 		}
-
-#if false
-		// --------------------------------------------------------------------
-		// 空の楽曲情報データベースを作成（既存のものは削除）
-		// ユニーク制約のカラムにはインデックスが自動作成される（速度実験により確認済み）
-		// 主キーもユニーク制約がかかるのでインデックスは自動作成されると思われる（未確認）
-		// --------------------------------------------------------------------
-		public static void CreateMusicInfoDb()
-		{
-			BackupMusicInfoDb();
-
-			LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "楽曲情報データベースを新規作成します...");
-
-			Directory.CreateDirectory(Path.GetDirectoryName(YlCommon.MusicInfoDbPath()));
-
-			using (SQLiteConnection aConnection = YlCommon.CreateMusicInfoDbConnection())
-			{
-				// 既存テーブルがある場合は削除
-				LinqUtils.DropAllTables(aConnection);
-
-				using (SQLiteCommand aCmd = new SQLiteCommand(aConnection))
-				{
-					List<String> aIndices = new List<String>();
-
-					// マスターテーブル
-					aIndices.Clear();
-					aIndices.Add(TSong.FIELD_NAME_SONG_NAME);
-					aIndices.Add(TSong.FIELD_NAME_SONG_CATEGORY_ID);
-					aIndices.Add(TSong.FIELD_NAME_SONG_OP_ED);
-					CreateMusicInfoDbTable(aCmd, typeof(TSong), aIndices);
-
-					CreateMusicInfoDbTable(aCmd, typeof(TPerson), TPerson.FIELD_NAME_PERSON_NAME);
-
-					aIndices.Clear();
-					aIndices.Add(TTieUp.FIELD_NAME_TIE_UP_NAME);
-					aIndices.Add(TTieUp.FIELD_NAME_TIE_UP_CATEGORY_ID);
-					CreateMusicInfoDbTable(aCmd, typeof(TTieUp), aIndices);
-
-					CreateMusicInfoDbTable(aCmd, typeof(TCategory), TCategory.FIELD_NAME_CATEGORY_NAME);
-					InsertMusicInfoDbCategoryDefaultRecords(aConnection);
-
-					CreateMusicInfoDbTable(aCmd, typeof(TTieUpGroup), TTieUpGroup.FIELD_NAME_TIE_UP_GROUP_NAME);
-
-					CreateMusicInfoDbTable(aCmd, typeof(TMaker), TMaker.FIELD_NAME_MAKER_NAME);
-
-					// 別名テーブル
-					CreateMusicInfoDbTable(aCmd, typeof(TSongAlias), TSongAlias.FIELD_NAME_SONG_ALIAS_ALIAS);
-
-					CreateMusicInfoDbTable(aCmd, typeof(TPersonAlias), TPersonAlias.FIELD_NAME_PERSON_ALIAS_ALIAS);
-
-					CreateMusicInfoDbTable(aCmd, typeof(TTieUpAlias), TTieUpAlias.FIELD_NAME_TIE_UP_ALIAS_ALIAS);
-
-					CreateMusicInfoDbTable(aCmd, typeof(TCategoryAlias), TCategoryAlias.FIELD_NAME_CATEGORY_ALIAS_ALIAS);
-
-					CreateMusicInfoDbTable(aCmd, typeof(TTieUpGroupAlias), TTieUpGroupAlias.FIELD_NAME_TIE_UP_GROUP_ALIAS_ALIAS);
-
-					CreateMusicInfoDbTable(aCmd, typeof(TMakerAlias), TMakerAlias.FIELD_NAME_MAKER_ALIAS_ALIAS);
-
-					// 紐付テーブル
-					CreateMusicInfoDbTable(aCmd, typeof(TArtistSequence));
-
-					CreateMusicInfoDbTable(aCmd, typeof(TLyristSequence));
-
-					CreateMusicInfoDbTable(aCmd, typeof(TComposerSequence));
-
-					CreateMusicInfoDbTable(aCmd, typeof(TArrangerSequence));
-
-					CreateMusicInfoDbTable(aCmd, typeof(TTieUpGroupSequence));
-				}
-
-				// プロパティーテーブル
-				CreateDbPropertyTable(aConnection);
-			}
-		}
-
-		// --------------------------------------------------------------------
-		// 楽曲情報データベースに接続
-		// --------------------------------------------------------------------
-		public static SQLiteConnection CreateMusicInfoDbConnection()
-		{
-			return CreateDbConnection(MusicInfoDbPath());
-		}
-#endif
 
 		// --------------------------------------------------------------------
 		// アプリ独自の変数を格納する変数を生成し、定義済みキーをすべて初期化（キーには <> は含まない）
@@ -766,32 +175,32 @@ namespace YukaLister.Models.SharedMisc
 			Dictionary<String, String> aVarMap = new Dictionary<String, String>();
 
 			// 番組マスターにも同様の項目があるもの
-			aVarMap[RULE_VAR_CATEGORY] = "番組分類";
+			aVarMap[YlConstants.RULE_VAR_CATEGORY] = "番組分類";
 			//aVarMap[RULE_VAR_GAME_CATEGORY] = "ゲーム種別";
-			aVarMap[RULE_VAR_PROGRAM] = "番組名";
-			aVarMap[RULE_VAR_AGE_LIMIT] = "年齢制限";
+			aVarMap[YlConstants.RULE_VAR_PROGRAM] = "番組名";
+			aVarMap[YlConstants.RULE_VAR_AGE_LIMIT] = "年齢制限";
 
 			// 楽曲マスターにも同様の項目があるもの
-			aVarMap[RULE_VAR_OP_ED] = "摘要（OP/ED 別）";
-			aVarMap[RULE_VAR_TITLE] = "楽曲名";
+			aVarMap[YlConstants.RULE_VAR_OP_ED] = "摘要（OP/ED 別）";
+			aVarMap[YlConstants.RULE_VAR_TITLE] = "楽曲名";
 
 			// ファイル名からのみ取得可能なもの
-			aVarMap[RULE_VAR_TITLE_RUBY] = "ガッキョクメイ";
+			aVarMap[YlConstants.RULE_VAR_TITLE_RUBY] = "ガッキョクメイ";
 
 			// 楽曲マスターにも同様の項目があるもの
-			aVarMap[RULE_VAR_ARTIST] = "歌手名";
+			aVarMap[YlConstants.RULE_VAR_ARTIST] = "歌手名";
 
 			// ファイル名からのみ取得可能なもの
-			aVarMap[RULE_VAR_WORKER] = "ニコカラ制作者";
-			aVarMap[RULE_VAR_TRACK] = "トラック情報";
-			aVarMap[RULE_VAR_ON_VOCAL] = "オンボーカルトラック";
-			aVarMap[RULE_VAR_OFF_VOCAL] = "オフボーカルトラック";
+			aVarMap[YlConstants.RULE_VAR_WORKER] = "ニコカラ制作者";
+			aVarMap[YlConstants.RULE_VAR_TRACK] = "トラック情報";
+			aVarMap[YlConstants.RULE_VAR_ON_VOCAL] = "オンボーカルトラック";
+			aVarMap[YlConstants.RULE_VAR_OFF_VOCAL] = "オフボーカルトラック";
 			//aVarMap[NklCommon.RULE_VAR_COMPOSER] = "作曲者";
 			//aVarMap[NklCommon.RULE_VAR_LYRIST] = "作詞者";
-			aVarMap[RULE_VAR_COMMENT] = "コメント";
+			aVarMap[YlConstants.RULE_VAR_COMMENT] = "コメント";
 
 			// その他
-			aVarMap[RULE_VAR_ANY] = "無視する部分";
+			aVarMap[YlConstants.RULE_VAR_ANY] = "無視する部分";
 
 			return aVarMap;
 		}
@@ -807,7 +216,7 @@ namespace YukaLister.Models.SharedMisc
 				Id = oId,
 				Import = false,
 				Invalid = false,
-				UpdateTime = INVALID_MJD,
+				UpdateTime = YlConstants.INVALID_MJD,
 				Dirty = true,
 
 				// IDbSequence
@@ -823,11 +232,11 @@ namespace YukaLister.Models.SharedMisc
 		{
 			// 固定部分
 			UpdaterLauncher aUpdaterLauncher = new UpdaterLauncher();
-			aUpdaterLauncher.ID = APP_ID;
-			aUpdaterLauncher.Name = APP_NAME_J;
+			aUpdaterLauncher.ID = YlConstants.APP_ID;
+			aUpdaterLauncher.Name = YlConstants.APP_NAME_J;
 			aUpdaterLauncher.Wait = 3;
 			aUpdaterLauncher.UpdateRss = "http://shinta.coresv.com/soft/YukaListerMeteor_AutoUpdate.xml";
-			aUpdaterLauncher.CurrentVer = APP_VER;
+			aUpdaterLauncher.CurrentVer = YlConstants.APP_VER;
 
 			// 変動部分
 			if (oCheckLatest)
@@ -994,7 +403,7 @@ namespace YukaLister.Models.SharedMisc
 		{
 			while (!String.IsNullOrEmpty(oFolderExLen))
 			{
-				if (File.Exists(oFolderExLen + "\\" + FILE_NAME_YUKA_LISTER_EXCLUDE_CONFIG))
+				if (File.Exists(oFolderExLen + "\\" + YlConstants.FILE_NAME_YUKA_LISTER_EXCLUDE_CONFIG))
 				{
 					return oFolderExLen;
 				}
@@ -1011,11 +420,11 @@ namespace YukaLister.Models.SharedMisc
 		{
 			while (!String.IsNullOrEmpty(oFolderExLen))
 			{
-				if (File.Exists(oFolderExLen + "\\" + FILE_NAME_YUKA_LISTER_CONFIG))
+				if (File.Exists(oFolderExLen + "\\" + YlConstants.FILE_NAME_YUKA_LISTER_CONFIG))
 				{
 					return oFolderExLen;
 				}
-				if (File.Exists(oFolderExLen + "\\" + FILE_NAME_NICO_KARA_LISTER_CONFIG))
+				if (File.Exists(oFolderExLen + "\\" + YlConstants.FILE_NAME_NICO_KARA_LISTER_CONFIG))
 				{
 					return oFolderExLen;
 				}
@@ -1032,7 +441,7 @@ namespace YukaLister.Models.SharedMisc
 		{
 			if (String.IsNullOrEmpty(oString))
 			{
-				return HEAD_MISC;
+				return YlConstants.HEAD_MISC;
 			}
 
 			Char aChar = oString[0];
@@ -1056,7 +465,7 @@ namespace YukaLister.Models.SharedMisc
 				return new string(aChar, 1);
 			}
 
-			return HEAD_MISC;
+			return YlConstants.HEAD_MISC;
 		}
 
 		// --------------------------------------------------------------------
@@ -1203,40 +612,10 @@ namespace YukaLister.Models.SharedMisc
 				catch (Exception oExcep)
 				{
 					oLogWriter.ShowLogMessage(TraceEventType.Error, "バックグラウンド処理 " + oDelegate.Method.Name + "実行時エラー：\n" + oExcep.Message);
-					oLogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+					oLogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 				}
 			});
 		}
-
-#if false
-		// --------------------------------------------------------------------
-		// ちょちょいと自動更新を起動
-		// --------------------------------------------------------------------
-		public static Boolean LaunchUpdater(Boolean oCheckLatest, Boolean oForceShow, IntPtr oHWnd, Boolean oClearUpdateCache, Boolean oForceInstall, LogWriter oLogWriter)
-		{
-			// 固定部分
-			UpdaterLauncher aUpdaterLauncher = new UpdaterLauncher();
-			aUpdaterLauncher.ID = APP_ID;
-			aUpdaterLauncher.Name = APP_NAME_J;
-			aUpdaterLauncher.Wait = 3;
-			aUpdaterLauncher.UpdateRss = "http://shinta.coresv.com/soft/YukaListerMeteor_AutoUpdate.xml";
-			aUpdaterLauncher.CurrentVer = APP_VER;
-
-			// 変動部分
-			if (oCheckLatest)
-			{
-				aUpdaterLauncher.LatestRss = "http://shinta.coresv.com/soft/YukaListerMeteor_JPN.xml";
-			}
-			aUpdaterLauncher.LogWriter = oLogWriter;
-			aUpdaterLauncher.ForceShow = oForceShow;
-			aUpdaterLauncher.NotifyHWnd = oHWnd;
-			aUpdaterLauncher.ClearUpdateCache = oClearUpdateCache;
-			aUpdaterLauncher.ForceInstall = oForceInstall;
-
-			// 起動
-			return aUpdaterLauncher.Launch(oForceShow);
-		}
-#endif
 
 		// --------------------------------------------------------------------
 		// 環境設定の文字コードに従って CSV ファイルを読み込む
@@ -1311,13 +690,13 @@ namespace YukaLister.Models.SharedMisc
 				String aFolderSettingsFolder = FindSettingsFolder2Ex(oFolderExLen);
 				if (!String.IsNullOrEmpty(aFolderSettingsFolder))
 				{
-					if (File.Exists(aFolderSettingsFolder + "\\" + FILE_NAME_YUKA_LISTER_CONFIG))
+					if (File.Exists(aFolderSettingsFolder + "\\" + YlConstants.FILE_NAME_YUKA_LISTER_CONFIG))
 					{
-						aFolderSettings = Common.Deserialize<FolderSettingsInDisk>(aFolderSettingsFolder + "\\" + FILE_NAME_YUKA_LISTER_CONFIG);
+						aFolderSettings = Common.Deserialize<FolderSettingsInDisk>(aFolderSettingsFolder + "\\" + YlConstants.FILE_NAME_YUKA_LISTER_CONFIG);
 					}
 					else
 					{
-						aFolderSettings = Common.Deserialize<FolderSettingsInDisk>(aFolderSettingsFolder + "\\" + FILE_NAME_NICO_KARA_LISTER_CONFIG);
+						aFolderSettings = Common.Deserialize<FolderSettingsInDisk>(aFolderSettingsFolder + "\\" + YlConstants.FILE_NAME_NICO_KARA_LISTER_CONFIG);
 					}
 				}
 			}
@@ -1384,22 +763,22 @@ namespace YukaLister.Models.SharedMisc
 					}
 					else
 					{
-						aDic[oFolderSettingsInMemory.FileRegexGroups[aMatchIndex][i]] += VAR_VALUE_DELIMITER + aMatch.Groups[i + 1].Value.Trim();
+						aDic[oFolderSettingsInMemory.FileRegexGroups[aMatchIndex][i]] += YlConstants.VAR_VALUE_DELIMITER + aMatch.Groups[i + 1].Value.Trim();
 					}
 				}
 			}
 
 			// 正規化
-			aDic[RULE_VAR_CATEGORY] = NormalizeDbString(aDic[RULE_VAR_CATEGORY]);
-			aDic[RULE_VAR_PROGRAM] = NormalizeDbString(aDic[RULE_VAR_PROGRAM]);
-			aDic[RULE_VAR_AGE_LIMIT] = NormalizeDbString(aDic[RULE_VAR_AGE_LIMIT]);
-			aDic[RULE_VAR_OP_ED] = NormalizeDbString(aDic[RULE_VAR_OP_ED]);
-			aDic[RULE_VAR_TITLE] = NormalizeDbString(aDic[RULE_VAR_TITLE]);
-			aDic[RULE_VAR_TITLE_RUBY] = NormalizeDbRuby(aDic[RULE_VAR_TITLE_RUBY]);
-			aDic[RULE_VAR_ARTIST] = NormalizeDbString(aDic[RULE_VAR_ARTIST]);
-			aDic[RULE_VAR_WORKER] = NormalizeDbString(aDic[RULE_VAR_WORKER]);
-			aDic[RULE_VAR_TRACK] = NormalizeDbString(aDic[RULE_VAR_TRACK]);
-			aDic[RULE_VAR_COMMENT] = NormalizeDbString(aDic[RULE_VAR_COMMENT]);
+			aDic[YlConstants.RULE_VAR_CATEGORY] = NormalizeDbString(aDic[YlConstants.RULE_VAR_CATEGORY]);
+			aDic[YlConstants.RULE_VAR_PROGRAM] = NormalizeDbString(aDic[YlConstants.RULE_VAR_PROGRAM]);
+			aDic[YlConstants.RULE_VAR_AGE_LIMIT] = NormalizeDbString(aDic[YlConstants.RULE_VAR_AGE_LIMIT]);
+			aDic[YlConstants.RULE_VAR_OP_ED] = NormalizeDbString(aDic[YlConstants.RULE_VAR_OP_ED]);
+			aDic[YlConstants.RULE_VAR_TITLE] = NormalizeDbString(aDic[YlConstants.RULE_VAR_TITLE]);
+			aDic[YlConstants.RULE_VAR_TITLE_RUBY] = NormalizeDbRuby(aDic[YlConstants.RULE_VAR_TITLE_RUBY]);
+			aDic[YlConstants.RULE_VAR_ARTIST] = NormalizeDbString(aDic[YlConstants.RULE_VAR_ARTIST]);
+			aDic[YlConstants.RULE_VAR_WORKER] = NormalizeDbString(aDic[YlConstants.RULE_VAR_WORKER]);
+			aDic[YlConstants.RULE_VAR_TRACK] = NormalizeDbString(aDic[YlConstants.RULE_VAR_TRACK]);
+			aDic[YlConstants.RULE_VAR_COMMENT] = NormalizeDbString(aDic[YlConstants.RULE_VAR_COMMENT]);
 
 			return aDic;
 		}
@@ -1430,7 +809,7 @@ namespace YukaLister.Models.SharedMisc
 		// --------------------------------------------------------------------
 		public static void MjdToStrings(Double oMjd, out String oYear, out String oMonth, out String oDay)
 		{
-			if (oMjd <= YlCommon.INVALID_MJD)
+			if (oMjd <= YlConstants.INVALID_MJD)
 			{
 				oYear = null;
 				oMonth = null;
@@ -1444,38 +823,6 @@ namespace YukaLister.Models.SharedMisc
 				oDay = aReleaseDate.Day.ToString();
 			}
 		}
-
-#if false
-		// --------------------------------------------------------------------
-		// 日付に合わせてテキストボックスを設定
-		// --------------------------------------------------------------------
-		public static void MjdToTextBox(Double oMjd, TextBox oTextBoxYear, TextBox oTextBoxMonth, TextBox oTextBoxDay)
-		{
-			if (oMjd <= YlCommon.INVALID_MJD)
-			{
-				oTextBoxYear.Text = null;
-				oTextBoxMonth.Text = null;
-				oTextBoxDay.Text = null;
-			}
-			else
-			{
-				DateTime aReleaseDate = JulianDay.ModifiedJulianDateToDateTime(oMjd);
-				oTextBoxYear.Text = aReleaseDate.Year.ToString();
-				oTextBoxMonth.Text = aReleaseDate.Month.ToString();
-				oTextBoxDay.Text = aReleaseDate.Day.ToString();
-			}
-		}
-#endif
-
-#if false
-		// --------------------------------------------------------------------
-		// 楽曲情報データベースファイルのフルパス
-		// --------------------------------------------------------------------
-		public static String MusicInfoDbPath()
-		{
-			return Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + "\\" + FOLDER_NAME_DATABASE + FILE_NAME_MUSIC_INFO;
-		}
-#endif
 
 		// --------------------------------------------------------------------
 		// 楽曲情報データベースに登録するフリガナの表記揺れを減らす
@@ -1861,24 +1208,6 @@ namespace YukaLister.Models.SharedMisc
 			}
 		}
 
-#if false
-		// --------------------------------------------------------------------
-		// ステータスバーにメッセージを表示
-		// --------------------------------------------------------------------
-		public static void SetStatusLabelMessage(Label oStatusLabel, TraceEventType oTraceEventType, String oMsg)
-		{
-			oStatusLabel.Content = oMsg;
-			if (oTraceEventType == TraceEventType.Error)
-			{
-				oStatusLabel.Foreground = new SolidColorBrush(Colors.Red);
-			}
-			else
-			{
-				oStatusLabel.Foreground = new SolidColorBrush(Colors.Black);
-			}
-		}
-#endif
-
 		// --------------------------------------------------------------------
 		// 設定保存フォルダのパス（末尾 '\\'）
 		// 存在しない場合は作成する
@@ -1886,7 +1215,7 @@ namespace YukaLister.Models.SharedMisc
 		public static String SettingsPath()
 		{
 			String aPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData, Environment.SpecialFolderOption.DoNotVerify)
-					+ "\\" + Common.FOLDER_NAME_SHINTA + YlCommon.FOLDER_NAME_YUKA_LISTER;
+					+ "\\" + Common.FOLDER_NAME_SHINTA + YlConstants.FOLDER_NAME_YUKA_LISTER;
 
 			if (!Directory.Exists(aPath))
 			{
@@ -1895,20 +1224,7 @@ namespace YukaLister.Models.SharedMisc
 			return aPath;
 		}
 
-		// --------------------------------------------------------------------
-		// extended-length でないパス表記に戻す
-		// EXTENDED_LENGTH_PATH_PREFIX を除去するだけなので、長さは MAX_PATH を超えることもありえる
-		// --------------------------------------------------------------------
-		public static String ShortenPath(String oPath)
-		{
-			if (!oPath.StartsWith(EXTENDED_LENGTH_PATH_PREFIX))
-			{
-				return oPath;
-			}
-
-			return oPath.Substring(EXTENDED_LENGTH_PATH_PREFIX.Length);
-		}
-
+#if false
 		// --------------------------------------------------------------------
 		// ヘルプの表示
 		// --------------------------------------------------------------------
@@ -1945,6 +1261,7 @@ namespace YukaLister.Models.SharedMisc
 				oEnvironment.LogWriter.ShowLogMessage(TraceEventType.Error, "ヘルプを表示できませんでした。\n" + oExcep.Message + "\n" + aHelpPath);
 			}
 		}
+#endif
 
 		// --------------------------------------------------------------------
 		// カンマ区切り ID をリストに分割
@@ -1974,7 +1291,7 @@ namespace YukaLister.Models.SharedMisc
 					throw new Exception(oCaption + "の年が入力されていません。");
 				}
 
-				return INVALID_MJD;
+				return YlConstants.INVALID_MJD;
 			}
 
 			// 年の確認
@@ -2000,9 +1317,9 @@ namespace YukaLister.Models.SharedMisc
 			{
 				throw new Exception(oCaption + "の年に 3 桁の値を入力することはできません。");
 			}
-			if (aYear < INVALID_YEAR)
+			if (aYear < YlConstants.INVALID_YEAR)
 			{
-				throw new Exception(oCaption + "の年は " + INVALID_YEAR + " 以上を入力して下さい。");
+				throw new Exception(oCaption + "の年は " + YlConstants.INVALID_YEAR + " 以上を入力して下さい。");
 			}
 			if (aYear > aNowYear)
 			{
@@ -2065,7 +1382,7 @@ namespace YukaLister.Models.SharedMisc
 		// --------------------------------------------------------------------
 		public static String TempPath()
 		{
-			String aPath = Path.GetTempPath() + FOLDER_NAME_YUKA_LISTER + Process.GetCurrentProcess().Id.ToString() + "\\";
+			String aPath = Path.GetTempPath() + YlConstants.FOLDER_NAME_YUKA_LISTER + Process.GetCurrentProcess().Id.ToString() + "\\";
 			if (!Directory.Exists(aPath))
 			{
 				try
@@ -2079,153 +1396,10 @@ namespace YukaLister.Models.SharedMisc
 			return aPath;
 		}
 
-#if false
-		// --------------------------------------------------------------------
-		// 年月日のテキストボックスから日付を生成
-		// ＜例外＞ Exception
-		// --------------------------------------------------------------------
-		public static Double TextBoxToMjd(String oCaption, TextBox oTextBoxYear, TextBox oTextBoxMonth, TextBox oTextBoxDay)
-		{
-			if (String.IsNullOrEmpty(oTextBoxYear.Text))
-			{
-				// 年が入力されていない場合は、月日も空欄でなければならない
-				if (!String.IsNullOrEmpty(oTextBoxMonth.Text) || !String.IsNullOrEmpty(oTextBoxDay.Text))
-				{
-					throw new Exception(oCaption + "の年が入力されていません。");
-				}
-
-				return INVALID_MJD;
-			}
-
-			// 年の確認
-			Int32 aYear = Common.StringToInt32(oTextBoxYear.Text);
-			Int32 aNowYear = DateTime.Now.Year;
-			if (aYear < 0)
-			{
-				throw new Exception(oCaption + "の年にマイナスの値を入力することはできません。");
-			}
-			if (aYear < 100)
-			{
-				// 2 桁の西暦を 4 桁に変換する
-				if (aYear <= aNowYear % 100)
-				{
-					aYear += (aNowYear / 100) * 100;
-				}
-				else
-				{
-					aYear += (aNowYear / 100 - 1) * 100;
-				}
-			}
-			if (aYear < 1000)
-			{
-				throw new Exception(oCaption + "の年に 3 桁の値を入力することはできません。");
-			}
-			if (aYear < INVALID_YEAR)
-			{
-				throw new Exception(oCaption + "の年は " + INVALID_YEAR + " 以上を入力して下さい。");
-			}
-			if (aYear > aNowYear)
-			{
-				throw new Exception(oCaption + "の年は " + aNowYear + " 以下を入力して下さい。");
-			}
-
-			// 月の確認
-			if (String.IsNullOrEmpty(oTextBoxMonth.Text) && !String.IsNullOrEmpty(oTextBoxDay.Text))
-			{
-				// 年と日が入力されている場合は、月も入力されていなければならない
-				throw new Exception(oCaption + "の月が入力されていません。");
-			}
-			Int32 aMonth;
-			if (String.IsNullOrEmpty(oTextBoxMonth.Text))
-			{
-				// 月が空欄の場合は 1 とする
-				aMonth = 1;
-			}
-			else
-			{
-				aMonth = Common.StringToInt32(oTextBoxMonth.Text);
-				if (aMonth < 1 || aMonth > 12)
-				{
-					throw new Exception(oCaption + "の月は 1～12 を入力して下さい。");
-				}
-			}
-
-			// 日の確認
-			Int32 aDay;
-			if (String.IsNullOrEmpty(oTextBoxDay.Text))
-			{
-				// 日が空欄の場合は 1 とする
-				aDay = 1;
-			}
-			else
-			{
-				aDay = Common.StringToInt32(oTextBoxDay.Text);
-				if (aDay < 1 || aDay > 31)
-				{
-					throw new Exception(oCaption + "の日は 1～31 を入力して下さい。");
-				}
-			}
-
-			return JulianDay.DateTimeToModifiedJulianDate(new DateTime(aYear, aMonth, aDay));
-		}
-#endif
-
-#if false
-		// --------------------------------------------------------------------
-		// 同名のタイアップがある場合でも見分けがつく名前を返す
-		// --------------------------------------------------------------------
-		public static String TieUpNameAvoidingSameName(SQLiteConnection oConnection, TTieUp oTieUp)
-		{
-			List<TTieUp> aTieUps = YlCommon.SelectMastersByName<TTieUp>(oConnection, oTieUp.Name);
-			if (aTieUps.Count <= 1)
-			{
-				// 同名のタイアップが無い場合はタイアップ名のみ
-				return oTieUp.Name;
-			}
-			else
-			{
-				// 同名タイアップが複数ある場合は見分けやすいようにする
-				TCategory aCategory = YlCommon.SelectMasterById<TCategory>(oConnection, oTieUp.CategoryId);
-				String aCategoryName = null;
-				if (aCategory != null)
-				{
-					aCategoryName = aCategory.Name;
-				}
-				return oTieUp.Name + "（" + (String.IsNullOrEmpty(aCategoryName) ? "カテゴリー無し" : aCategoryName) + ", "
-						+ (String.IsNullOrEmpty(oTieUp.Keyword) ? "キーワード無し" : oTieUp.Keyword) + "）";
-			}
-		}
-#endif
-
-#if false
-		// --------------------------------------------------------------------
-		// ルビの一部が削除されたら警告
-		// ＜例外＞ OperationCanceledException
-		// --------------------------------------------------------------------
-		public static void WarnRubyDeletedIfNeeded(String oOriginalRuby, String oNormalizedRuby)
-		{
-			if (!String.IsNullOrEmpty(oOriginalRuby)
-					&& (String.IsNullOrEmpty(oNormalizedRuby) || oOriginalRuby.Length != oNormalizedRuby.Length))
-			{
-				if (MessageBox.Show("フリガナはカタカナのみ登録可能のため、カタカナ以外は削除されます。\n"
-						+ oOriginalRuby + " → " + oNormalizedRuby + "\nよろしいですか？", "確認",
-						MessageBoxButton.YesNo, MessageBoxImage.Exclamation) == MessageBoxResult.No)
-				{
-					throw new OperationCanceledException();
-				}
-			}
-		}
-#endif
 
 		// ====================================================================
 		// private 定数
 		// ====================================================================
-
-		// --------------------------------------------------------------------
-		// ファイル名
-		// --------------------------------------------------------------------
-		private const String FILE_NAME_HELP_PREFIX = APP_ID + "_JPN";
-		private const String FOLDER_NAME_HELP_PARTS = "HelpParts\\";
 
 		// --------------------------------------------------------------------
 		// DB 変換
@@ -2410,7 +1584,7 @@ namespace YukaLister.Models.SharedMisc
 			Boolean aLongestExists = false;
 			while (aBeginPos < oRuleInDisk.Length)
 			{
-				if (oRuleInDisk[aBeginPos] == RULE_VAR_BEGIN[0])
+				if (oRuleInDisk[aBeginPos] == YlConstants.RULE_VAR_BEGIN[0])
 				{
 					// 変数を解析
 					aEndPos = MakeRegexPatternFindVarEnd(oRuleInDisk, aBeginPos + 1);
@@ -2425,7 +1599,7 @@ namespace YukaLister.Models.SharedMisc
 
 					// 番組名・楽曲名は区切り文字を含むこともあるため最長一致で検索する
 					// また、最低 1 つは最長一致が無いとマッチしない
-					if (aVarName == RULE_VAR_PROGRAM || aVarName == RULE_VAR_TITLE || !aLongestExists && aEndPos == oRuleInDisk.Length - 1)
+					if (aVarName == YlConstants.RULE_VAR_PROGRAM || aVarName == YlConstants.RULE_VAR_TITLE || !aLongestExists && aEndPos == oRuleInDisk.Length - 1)
 					{
 						aSB.Append("(.*)");
 						aLongestExists = true;
@@ -2463,7 +1637,7 @@ namespace YukaLister.Models.SharedMisc
 		{
 			while (oBeginPos < oString.Length)
 			{
-				if (oString[oBeginPos] == RULE_VAR_END[0])
+				if (oString[oBeginPos] == YlConstants.RULE_VAR_END[0])
 				{
 					return oBeginPos;
 				}
@@ -2473,391 +1647,6 @@ namespace YukaLister.Models.SharedMisc
 		}
 	}
 	// public class YlCommon ___END___
-
-	// ====================================================================
-	// ドライブ接続時にゆかり検索対象フォルダーに自動的に追加するための情報
-	// ====================================================================
-	public class AutoTargetInfo
-	{
-		// ====================================================================
-		// コンストラクター・デストラクター
-		// ====================================================================
-
-		// --------------------------------------------------------------------
-		// コンストラクター
-		// --------------------------------------------------------------------
-		public AutoTargetInfo()
-		{
-			Folders = new List<String>();
-		}
-
-		// ====================================================================
-		// public プロパティー
-		// ====================================================================
-
-		// 前回接続時に追加されていたフォルダー群（ドライブレターを除き '\\' から始まる）
-		public List<String> Folders { get; set; }
-	}
-
-	// ====================================================================
-	// フォルダー設定ウィンドウでのプレビュー情報
-	// ====================================================================
-	public class PreviewInfo
-	{
-		// ====================================================================
-		// public プロパティー
-		// ====================================================================
-
-		// ファイル名（パス無）
-		public String FileName { get; set; }
-
-		// 取得項目
-		public String Items { get; set; }
-
-	} // public class PreviewInfo ___END___
-
-	// ====================================================================
-	// ゆかり検索対象フォルダーの情報
-	// ====================================================================
-
-	public class TargetFolderInfo
-	{
-		// ====================================================================
-		// public プロパティー
-		// ====================================================================
-
-		// 親フォルダーかどうか
-		public Boolean IsParent { get; set; }
-
-		// 親フォルダーの場合のみ有効：サブフォルダーを表示しているかどうか：表示用兼用
-		private Boolean mIsOpen;
-		public Boolean? IsOpen
-		{
-			get
-			{
-				if (IsParent && NumTotalFolders > 1)
-				{
-					return mIsOpen;
-				}
-				return null;
-			}
-			set
-			{
-				if (IsParent && NumTotalFolders > 1 && value != mIsOpen)
-				{
-					mIsOpen = (Boolean)value;
-					IsOpenChanged(this);
-				}
-			}
-		}
-
-		// 親フォルダーの場合のみ有効：サブフォルダーが動作しているかどうか
-		public Boolean IsChildRunning { get; set; }
-
-		// 親フォルダーの場合のみ有効：親フォルダー＋サブフォルダーの数
-		public Int32 NumTotalFolders { get; set; }
-
-		// フォルダーパス（ExLen 形式）
-		public String Path { get; set; }
-
-		// 親フォルダーのパス（ソート用）（ExLen 形式）（親の場合は Path と同じ値にすること）
-		public String ParentPath { get; set; }
-
-		// 操作
-		public FolderTask FolderTask { get; set; }
-
-		// 動作状況
-		public FolderTaskStatus FolderTaskStatus { get; set; }
-
-		// フォルダー除外設定の状態
-		public FolderExcludeSettingsStatus FolderExcludeSettingsStatus
-		{
-			get
-			{
-				if (mFolderExcludeSettingsStatus == FolderExcludeSettingsStatus.Unchecked)
-				{
-					mFolderExcludeSettingsStatus = YlCommon.DetectFolderExcludeSettingsStatus(Path);
-				}
-				return mFolderExcludeSettingsStatus;
-			}
-			set
-			{
-				mFolderExcludeSettingsStatus = value;
-			}
-		}
-
-		// フォルダー設定の状態
-		public FolderSettingsStatus FolderSettingsStatus
-		{
-			get
-			{
-				if (mFolderSettingsStatus == FolderSettingsStatus.Unchecked)
-				{
-					mFolderSettingsStatus = YlCommon.DetectFolderSettingsStatus2Ex(Path);
-				}
-				return mFolderSettingsStatus;
-			}
-			set
-			{
-				mFolderSettingsStatus = value;
-			}
-		}
-
-		// UI に表示するかどうか
-		public Boolean Visible { get; set; }
-
-		// 表示用：状態
-		public String FolderTaskStatusLabel
-		{
-			get
-			{
-				String aLabel;
-				FolderTaskStatus aStatusForLabelColor;
-				GetFolderTaskStatus(out aLabel, out aStatusForLabelColor);
-				return aLabel;
-			}
-			set
-			{
-				Debug.Assert(false, "TargetFolderInfo.FolderTaskStatusLabel set: forbidden");
-			}
-		}
-
-		// 表示用：パス
-		public String PathLabel
-		{
-			get
-			{
-				return YlCommon.ShortenPath(Path);
-			}
-			set
-			{
-				Debug.Assert(false, "TargetFolderInfo.PathLabel set: forbidden");
-			}
-		}
-
-		// 表示用：設定有無
-		public String FolderSettingsStatusLabel
-		{
-			get
-			{
-				return YlCommon.FOLDER_SETTINGS_STATUS_TEXTS[(Int32)FolderSettingsStatus];
-			}
-			set
-			{
-				Debug.Assert(false, "TargetFolderInfo.FolderSettingsStatusLabel set: forbidden");
-			}
-		}
-
-		// 表示用：色分け
-		public FolderTaskStatus StatusForLabelColor
-		{
-			get
-			{
-				String aLabel;
-				FolderTaskStatus aStatusForLabelColor;
-				GetFolderTaskStatus(out aLabel, out aStatusForLabelColor);
-				return aStatusForLabelColor;
-			}
-			set
-			{
-				Debug.Assert(false, "TargetFolderInfo.StatusForLabelColor set: forbidden");
-			}
-		}
-
-		// ゆかり用リストデータベース構築状況取得
-		public static YukaListerStatusDelegate YukariDbYukaListerStatus { get; set; }
-
-		// IsOpen 変更時イベントハンドラー
-		public static TargetFolderInfoIsOpenChangedDelegate IsOpenChanged { get; set; }
-
-		// ====================================================================
-		// コンストラクター・デストラクター
-		// ====================================================================
-
-		// --------------------------------------------------------------------
-		// コンストラクター
-		// --------------------------------------------------------------------
-		public TargetFolderInfo(String oParentPathExLen, String oPathExLen)
-		{
-			IsParent = false;
-			IsOpen = false;
-			IsChildRunning = false;
-			NumTotalFolders = 0;
-			Path = oPathExLen;
-			ParentPath = oParentPathExLen;
-			FolderTask = FolderTask.AddFileName;
-			FolderTaskStatus = FolderTaskStatus.Queued;
-			FolderExcludeSettingsStatus = FolderExcludeSettingsStatus.Unchecked;
-			FolderSettingsStatus = FolderSettingsStatus.Unchecked;
-			Visible = false;
-		}
-
-		// ====================================================================
-		// public メンバー関数
-		// ====================================================================
-
-		// --------------------------------------------------------------------
-		// ソート用比較関数
-		// 例えば @"C:\A" 配下と @"C:\A 2" を正しく並べ替えるために ParentPath が必要
-		// --------------------------------------------------------------------
-		public static Int32 Compare(TargetFolderInfo oLhs, TargetFolderInfo oRhs)
-		{
-			if (oLhs.ParentPath != oRhs.ParentPath)
-			{
-				return String.Compare(oLhs.ParentPath, oRhs.ParentPath);
-			}
-			return String.Compare(oLhs.Path, oRhs.Path);
-		}
-
-		// ====================================================================
-		// private メンバー変数
-		// ====================================================================
-
-		// プロパティー FolderSettingsStatus の実体
-		private FolderSettingsStatus mFolderSettingsStatus;
-
-		// プロパティー FolderExcludeSettingsStatus の実体
-		private FolderExcludeSettingsStatus mFolderExcludeSettingsStatus;
-
-		// ====================================================================
-		// private メンバー関数
-		// ====================================================================
-
-		// --------------------------------------------------------------------
-		// 状態
-		// --------------------------------------------------------------------
-		private void GetFolderTaskStatus(out String oLabel, out FolderTaskStatus oStatusForLabelColor)
-		{
-			if (YukariDbYukaListerStatus() == YukaListerStatus.Error)
-			{
-				oLabel = "エラー解決待ち";
-				oStatusForLabelColor = FolderTaskStatus.Error;
-				return;
-			}
-
-			switch (FolderTaskStatus)
-			{
-				case FolderTaskStatus.Queued:
-					switch (FolderTask)
-					{
-						case FolderTask.AddFileName:
-							oLabel = "追加予定";
-							break;
-						case FolderTask.AddInfo:
-							oLabel = "ファイル名検索可";
-							break;
-						case FolderTask.Remove:
-							oLabel = "削除予定";
-							break;
-						case FolderTask.Update:
-							oLabel = "更新予定";
-							break;
-						default:
-							Debug.Assert(false, "GetFolderTaskStatus() bad FolderTask in FolderTaskStatus.Queued");
-							oLabel = null;
-							break;
-					}
-					oStatusForLabelColor = FolderTaskStatus.Queued;
-					break;
-				case FolderTaskStatus.Running:
-					switch (FolderTask)
-					{
-						case FolderTask.AddFileName:
-							oLabel = "ファイル名確認中";
-							break;
-						case FolderTask.AddInfo:
-							oLabel = "ファイル名検索可＋属性確認中";
-							break;
-						case FolderTask.FindSubFolders:
-							oLabel = "サブフォルダー検索中";
-							break;
-						case FolderTask.Remove:
-							oLabel = "削除中";
-							break;
-						case FolderTask.Update:
-							oLabel = "更新中";
-							break;
-						default:
-							Debug.Assert(false, "GetFolderTaskStatus() bad FolderTask in FolderTaskStatus.Running");
-							oLabel = null;
-							break;
-					}
-					oStatusForLabelColor = FolderTaskStatus.Running;
-					break;
-				case FolderTaskStatus.Error:
-					oLabel = "エラー";
-					oStatusForLabelColor = FolderTaskStatus.Error;
-					break;
-				case FolderTaskStatus.DoneInMemory:
-					if (IsParent && IsChildRunning)
-					{
-						oLabel = "サブフォルダー待ち";
-						oStatusForLabelColor = FolderTaskStatus.Running;
-					}
-					else
-					{
-						switch (FolderTask)
-						{
-							case FolderTask.AddFileName:
-								oLabel = "ファイル名確認済";
-								break;
-							case FolderTask.AddInfo:
-								oLabel = "ファイル名検索可＋属性確認済";
-								break;
-							case FolderTask.Remove:
-								oLabel = "削除準備完了";
-								break;
-							case FolderTask.Update:
-								oLabel = "更新準備完了";
-								break;
-							default:
-								Debug.Assert(false, "GetFolderTaskStatus() bad FolderTask in FolderTaskStatus.DoneInMemory");
-								oLabel = null;
-								break;
-						}
-						oStatusForLabelColor = FolderTaskStatus.Queued;
-					}
-					break;
-				case FolderTaskStatus.DoneInDisk:
-					switch (FolderTask)
-					{
-						case FolderTask.AddFileName:
-							Debug.Assert(false, "GetFolderTaskStatus() bad FolderTask in FolderTaskStatus.DoneInDisk - FolderTask.AddFileName");
-							oLabel = null;
-							break;
-						case FolderTask.AddInfo:
-							oLabel = "追加完了";
-							break;
-						case FolderTask.Remove:
-							oLabel = "削除完了";
-							break;
-						case FolderTask.Update:
-							oLabel = "更新完了";
-							break;
-						default:
-							Debug.Assert(false, "GetFolderTaskStatus() bad oInfo.FolderTask in FolderTaskStatus.DoneInDisk");
-							oLabel = null;
-							break;
-					}
-					oStatusForLabelColor = FolderTaskStatus.DoneInDisk;
-					break;
-				default:
-					Debug.Assert(false, "GetFolderTaskStatus() bad FolderTaskStatus");
-					oLabel = null;
-					oStatusForLabelColor = FolderTaskStatus.Error;
-					break;
-			}
-
-			if (FolderExcludeSettingsStatus == FolderExcludeSettingsStatus.True)
-			{
-				oLabel = "対象外";
-				oStatusForLabelColor = FolderTaskStatus.Queued;
-			}
-		}
-
-	}
-	// public class TargetFolderInfo ___END___
-
 
 }
 // namespace YukaLister.Shared ___END___

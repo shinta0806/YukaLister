@@ -11,29 +11,26 @@
 using Livet;
 using Livet.Commands;
 using Livet.Messaging;
-using Livet.Messaging.IO;
-using Livet.EventListeners;
 using Livet.Messaging.Windows;
+
+using Shinta;
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Data.Linq;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Windows.Controls;
+using System.Windows.Data;
 
 using YukaLister.Models;
-using System.Diagnostics;
 using YukaLister.Models.Database;
-using System.Data.Linq;
-using System.Collections.ObjectModel;
-using System.Windows.Controls;
 using YukaLister.Models.OutputWriters;
 using YukaLister.Models.SharedMisc;
-using System.Windows.Data;
-using System.Drawing;
-using System.Reflection;
-using System.Windows;
-using System.IO;
 
 namespace YukaLister.ViewModels
 {
@@ -109,7 +106,6 @@ namespace YukaLister.ViewModels
 			{
 				if (RaisePropertyChangedIfSet(ref mSelectedTFound, value))
 				{
-					Debug.WriteLine("SelectedTFound: " + SelectedTFound?.SongName);
 					ButtonEditMusicInfoClickedCommand.RaiseCanExecuteChanged();
 					ButtonFolderSettingsClickedCommand.RaiseCanExecuteChanged();
 				}
@@ -143,39 +139,44 @@ namespace YukaLister.ViewModels
 		// ゆかり用リストデータベース（作業用インメモリ）
 		public YukariListDatabaseInMemory YukariListDbInMemory { get; set; }
 
-
 		// --------------------------------------------------------------------
 		// コマンド
 		// --------------------------------------------------------------------
 
 		#region ヘルプリンクの制御
-		private ListenerCommand<String> mHelpClickedCommand;
-
 		public ListenerCommand<String> HelpClickedCommand
+		{
+			get => Environment?.HelpClickedCommand;
+		}
+		#endregion
+
+		#region データグリッドダブルクリックの制御
+		private ViewModelCommand mDataGridDoubleClickedCommand;
+
+		public ViewModelCommand DataGridDoubleClickedCommand
 		{
 			get
 			{
-				if (mHelpClickedCommand == null)
+				if (mDataGridDoubleClickedCommand == null)
 				{
-					mHelpClickedCommand = new ListenerCommand<String>(HelpClicked);
+					mDataGridDoubleClickedCommand = new ViewModelCommand(DataGridDoubleClicked);
 				}
-				return mHelpClickedCommand;
+				return mDataGridDoubleClickedCommand;
 			}
 		}
 
-		public void HelpClicked(String oParameter)
+		public void DataGridDoubleClicked()
 		{
 			try
 			{
-				YlCommon.ShowHelp(Environment, oParameter);
+				EditMusicInfo();
 			}
 			catch (Exception oExcep)
 			{
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "詳細情報リンククリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "データグリッドダブルクリック時エラー：\n" + oExcep.Message);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
-
 		#endregion
 
 		#region ソートの制御
@@ -418,7 +419,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "DGV ヘッダークリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -447,40 +448,12 @@ namespace YukaLister.ViewModels
 		{
 			try
 			{
-				if (SelectedTFound == null)
-				{
-					return;
-				}
-				CloseFindKeywordWindowIfNeeded();
-
-				String aPath = SelectedTFound.Path;
-
-				// ファイル命名規則とフォルダー固定値を適用
-				FolderSettingsInDisk aFolderSettingsInDisk = YlCommon.LoadFolderSettings2Ex(Path.GetDirectoryName(aPath));
-				FolderSettingsInMemory aFolderSettingsInMemory = YlCommon.CreateFolderSettingsInMemory(aFolderSettingsInDisk);
-				Dictionary<String, String> aDic = YlCommon.MatchFileNameRulesAndFolderRule
-						(Path.GetFileNameWithoutExtension(aPath), aFolderSettingsInMemory);
-
-				// 楽曲名が取得できていない場合は編集不可
-				if (String.IsNullOrEmpty(aDic[YlCommon.RULE_VAR_TITLE]))
-				{
-					Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "ファイル名から楽曲名を取得できていないため、編集できません。\nファイル命名規則を確認して下さい。");
-					return;
-				}
-
-				// 楽曲情報等編集ウィンドウを開く
-				using (EditMusicInfoWindowViewModel aEditMusicInfoWindowViewModel = new EditMusicInfoWindowViewModel())
-				{
-					aEditMusicInfoWindowViewModel.Environment = Environment;
-					aEditMusicInfoWindowViewModel.PathExLen = SelectedTFound.Path;
-					aEditMusicInfoWindowViewModel.DicByFile = YlCommon.DicByFile(SelectedTFound.Path);
-					Messenger.Raise(new TransitionMessage(aEditMusicInfoWindowViewModel, "OpenEditMusicInfoWindow"));
-				}
+				EditMusicInfo();
 			}
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "フォルダー設定ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -526,7 +499,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "フォルダー設定ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -555,7 +528,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "キーワード検索ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -584,7 +557,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "セル検索ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -605,7 +578,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "検索時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 
@@ -640,7 +613,7 @@ namespace YukaLister.ViewModels
 					}
 					else
 					{
-						aColumn.Header = YlCommon.OUTPUT_ITEM_NAMES[(Int32)aOutputItem];
+						aColumn.Header = YlConstants.OUTPUT_ITEM_NAMES[(Int32)aOutputItem];
 					}
 					Columns.Add(aColumn);
 				}
@@ -662,7 +635,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "ファイル一覧ウィンドウビューモデル初期化時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 
@@ -730,6 +703,42 @@ namespace YukaLister.ViewModels
 		}
 
 		// --------------------------------------------------------------------
+		// 指定された TFound に対して編集ウィンドウを開く
+		// --------------------------------------------------------------------
+		private void EditMusicInfo()
+		{
+			if (SelectedTFound == null)
+			{
+				return;
+			}
+			CloseFindKeywordWindowIfNeeded();
+
+			String aPath = SelectedTFound.Path;
+
+			// ファイル命名規則とフォルダー固定値を適用
+			FolderSettingsInDisk aFolderSettingsInDisk = YlCommon.LoadFolderSettings2Ex(Path.GetDirectoryName(aPath));
+			FolderSettingsInMemory aFolderSettingsInMemory = YlCommon.CreateFolderSettingsInMemory(aFolderSettingsInDisk);
+			Dictionary<String, String> aDic = YlCommon.MatchFileNameRulesAndFolderRule
+					(Path.GetFileNameWithoutExtension(aPath), aFolderSettingsInMemory);
+
+			// 楽曲名が取得できていない場合は編集不可
+			if (String.IsNullOrEmpty(aDic[YlConstants.RULE_VAR_TITLE]))
+			{
+				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "ファイル名から楽曲名を取得できていないため、編集できません。\nファイル命名規則を確認して下さい。");
+				return;
+			}
+
+			// 楽曲情報等編集ウィンドウを開く
+			using (EditMusicInfoWindowViewModel aEditMusicInfoWindowViewModel = new EditMusicInfoWindowViewModel())
+			{
+				aEditMusicInfoWindowViewModel.Environment = Environment;
+				aEditMusicInfoWindowViewModel.PathExLen = SelectedTFound.Path;
+				aEditMusicInfoWindowViewModel.DicByFile = YlCommon.DicByFile(SelectedTFound.Path);
+				Messenger.Raise(new TransitionMessage(aEditMusicInfoWindowViewModel, "OpenEditMusicInfoWindow"));
+			}
+		}
+
+		// --------------------------------------------------------------------
 		// 未登録または登録済みの項目を検索して選択
 		// ＜例外＞ Exception
 		// --------------------------------------------------------------------
@@ -751,7 +760,7 @@ namespace YukaLister.ViewModels
 				}
 			}
 
-			throw new Exception("選択されたセルより下には、" + YlCommon.OUTPUT_ITEM_NAMES[(Int32)mRuntimeOutputItems[CurrentCellLocation.X]] + "が空欄"
+			throw new Exception("選択されたセルより下には、" + YlConstants.OUTPUT_ITEM_NAMES[(Int32)mRuntimeOutputItems[CurrentCellLocation.X]] + "が空欄"
 					+ (oFindEmpty ? "の" : "ではない") + "セルはありません。");
 		}
 

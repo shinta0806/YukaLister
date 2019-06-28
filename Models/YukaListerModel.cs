@@ -17,17 +17,16 @@
 // （Id カウンターリセット時にユニーク制約に引っかかってアップロードできないのを防止）
 // ----------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Livet;
 using Livet.Messaging;
+
 using Shinta;
+
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Threading.Tasks;
+
 using YukaLister.Models.Database;
 using YukaLister.Models.Http;
 using YukaLister.ViewModels;
@@ -101,7 +100,7 @@ namespace YukaLister.Models
 			// ゆかり設定ファイルのフルパスが変更された場合は処理を行う
 			if (Environment.YukaListerSettings.YukariConfigPath() != aYukariConfigPathBak)
 			{
-				Environment.YukaListerSettings.AnalyzeYukariEasyAuthConfig();
+				Environment.YukaListerSettings.AnalyzeYukariEasyAuthConfig(Environment);
 				SetFileSystemWatcherYukariConfig();
 				YukariDb.YukariConfigPathChanged();
 			}
@@ -208,7 +207,7 @@ namespace YukaLister.Models
 		private void FileSystemWatcherYukariConfig_Changed(Object oSender, FileSystemEventArgs oFileSystemEventArgs)
 		{
 			mMainWindowViewModel.SetStatusBarMessageWithInvoke(TraceEventType.Information, "ゆかり設定ファイルが更新されました。");
-			Environment.YukaListerSettings.AnalyzeYukariEasyAuthConfig();
+			Environment.YukaListerSettings.AnalyzeYukariEasyAuthConfig(Environment);
 		}
 
 		// --------------------------------------------------------------------

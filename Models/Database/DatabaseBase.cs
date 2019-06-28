@@ -11,14 +11,12 @@
 using Shinta;
 
 using System;
-using System.Collections.Generic;
 using System.Data.Linq;
 using System.Data.SQLite;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 using YukaLister.Models.SharedMisc;
 
 namespace YukaLister.Models.Database
@@ -195,7 +193,7 @@ namespace YukaLister.Models.Database
 				aContext.SubmitChanges();
 
 				// 新しいプロパティーを挿入
-				aTableProperty.InsertOnSubmit(new TProperty { AppId = YlCommon.APP_ID, AppVer = YlCommon.APP_GENERATION + "," + YlCommon.APP_VER });
+				aTableProperty.InsertOnSubmit(new TProperty { AppId = YlConstants.APP_ID, AppVer = YlConstants.APP_GENERATION + "," + YlConstants.APP_VER });
 				aContext.SubmitChanges();
 			}
 		}
@@ -206,7 +204,7 @@ namespace YukaLister.Models.Database
 		protected Boolean ValidPropertyExists()
 		{
 			TProperty aProperty = Property();
-			return aProperty.AppId == YlCommon.APP_ID;
+			return aProperty.AppId == YlConstants.APP_ID;
 		}
 
 		// ====================================================================

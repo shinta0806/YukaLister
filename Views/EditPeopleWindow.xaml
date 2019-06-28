@@ -59,6 +59,9 @@
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="人物" Width="*" Binding="{Binding DisplayName}" />
                 </DataGrid.Columns>
+                <DataGrid.InputBindings>
+                    <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding DataGridDoubleClickedCommand}" />
+                </DataGrid.InputBindings>
             </DataGrid>
             <StackPanel Margin="0" VerticalAlignment="Center">
                 <Button x:Name="ButtonAdd" Height="Auto" VerticalAlignment="Center" Content="検索して追加 (_A)" HorizontalAlignment="Left" Margin="0" Width="140" Padding="4" Command="{Binding ButtonAddClickedCommand}"/>

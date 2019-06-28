@@ -11,6 +11,8 @@
 using Livet;
 using Livet.Commands;
 
+using Shinta;
+
 using System;
 using System.Diagnostics;
 
@@ -138,7 +140,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "リンククリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -157,18 +159,18 @@ namespace YukaLister.ViewModels
 			try
 			{
 				// 表示
-				Title = YlCommon.APP_NAME_J + "のバージョン情報";
+				Title = YlConstants.APP_NAME_J + "のバージョン情報";
 #if DEBUG
 				Title = "［デバッグ］" + Title;
 #endif
-				AppName = YlCommon.APP_NAME_J;
-				AppVer = YlCommon.APP_VER;
-				Copyright = YlCommon.COPYRIGHT_J;
+				AppName = YlConstants.APP_NAME_J;
+				AppVer = YlConstants.APP_VER;
+				Copyright = YlConstants.COPYRIGHT_J;
 			}
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "バージョン情報ウィンドウビューモデル初期化時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 	}

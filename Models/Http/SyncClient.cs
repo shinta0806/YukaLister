@@ -9,20 +9,18 @@
 // ----------------------------------------------------------------------------
 
 using Shinta;
+
 using System;
 using System.Collections.Generic;
 using System.Data.Linq;
-using System.Data.SQLite;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Controls;
-using System.Windows.Media;
+
 using YukaLister.Models.Database;
 using YukaLister.Models.SharedMisc;
 using YukaLister.ViewModels;
@@ -46,14 +44,14 @@ namespace YukaLister.Models.Http
 
 			// ログ初期化
 			// さほど大量のログは発生しないため、世代等はデフォルトのまま
-			mLogWriterSync = new LogWriter(YlCommon.APP_ID + "Sync");
+			mLogWriterSync = new LogWriter(YlConstants.APP_ID + "Sync");
 			mLogWriterSync.SimpleTraceListener.LogFileName = Path.GetDirectoryName(mLogWriterSync.SimpleTraceListener.LogFileName) + "\\" + FILE_NAME_SYNC_LOG;
 			mLogWriterSync.ApplicationQuitToken = mEnvironment.AppCancellationTokenSource.Token;
 			mLogWriterSync.SimpleTraceListener.MaxOldGenerations = 3;
 
 			// 詳細ログ初期化
 			// 大量のログが発生するため、世代・サイズともに拡大
-			mLogWriterSyncDetail = new LogWriter(YlCommon.APP_ID + "SyncDetail");
+			mLogWriterSyncDetail = new LogWriter(YlConstants.APP_ID + "SyncDetail");
 			mLogWriterSyncDetail.SimpleTraceListener.LogFileName = Path.GetDirectoryName(mLogWriterSync.SimpleTraceListener.LogFileName) + "\\" + FILE_NAME_SYNC_DETAIL_LOG;
 			mLogWriterSyncDetail.ApplicationQuitToken = mEnvironment.AppCancellationTokenSource.Token;
 			mLogWriterSyncDetail.SimpleTraceListener.MaxOldGenerations = 5;
@@ -92,9 +90,9 @@ namespace YukaLister.Models.Http
 		// ファイル名
 		private const String FILE_NAME_CP_LOGIN = "CPLogin" + Common.FILE_EXT_PHP;
 		private const String FILE_NAME_CP_MAIN = "CPMain" + Common.FILE_EXT_PHP;
-		private const String FILE_NAME_SYNC_DETAIL_LOG = YlCommon.APP_ID + "SyncDetail" + Common.FILE_EXT_LOG;
+		private const String FILE_NAME_SYNC_DETAIL_LOG = YlConstants.APP_ID + "SyncDetail" + Common.FILE_EXT_LOG;
 		private const String FILE_NAME_SYNC_INFO = "SyncInfo" + Common.FILE_EXT_TXT;
-		private const String FILE_NAME_SYNC_LOG = YlCommon.APP_ID + "Sync" + Common.FILE_EXT_LOG;
+		private const String FILE_NAME_SYNC_LOG = YlConstants.APP_ID + "Sync" + Common.FILE_EXT_LOG;
 
 		// 同期モード
 		private const String SYNC_MODE_NAME_DOWNLOAD_POST_ERROR = "DownloadPostError";
@@ -228,9 +226,9 @@ namespace YukaLister.Models.Http
 			// ダウンロード開始時刻の記録
 			DateTime aTaskBeginDateTime = DateTime.UtcNow;
 
-			if (mEnvironment.YukaListerSettings.LastSyncDownloadDate < YlCommon.INVALID_MJD)
+			if (mEnvironment.YukaListerSettings.LastSyncDownloadDate < YlConstants.INVALID_MJD)
 			{
-				mEnvironment.YukaListerSettings.LastSyncDownloadDate = YlCommon.INVALID_MJD;
+				mEnvironment.YukaListerSettings.LastSyncDownloadDate = YlConstants.INVALID_MJD;
 			}
 			DateTime aTargetDate = JulianDay.ModifiedJulianDateToDateTime(mEnvironment.YukaListerSettings.LastSyncDownloadDate);
 			oNumTotalDownloads = 0;
@@ -1905,7 +1903,14 @@ namespace YukaLister.Models.Http
 			catch (Exception oExcep)
 			{
 				mMainWindowViewModel.SetStatusBarMessageWithInvoke(TraceEventType.Error, "楽曲情報データベース同期タスク実行時エラー：" + oExcep.Message);
-				mLogWriterSync.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				mLogWriterSync.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
+			}
+			finally
+			{
+				if (mDownloader != null)
+				{
+					mDownloader.Dispose();
+				}
 			}
 		}
 
@@ -2002,7 +2007,7 @@ namespace YukaLister.Models.Http
 				}
 
 				// 一定数ずつアップロード
-				mLogWriterSyncDetail.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "アップロード中... " + YlCommon.MUSIC_INFO_DB_TABLE_NAMES[(Int32)i]);
+				mLogWriterSyncDetail.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "アップロード中... " + YlConstants.MUSIC_INFO_DB_TABLE_NAMES[(Int32)i]);
 				for (Int32 j = 0; j < (aCsvContents.Count + SYNC_UPLOAD_BLOCK - 1) / SYNC_UPLOAD_BLOCK; j++)
 				{
 					List<List<String>> aUploadContents = new List<List<String>>();
@@ -2010,7 +2015,7 @@ namespace YukaLister.Models.Http
 					aUploadContents.AddRange(aCsvContents.GetRange(j * SYNC_UPLOAD_BLOCK, Math.Min(SYNC_UPLOAD_BLOCK, aCsvContents.Count - j * SYNC_UPLOAD_BLOCK)));
 					String aUploadFolder = YlCommon.TempFilePath();
 					Directory.CreateDirectory(aUploadFolder);
-					String aUploadPath = aUploadFolder + "\\" + YlCommon.MUSIC_INFO_DB_TABLE_NAMES[(Int32)i];
+					String aUploadPath = aUploadFolder + "\\" + YlConstants.MUSIC_INFO_DB_TABLE_NAMES[(Int32)i];
 					CsvManager.SaveCsv(aUploadPath, aUploadContents, "\n", Encoding.UTF8);
 					Dictionary<String, String> aUploadFiles = new Dictionary<String, String>
 					{

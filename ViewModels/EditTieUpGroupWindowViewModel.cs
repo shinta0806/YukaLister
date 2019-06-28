@@ -8,13 +8,6 @@
 // ビューは EditMasterWindow を使う。
 // ----------------------------------------------------------------------------
 
-using Livet;
-using Livet.Commands;
-using Livet.Messaging;
-using Livet.Messaging.IO;
-using Livet.EventListeners;
-using Livet.Messaging.Windows;
-
 using Shinta;
 
 using System;
@@ -23,10 +16,7 @@ using System.Data.Linq;
 using System.Data.SQLite;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.ComponentModel;
 
-using YukaLister.Models;
 using YukaLister.Models.Database;
 using YukaLister.Models.SharedMisc;
 
@@ -118,13 +108,13 @@ namespace YukaLister.ViewModels
 #endif
 
 				// ヒント
-				NameHint = "シリーズ名に「" + YlCommon.TIE_UP_GROUP_SUFFIX + "」は含めないで下さい。";
+				NameHint = "シリーズ名に「" + YlConstants.TIE_UP_GROUP_SUFFIX + "」は含めないで下さい。";
 
 			}
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "シリーズ詳細情報編集ウィンドウビューモデル初期化時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 

@@ -8,21 +8,14 @@
 // 
 // ----------------------------------------------------------------------------
 
-using MaterialDesignColors;
-using MaterialDesignThemes.Wpf;
 using Shinta;
+
 using System;
 using System.Collections.Generic;
 using System.Data.Linq;
-using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Reflection;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Media;
-using System.Windows.Navigation;
+
 using YukaLister.Models.Database;
 using YukaLister.Models.SharedMisc;
 using YukaLister.ViewModels;
@@ -117,7 +110,7 @@ namespace YukaLister.Models.OutputWriters
 		// --------------------------------------------------------------------
 		protected String LoadTemplate(String oFileNameBody)
 		{
-			return File.ReadAllText(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + "\\" + YlCommon.FOLDER_NAME_TEMPLATES
+			return File.ReadAllText(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + "\\" + YlConstants.FOLDER_NAME_TEMPLATES
 					+ oFileNameBody + Common.FILE_EXT_TPL);
 		}
 

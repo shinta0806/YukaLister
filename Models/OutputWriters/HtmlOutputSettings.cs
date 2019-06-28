@@ -8,8 +8,6 @@
 // 
 // ----------------------------------------------------------------------------
 
-using Shinta;
-
 namespace YukaLister.Models.OutputWriters
 {
 	public class HtmlOutputSettings : WebOutputSettings

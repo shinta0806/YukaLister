@@ -9,14 +9,13 @@
 // ----------------------------------------------------------------------------
 
 using Shinta;
+
 using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SQLite;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
-using System.Reflection;
 using System.Text;
 using System.Windows;
 
@@ -37,7 +36,7 @@ namespace YukaLister.Models.SharedMisc
 		// ゆかり設定ファイルのパス（相対または絶対）
 		private const String KEY_NAME_YUKARI_CONFIG_PATH_SEED = "YukariConfigPathSeed";
 		[UserScopedSetting]
-		[DefaultSettingValue(@"..\" + YlCommon.FILE_NAME_YUKARI_CONFIG)]
+		[DefaultSettingValue(@"..\" + YlConstants.FILE_NAME_YUKARI_CONFIG)]
 		public String YukariConfigPathSeed
 		{
 			get
@@ -460,7 +459,7 @@ namespace YukaLister.Models.SharedMisc
 		// --------------------------------------------------------------------
 		// ゆかり設定ファイルを解析して簡易認証の設定を取得
 		// --------------------------------------------------------------------
-		public void AnalyzeYukariEasyAuthConfig()
+		public void AnalyzeYukariEasyAuthConfig(EnvironmentModel oEnvironment)
 		{
 			try
 			{
@@ -483,7 +482,7 @@ namespace YukaLister.Models.SharedMisc
 			{
 				// エラーの場合は情報をクリア
 				YukariUseEasyAuth = false;
-				//mLogWriter.ShowLogMessage(TraceEventType.Error, oExcep.Message + "サーバーに簡易認証を適用しません。", true);
+				oEnvironment.LogWriter.ShowLogMessage(TraceEventType.Error, oExcep.Message + "サーバーに簡易認証を適用しません。", true);
 			}
 		}
 
@@ -515,7 +514,7 @@ namespace YukaLister.Models.SharedMisc
 		public String LastId(MusicInfoDbTables oTableIndex)
 		{
 			Debug.Assert(!String.IsNullOrEmpty(IdPrefix), "LastId() empty IdPrefix");
-			return IdPrefix + YlCommon.MUSIC_INFO_ID_SECOND_PREFIXES[(Int32)oTableIndex] + LastIdNumbers[(Int32)oTableIndex].ToString();
+			return IdPrefix + YlConstants.MUSIC_INFO_ID_SECOND_PREFIXES[(Int32)oTableIndex] + LastIdNumbers[(Int32)oTableIndex].ToString();
 		}
 
 		// --------------------------------------------------------------------
@@ -529,8 +528,8 @@ namespace YukaLister.Models.SharedMisc
 				for (; ; )
 				{
 					LastIdNumbers[(Int32)oTableIndex]++;
-					aCmd.CommandText = "SELECT * FROM " + YlCommon.MUSIC_INFO_DB_TABLE_NAMES[(Int32)oTableIndex]
-							+ " WHERE " + YlCommon.MUSIC_INFO_DB_ID_COLUMN_NAMES[(Int32)oTableIndex] + " = @id";
+					aCmd.CommandText = "SELECT * FROM " + YlConstants.MUSIC_INFO_DB_TABLE_NAMES[(Int32)oTableIndex]
+							+ " WHERE " + YlConstants.MUSIC_INFO_DB_ID_COLUMN_NAMES[(Int32)oTableIndex] + " = @id";
 					aCmd.Parameters.Add(new SQLiteParameter("@id", LastId(oTableIndex)));
 
 					using (SQLiteDataReader aReader = aCmd.ExecuteReader())

@@ -8,24 +8,13 @@
 // 
 // ----------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.ComponentModel;
-
-using Livet;
-using Livet.Commands;
-using Livet.Messaging;
-using Livet.Messaging.IO;
-using Livet.EventListeners;
-using Livet.Messaging.Windows;
-
-using YukaLister.Models;
-using System.Diagnostics;
 using Shinta;
-using YukaLister.Models.SharedMisc;
+
+using System;
+using System.Diagnostics;
+
 using YukaLister.Models.OutputWriters;
+using YukaLister.Models.SharedMisc;
 
 namespace YukaLister.ViewModels
 {
@@ -133,7 +122,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "HTML / PHP リスト出力設定ウィンドウビューモデル初期化時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 
@@ -163,9 +152,9 @@ namespace YukaLister.ViewModels
 			if (EnableNew)
 			{
 				Int32 aNewDays = Common.StringToInt32(NewDays);
-				if (aNewDays < YlCommon.NEW_DAYS_MIN)
+				if (aNewDays < YlConstants.NEW_DAYS_MIN)
 				{
-					throw new Exception("新着の日数は " + YlCommon.NEW_DAYS_MIN.ToString() + " 以上を指定して下さい。");
+					throw new Exception("新着の日数は " + YlConstants.NEW_DAYS_MIN.ToString() + " 以上を指定して下さい。");
 				}
 			}
 		}

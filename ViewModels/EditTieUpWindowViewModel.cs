@@ -8,29 +8,22 @@
 // 
 // ----------------------------------------------------------------------------
 
-using Livet;
 using Livet.Commands;
 using Livet.Messaging;
-using Livet.Messaging.IO;
-using Livet.EventListeners;
-using Livet.Messaging.Windows;
 
 using Shinta;
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data.Linq;
 using System.Data.SQLite;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 
-using YukaLister.Models;
-using YukaLister.Models.SharedMisc;
 using YukaLister.Models.Database;
+using YukaLister.Models.SharedMisc;
 
 namespace YukaLister.ViewModels
 {
@@ -218,7 +211,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "制作会社検索ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -276,7 +269,7 @@ namespace YukaLister.ViewModels
 					Id = null,
 					Import = false,
 					Invalid = false,
-					UpdateTime = YlCommon.INVALID_MJD,
+					UpdateTime = YlConstants.INVALID_MJD,
 					Dirty = true,
 
 					// IRcMaster
@@ -312,7 +305,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "制作会社詳細編集ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -368,7 +361,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "シリーズ検索ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -426,7 +419,7 @@ namespace YukaLister.ViewModels
 					Id = null,
 					Import = false,
 					Invalid = false,
-					UpdateTime = YlCommon.INVALID_MJD,
+					UpdateTime = YlConstants.INVALID_MJD,
 					Dirty = true,
 
 					// IRcMaster
@@ -462,7 +455,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "シリーズ詳細編集ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -496,15 +489,15 @@ namespace YukaLister.ViewModels
 				// 年齢制限選択ボタンのコンテキストメニュー
 				ContextMenuButtonSelectAgeLimitItems = new List<MenuItem>();
 				YlCommon.AddContextMenuItem(ContextMenuButtonSelectAgeLimitItems, "全年齢対象（CERO A 相当）", ContextMenuButtonSelectAgeLimitItem_Click);
-				YlCommon.AddContextMenuItem(ContextMenuButtonSelectAgeLimitItems, YlCommon.AGE_LIMIT_CERO_B.ToString() + " 才以上対象（CERO B 相当）", ContextMenuButtonSelectAgeLimitItem_Click);
-				YlCommon.AddContextMenuItem(ContextMenuButtonSelectAgeLimitItems, YlCommon.AGE_LIMIT_CERO_C.ToString() + " 才以上対象（CERO C 相当）", ContextMenuButtonSelectAgeLimitItem_Click);
-				YlCommon.AddContextMenuItem(ContextMenuButtonSelectAgeLimitItems, YlCommon.AGE_LIMIT_CERO_D.ToString() + " 才以上対象（CERO D 相当）", ContextMenuButtonSelectAgeLimitItem_Click);
-				YlCommon.AddContextMenuItem(ContextMenuButtonSelectAgeLimitItems, YlCommon.AGE_LIMIT_CERO_Z.ToString() + " 才以上対象（CERO Z 相当）", ContextMenuButtonSelectAgeLimitItem_Click);
+				YlCommon.AddContextMenuItem(ContextMenuButtonSelectAgeLimitItems, YlConstants.AGE_LIMIT_CERO_B.ToString() + " 才以上対象（CERO B 相当）", ContextMenuButtonSelectAgeLimitItem_Click);
+				YlCommon.AddContextMenuItem(ContextMenuButtonSelectAgeLimitItems, YlConstants.AGE_LIMIT_CERO_C.ToString() + " 才以上対象（CERO C 相当）", ContextMenuButtonSelectAgeLimitItem_Click);
+				YlCommon.AddContextMenuItem(ContextMenuButtonSelectAgeLimitItems, YlConstants.AGE_LIMIT_CERO_D.ToString() + " 才以上対象（CERO D 相当）", ContextMenuButtonSelectAgeLimitItem_Click);
+				YlCommon.AddContextMenuItem(ContextMenuButtonSelectAgeLimitItems, YlConstants.AGE_LIMIT_CERO_Z.ToString() + " 才以上対象（CERO Z 相当）", ContextMenuButtonSelectAgeLimitItem_Click);
 			}
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "タイアップ詳細情報編集ウィンドウビューモデル初期化時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 
@@ -699,7 +692,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "年齢制限選択メニュークリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 

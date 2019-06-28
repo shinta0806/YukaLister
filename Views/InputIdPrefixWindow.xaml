@@ -4,7 +4,7 @@
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
         xmlns:l="http://schemas.livet-mvvm.net/2011/wpf"
-        xmlns:mb="clr-namespace:YukaLister.Models.Behaviors"
+        xmlns:sb="clr-namespace:Shinta.Behaviors"
         xmlns:v="clr-namespace:YukaLister.Views"
         xmlns:vm="clr-namespace:YukaLister.ViewModels"
         Title="{Binding Title}" SizeToContent="WidthAndHeight" ResizeMode="NoResize" >
@@ -47,7 +47,7 @@
                 </Hyperlink>
             </Label>
         </StackPanel>
-        <TextBox x:Name="TextBoxIdPrefix" Text="{Binding IdPrefix, UpdateSourceTrigger=PropertyChanged}" Margin="20,10,20,0" Width="500" HorizontalAlignment="Left" mb:IsFocusedAttachedBehavior.IsFocused="{Binding IsIdPrefixFocused}"/>
+        <TextBox x:Name="TextBoxIdPrefix" Text="{Binding IdPrefix, UpdateSourceTrigger=PropertyChanged}" Margin="20,10,20,0" Width="500" HorizontalAlignment="Left" sb:IsFocusedAttachedBehavior.IsFocused="{Binding IsIdPrefixFocused}"/>
         <StackPanel Orientation="Horizontal" FlowDirection="RightToLeft" Margin="20">
             <Button x:Name="ButtonCancel" Content="キャンセル" Height="Auto" Style="{StaticResource MaterialDesignRaisedLightButton}" IsCancel="True" Width="100" Padding="4"/>
             <Button x:Name="ButtonOK" Content="OK" Margin="20,0,0,0" Height="Auto" IsDefault="True" Width="100" Command="{Binding ButtonOKClickedCommand}"/>

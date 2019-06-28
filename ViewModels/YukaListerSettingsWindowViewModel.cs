@@ -8,31 +8,27 @@
 // 
 // ----------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.ComponentModel;
-
 using Livet;
 using Livet.Commands;
 using Livet.Messaging;
 using Livet.Messaging.IO;
-using Livet.EventListeners;
 using Livet.Messaging.Windows;
 
-using YukaLister.Models;
-using System.Diagnostics;
-using YukaLister.Models.OutputWriters;
-using System.Collections.ObjectModel;
-using YukaLister.Models.SharedMisc;
-using System.IO;
-using YukaLister.Models.Database;
-using System.Windows;
-using System.Windows.Interop;
 using Shinta;
+
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
 using System.IO.Compression;
+using System.Windows;
+
+using YukaLister.Models;
+using YukaLister.Models.Database;
 using YukaLister.Models.Http;
+using YukaLister.Models.OutputWriters;
+using YukaLister.Models.SharedMisc;
 
 namespace YukaLister.ViewModels
 {
@@ -248,7 +244,7 @@ namespace YukaLister.ViewModels
 			set
 			{
 				if (mCheckRss && !value
-						&& MessageBox.Show("最新情報・更新版の確認を無効にすると、" + YlCommon.APP_NAME_J
+						&& MessageBox.Show("最新情報・更新版の確認を無効にすると、" + YlConstants.APP_NAME_J
 						+ "の新版がリリースされても自動的にインストールされず、古いバージョンを使い続けることになります。\n"
 						+ "本当に無効にしてもよろしいですか？", "警告", MessageBoxButton.YesNo, MessageBoxImage.Warning)
 						!= MessageBoxResult.Yes)
@@ -465,31 +461,9 @@ namespace YukaLister.ViewModels
 		#region ウィンドウのコマンド
 
 		#region ヘルプリンクの制御
-		private ListenerCommand<String> mHelpClickedCommand;
-
 		public ListenerCommand<String> HelpClickedCommand
 		{
-			get
-			{
-				if (mHelpClickedCommand == null)
-				{
-					mHelpClickedCommand = new ListenerCommand<String>(HelpClicked);
-				}
-				return mHelpClickedCommand;
-			}
-		}
-
-		public void HelpClicked(String oParameter)
-		{
-			try
-			{
-				YlCommon.ShowHelp(Environment, oParameter);
-			}
-			catch (Exception oExcep)
-			{
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "詳細情報リンククリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
-			}
+			get => Environment?.HelpClickedCommand;
 		}
 		#endregion
 
@@ -525,7 +499,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "タブコントロールファイルドロップ時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -583,7 +557,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "OK ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -611,7 +585,7 @@ namespace YukaLister.ViewModels
 		{
 			try
 			{
-				String aPath = PathByOpeningDialog("ゆかり設定ファイル", "ゆかり設定ファイル|" + YlCommon.FILE_NAME_YUKARI_CONFIG, YlCommon.FILE_NAME_YUKARI_CONFIG);
+				String aPath = PathByOpeningDialog("ゆかり設定ファイル", "ゆかり設定ファイル|" + YlConstants.FILE_NAME_YUKARI_CONFIG, YlConstants.FILE_NAME_YUKARI_CONFIG);
 				if (aPath != null)
 				{
 					YukariConfigPathSeed = aPath;
@@ -620,7 +594,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "ゆかり設定ファイル参照ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -693,7 +667,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "追加ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -734,7 +708,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "削除ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -783,7 +757,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "ゆかりリクエスト用リスト出力設定ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -827,7 +801,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "閲覧用リスト出力設定ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 
 		}
@@ -890,7 +864,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "リスト出力ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -929,7 +903,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "最新情報確認時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -972,7 +946,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "ログ保存時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -1020,7 +994,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "強制的に合わせる時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -1079,8 +1053,8 @@ namespace YukaLister.ViewModels
 		{
 			try
 			{
-				String aPath = PathByOpeningDialog(YlCommon.FILE_BODY_ANISON_INFO_CSV_PROGRAM + Common.FILE_EXT_CSV
-						+ " または " + YlCommon.FILE_BODY_ANISON_INFO_CSV_PROGRAM + Common.FILE_EXT_ZIP,
+				String aPath = PathByOpeningDialog(YlConstants.FILE_BODY_ANISON_INFO_CSV_PROGRAM + Common.FILE_EXT_CSV
+						+ " または " + YlConstants.FILE_BODY_ANISON_INFO_CSV_PROGRAM + Common.FILE_EXT_ZIP,
 						IMPORT_ANISON_INFO_FILTER);
 				if (aPath != null)
 				{
@@ -1090,9 +1064,9 @@ namespace YukaLister.ViewModels
 			}
 			catch (Exception oExcep)
 			{
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, YlCommon.FILE_BODY_ANISON_INFO_CSV_PROGRAM + Common.FILE_EXT_CSV +
+				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, YlConstants.FILE_BODY_ANISON_INFO_CSV_PROGRAM + Common.FILE_EXT_CSV +
 						"参照ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -1122,8 +1096,8 @@ namespace YukaLister.ViewModels
 		{
 			try
 			{
-				String aPath = PathByOpeningDialog(YlCommon.FILE_BODY_ANISON_INFO_CSV_ANISON + Common.FILE_EXT_CSV
-						+ " または " + YlCommon.FILE_BODY_ANISON_INFO_CSV_ANISON + Common.FILE_EXT_ZIP,
+				String aPath = PathByOpeningDialog(YlConstants.FILE_BODY_ANISON_INFO_CSV_ANISON + Common.FILE_EXT_CSV
+						+ " または " + YlConstants.FILE_BODY_ANISON_INFO_CSV_ANISON + Common.FILE_EXT_ZIP,
 						IMPORT_ANISON_INFO_FILTER);
 				if (aPath != null)
 				{
@@ -1133,9 +1107,9 @@ namespace YukaLister.ViewModels
 			}
 			catch (Exception oExcep)
 			{
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, YlCommon.FILE_BODY_ANISON_INFO_CSV_PROGRAM + Common.FILE_EXT_CSV +
+				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, YlConstants.FILE_BODY_ANISON_INFO_CSV_PROGRAM + Common.FILE_EXT_CSV +
 						"参照ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -1164,8 +1138,8 @@ namespace YukaLister.ViewModels
 		{
 			try
 			{
-				String aPath = PathByOpeningDialog(YlCommon.FILE_BODY_ANISON_INFO_CSV_SF + Common.FILE_EXT_CSV
-						+ " または " + YlCommon.FILE_BODY_ANISON_INFO_CSV_SF + Common.FILE_EXT_ZIP,
+				String aPath = PathByOpeningDialog(YlConstants.FILE_BODY_ANISON_INFO_CSV_SF + Common.FILE_EXT_CSV
+						+ " または " + YlConstants.FILE_BODY_ANISON_INFO_CSV_SF + Common.FILE_EXT_ZIP,
 						IMPORT_ANISON_INFO_FILTER);
 				if (aPath != null)
 				{
@@ -1175,9 +1149,9 @@ namespace YukaLister.ViewModels
 			}
 			catch (Exception oExcep)
 			{
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, YlCommon.FILE_BODY_ANISON_INFO_CSV_SF + Common.FILE_EXT_CSV +
+				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, YlConstants.FILE_BODY_ANISON_INFO_CSV_SF + Common.FILE_EXT_CSV +
 						"参照ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -1206,8 +1180,8 @@ namespace YukaLister.ViewModels
 		{
 			try
 			{
-				String aPath = PathByOpeningDialog(YlCommon.FILE_BODY_ANISON_INFO_CSV_GAME + Common.FILE_EXT_CSV
-						+ " または " + YlCommon.FILE_BODY_ANISON_INFO_CSV_GAME + Common.FILE_EXT_ZIP,
+				String aPath = PathByOpeningDialog(YlConstants.FILE_BODY_ANISON_INFO_CSV_GAME + Common.FILE_EXT_CSV
+						+ " または " + YlConstants.FILE_BODY_ANISON_INFO_CSV_GAME + Common.FILE_EXT_ZIP,
 						IMPORT_ANISON_INFO_FILTER);
 				if (aPath != null)
 				{
@@ -1217,9 +1191,9 @@ namespace YukaLister.ViewModels
 			}
 			catch (Exception oExcep)
 			{
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, YlCommon.FILE_BODY_ANISON_INFO_CSV_GAME + Common.FILE_EXT_CSV +
+				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, YlConstants.FILE_BODY_ANISON_INFO_CSV_GAME + Common.FILE_EXT_CSV +
 						"参照ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -1248,7 +1222,7 @@ namespace YukaLister.ViewModels
 		{
 			try
 			{
-				String aPath = PathByOpeningDialog("ニコカラりすたー情報ファイル", "ニコカラりすたー情報ファイル|*" + YlCommon.FILE_EXT_NKLINFO);
+				String aPath = PathByOpeningDialog("ニコカラりすたー情報ファイル", "ニコカラりすたー情報ファイル|*" + YlConstants.FILE_EXT_NKLINFO);
 				if (aPath != null)
 				{
 					ImportNicoKaraListerPath = aPath;
@@ -1257,7 +1231,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "ニコカラりすたー参照ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -1306,7 +1280,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "インポートボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -1346,7 +1320,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "環境設定ウィンドウビューモデル初期化時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 
@@ -1366,7 +1340,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "リスト出力先フォルダー選択時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 
@@ -1395,7 +1369,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "ゆかり設定ファイル選択時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 
@@ -1475,31 +1449,31 @@ namespace YukaLister.ViewModels
 				// program.csv
 				if (String.IsNullOrEmpty(ImportProgramCsvPath))
 				{
-					ImportProgramCsvPath = CompleteAnisonInfo(oStandardPath, YlCommon.FILE_BODY_ANISON_INFO_CSV_PROGRAM);
+					ImportProgramCsvPath = CompleteAnisonInfo(oStandardPath, YlConstants.FILE_BODY_ANISON_INFO_CSV_PROGRAM);
 				}
 
 				// anison.csv
 				if (String.IsNullOrEmpty(ImportAnisonCsvPath))
 				{
-					ImportAnisonCsvPath = CompleteAnisonInfo(oStandardPath, YlCommon.FILE_BODY_ANISON_INFO_CSV_ANISON);
+					ImportAnisonCsvPath = CompleteAnisonInfo(oStandardPath, YlConstants.FILE_BODY_ANISON_INFO_CSV_ANISON);
 				}
 
 				// sf.csv
 				if (String.IsNullOrEmpty(ImportSfCsvPath))
 				{
-					ImportSfCsvPath = CompleteAnisonInfo(oStandardPath, YlCommon.FILE_BODY_ANISON_INFO_CSV_SF);
+					ImportSfCsvPath = CompleteAnisonInfo(oStandardPath, YlConstants.FILE_BODY_ANISON_INFO_CSV_SF);
 				}
 
 				// game.csv
 				if (String.IsNullOrEmpty(ImportGameCsvPath))
 				{
-					ImportGameCsvPath = CompleteAnisonInfo(oStandardPath, YlCommon.FILE_BODY_ANISON_INFO_CSV_GAME);
+					ImportGameCsvPath = CompleteAnisonInfo(oStandardPath, YlConstants.FILE_BODY_ANISON_INFO_CSV_GAME);
 				}
 			}
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "anison.info CSV 補完時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 
@@ -1663,19 +1637,19 @@ namespace YukaLister.ViewModels
 				if (aExt == Common.FILE_EXT_CSV || aExt == Common.FILE_EXT_ZIP)
 				{
 					// anison.info CSV インポート
-					if (aFileName.IndexOf(YlCommon.FILE_BODY_ANISON_INFO_CSV_PROGRAM, StringComparison.OrdinalIgnoreCase) >= 0)
+					if (aFileName.IndexOf(YlConstants.FILE_BODY_ANISON_INFO_CSV_PROGRAM, StringComparison.OrdinalIgnoreCase) >= 0)
 					{
 						ImportProgramCsvPath = aFile;
 					}
-					else if (aFileName.IndexOf(YlCommon.FILE_BODY_ANISON_INFO_CSV_ANISON, StringComparison.OrdinalIgnoreCase) >= 0)
+					else if (aFileName.IndexOf(YlConstants.FILE_BODY_ANISON_INFO_CSV_ANISON, StringComparison.OrdinalIgnoreCase) >= 0)
 					{
 						ImportAnisonCsvPath = aFile;
 					}
-					else if (aFileName.IndexOf(YlCommon.FILE_BODY_ANISON_INFO_CSV_SF, StringComparison.OrdinalIgnoreCase) >= 0)
+					else if (aFileName.IndexOf(YlConstants.FILE_BODY_ANISON_INFO_CSV_SF, StringComparison.OrdinalIgnoreCase) >= 0)
 					{
 						ImportSfCsvPath = aFile;
 					}
-					else if (aFileName.IndexOf(YlCommon.FILE_BODY_ANISON_INFO_CSV_GAME, StringComparison.OrdinalIgnoreCase) >= 0)
+					else if (aFileName.IndexOf(YlConstants.FILE_BODY_ANISON_INFO_CSV_GAME, StringComparison.OrdinalIgnoreCase) >= 0)
 					{
 						ImportGameCsvPath = aFile;
 					}
@@ -1685,7 +1659,7 @@ namespace YukaLister.ViewModels
 					}
 					ImportAnisonInfoMode = true;
 				}
-				else if (aExt == YlCommon.FILE_EXT_NKLINFO)
+				else if (aExt == YlConstants.FILE_EXT_NKLINFO)
 				{
 					// ニコカラりすたーインポート
 					ImportNicoKaraListerPath = aFile;

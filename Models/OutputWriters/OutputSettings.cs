@@ -17,8 +17,10 @@
 // ----------------------------------------------------------------------------
 
 using Shinta;
+
 using System;
 using System.Collections.Generic;
+
 using YukaLister.Models.SharedMisc;
 
 namespace YukaLister.Models.OutputWriters

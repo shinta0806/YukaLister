@@ -14,16 +14,14 @@
 // ----------------------------------------------------------------------------
 
 using Shinta;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Windows;
-using System.Windows.Controls;
+
 using YukaLister.Models.Database;
 using YukaLister.Models.SharedMisc;
 using YukaLister.ViewModels;
@@ -151,7 +149,7 @@ namespace YukaLister.Models.OutputWriters
 			mTopPage.AddChild(aAdult);
 
 			// テーブル項目名（原則 YlCommon.OUTPUT_ITEM_NAMES だが一部見やすいよう変更）
-			mThNames = new List<String>(YlCommon.OUTPUT_ITEM_NAMES);
+			mThNames = new List<String>(YlConstants.OUTPUT_ITEM_NAMES);
 			mThNames[(Int32)OutputItems.Worker] = "制作";
 			mThNames[(Int32)OutputItems.SmartTrack] = "On</th><th>Off";
 			mThNames[(Int32)OutputItems.FileSize] = "サイズ";
@@ -230,8 +228,8 @@ namespace YukaLister.Models.OutputWriters
 			ReplaceListContent(oPageInfoTree, HTML_VAR_ADDITIONAL_HEADER, mAdditionalHeader);
 			ReplaceListContent(oPageInfoTree, HTML_VAR_ADDITIONAL_NAVI, mAdditionalNavi);
 			ReplaceListContent(oPageInfoTree, HTML_VAR_GROUP_NAVI, GroupNavi(((WebOutputSettings)OutputSettings).EnableNew));
-			ReplaceListContent(oPageInfoTree, HTML_VAR_GENERATOR, YlCommon.APP_NAME_J + "  " + YlCommon.APP_VER);
-			ReplaceListContent(oPageInfoTree, HTML_VAR_GENERATE_DATE, DateTime.Now.ToString(YlCommon.DATE_FORMAT));
+			ReplaceListContent(oPageInfoTree, HTML_VAR_GENERATOR, YlConstants.APP_NAME_J + "  " + YlConstants.APP_VER);
+			ReplaceListContent(oPageInfoTree, HTML_VAR_GENERATE_DATE, DateTime.Now.ToString(YlConstants.DATE_FORMAT));
 
 			// その他の調整
 			AdjustListMisc(oPageInfoTree);
@@ -320,15 +318,15 @@ namespace YukaLister.Models.OutputWriters
 						oSB.Append("<td>" + oTFound.Track + "</td>");
 						break;
 					case OutputItems.SmartTrack:
-						oSB.Append("<td>" + (oTFound.SmartTrackOnVocal ? YlCommon.SMART_TRACK_VALID_MARK : null) + "</td>");
-						oSB.Append("<td>" + (oTFound.SmartTrackOffVocal ? YlCommon.SMART_TRACK_VALID_MARK : null) + "</td>");
+						oSB.Append("<td>" + (oTFound.SmartTrackOnVocal ? YlConstants.SMART_TRACK_VALID_MARK : null) + "</td>");
+						oSB.Append("<td>" + (oTFound.SmartTrackOffVocal ? YlConstants.SMART_TRACK_VALID_MARK : null) + "</td>");
 						break;
 					case OutputItems.Comment:
 						oSB.Append("<td class=\"small\">" + oTFound.Comment + "</td>");
 						break;
 					case OutputItems.LastWriteTime:
 						oSB.Append("<td class=\"small\">" + JulianDay.ModifiedJulianDateToDateTime(oTFound.LastWriteTime).ToString(
-								YlCommon.DATE_FORMAT + " " + YlCommon.TIME_FORMAT) + "</td>");
+								YlConstants.DATE_FORMAT + " " + YlConstants.TIME_FORMAT) + "</td>");
 						break;
 					case OutputItems.FileSize:
 						oSB.Append("<td class=\"small\">" + (oTFound.FileSize / (1024 * 1024)).ToString("#,0") + " MB</td>");
@@ -343,13 +341,13 @@ namespace YukaLister.Models.OutputWriters
 						oSB.Append("<td>" + oTFound.SongOpEd + "</td>");
 						break;
 					case OutputItems.SongReleaseDate:
-						if (oTFound.SongReleaseDate <= YlCommon.INVALID_MJD)
+						if (oTFound.SongReleaseDate <= YlConstants.INVALID_MJD)
 						{
 							oSB.Append("<td></td>");
 						}
 						else
 						{
-							oSB.Append("<td class=\"small\">" + JulianDay.ModifiedJulianDateToDateTime(oTFound.SongReleaseDate).ToString(YlCommon.DATE_FORMAT) + "</td>");
+							oSB.Append("<td class=\"small\">" + JulianDay.ModifiedJulianDateToDateTime(oTFound.SongReleaseDate).ToString(YlConstants.DATE_FORMAT) + "</td>");
 						}
 						break;
 					case OutputItems.ArtistName:
@@ -429,9 +427,9 @@ namespace YukaLister.Models.OutputWriters
 			{
 				// 章の区切りがタイアップ名の場合、シリーズがあるなら記載する
 				oSB.Append("　<a class=\"series\" href=\"");
-				oSB.Append(OutputFileName(oTFounds[0].TieUpAgeLimit >= YlCommon.AGE_LIMIT_CERO_Z, KIND_FILE_NAME_TIE_UP_GROUP,
-						TieUpGroupHead(oTFounds[0]), oTFounds[0].TieUpGroupName + YlCommon.TIE_UP_GROUP_SUFFIX));
-				oSB.Append("\">" + oTFounds[0].TieUpGroupName + YlCommon.TIE_UP_GROUP_SUFFIX + "</a>");
+				oSB.Append(OutputFileName(oTFounds[0].TieUpAgeLimit >= YlConstants.AGE_LIMIT_CERO_Z, KIND_FILE_NAME_TIE_UP_GROUP,
+						TieUpGroupHead(oTFounds[0]), oTFounds[0].TieUpGroupName + YlConstants.TIE_UP_GROUP_SUFFIX));
+				oSB.Append("\">" + oTFounds[0].TieUpGroupName + YlConstants.TIE_UP_GROUP_SUFFIX + "</a>");
 			}
 			oSB.Append("</label>\n");
 			oSB.Append("<div class=\"accchild\">\n");
@@ -538,7 +536,7 @@ namespace YukaLister.Models.OutputWriters
 
 			IQueryable<TFound> aQueryResult =
 					from x in TableFound
-					where x.ArtistName != null && (oIsAdult ? x.TieUpAgeLimit >= YlCommon.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlCommon.AGE_LIMIT_CERO_Z)
+					where x.ArtistName != null && (oIsAdult ? x.TieUpAgeLimit >= YlConstants.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlConstants.AGE_LIMIT_CERO_Z)
 					orderby x.ArtistRuby, x.ArtistName, x.TieUpRuby, x.TieUpName, x.SongRuby, x.SongName
 					select x;
 			TFound aPrevTFound = null;
@@ -604,7 +602,7 @@ namespace YukaLister.Models.OutputWriters
 
 			IQueryable<TFound> aQueryResult =
 					from x in TableFound
-					where oIsAdult ? x.TieUpAgeLimit >= YlCommon.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlCommon.AGE_LIMIT_CERO_Z
+					where oIsAdult ? x.TieUpAgeLimit >= YlConstants.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlConstants.AGE_LIMIT_CERO_Z
 					orderby x.Category, x.Head, x.TieUpRuby, x.TieUpName, x.SongRuby, x.SongName
 					select x;
 
@@ -682,7 +680,7 @@ namespace YukaLister.Models.OutputWriters
 
 			IQueryable<TFound> aQueryResult =
 					from x in TableFound
-					where x.ComposerName != null && (oIsAdult ? x.TieUpAgeLimit >= YlCommon.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlCommon.AGE_LIMIT_CERO_Z)
+					where x.ComposerName != null && (oIsAdult ? x.TieUpAgeLimit >= YlConstants.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlConstants.AGE_LIMIT_CERO_Z)
 					orderby x.ComposerRuby, x.ComposerName, x.TieUpRuby, x.TieUpName, x.SongRuby, x.SongName
 					select x;
 			TFound aPrevTFound = null;
@@ -740,7 +738,7 @@ namespace YukaLister.Models.OutputWriters
 			// その他以外
 			for (Int32 i = 0; i < oIndexPage.Children.Count; i++)
 			{
-				if (oIndexPage.Children[i].Name == YlCommon.GROUP_MISC)
+				if (oIndexPage.Children[i].Name == YlConstants.GROUP_MISC)
 				{
 					aMiscGroup = oIndexPage.Children[i];
 					continue;
@@ -799,7 +797,7 @@ namespace YukaLister.Models.OutputWriters
 			// その他以外
 			for (Int32 i = 0; i < oIndexPage.Children.Count; i++)
 			{
-				if (oIndexPage.Children[i].Name == YlCommon.GROUP_MISC)
+				if (oIndexPage.Children[i].Name == YlConstants.GROUP_MISC)
 				{
 					aMiscGroup = oIndexPage.Children[i];
 					continue;
@@ -840,7 +838,7 @@ namespace YukaLister.Models.OutputWriters
 						+ OutputFileName(oIsAdult, oKindFileName, oGroup.Name, aPageInfo.Name) + mListLinkArg + "\">" + aPageInfo.Name + "</a></td>");
 				aNumSongs += aPageInfo.NumSongs;
 
-				if (aPageInfo.Name == YlCommon.HEAD_MISC)
+				if (aPageInfo.Name == YlConstants.HEAD_MISC)
 				{
 					aHasMisc = true;
 				}
@@ -885,7 +883,7 @@ namespace YukaLister.Models.OutputWriters
 
 			IQueryable<TFound> aQueryResult =
 					from x in TableFound
-					where x.LastWriteTime >= aNewDate && (oIsAdult ? x.TieUpAgeLimit >= YlCommon.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlCommon.AGE_LIMIT_CERO_Z)
+					where x.LastWriteTime >= aNewDate && (oIsAdult ? x.TieUpAgeLimit >= YlConstants.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlConstants.AGE_LIMIT_CERO_Z)
 					orderby x.Head, x.TieUpRuby, x.TieUpName, x.SongRuby, x.SongName
 					select x;
 
@@ -904,7 +902,7 @@ namespace YukaLister.Models.OutputWriters
 			// null を調整
 			if (String.IsNullOrEmpty(oGroupName))
 			{
-				oGroupName = YlCommon.GROUP_MISC;
+				oGroupName = YlConstants.GROUP_MISC;
 			}
 
 			PageInfoTree aPageInfoTree = new PageInfoTree();
@@ -933,7 +931,7 @@ namespace YukaLister.Models.OutputWriters
 
 			// テンプレート適用
 			aTemplate = aTemplate.Replace(HTML_VAR_ADDITIONAL_DESCRIPTION, mAdditionalDescription);
-			aTemplate = aTemplate.Replace(HTML_VAR_CHAPTER_NAME, YlCommon.OUTPUT_ITEM_NAMES[(Int32)oChapterItem]);
+			aTemplate = aTemplate.Replace(HTML_VAR_CHAPTER_NAME, YlConstants.OUTPUT_ITEM_NAMES[(Int32)oChapterItem]);
 			aTemplate = aTemplate.Replace(HTML_VAR_PROGRAMS, aSB.ToString());
 
 			aPageInfoTree.Content = aTemplate;
@@ -989,7 +987,7 @@ namespace YukaLister.Models.OutputWriters
 			Int32 aSinceYear = DateTime.UtcNow.Year;
 			aSinceYear -= aSinceYear % 10;
 
-			while (aSinceYear > YlCommon.INVALID_YEAR)
+			while (aSinceYear > YlConstants.INVALID_YEAR)
 			{
 				Int32 aUntilYear = aSinceYear + 10;
 
@@ -997,7 +995,7 @@ namespace YukaLister.Models.OutputWriters
 						from x in TableFound
 						where JulianDay.DateTimeToModifiedJulianDate(new DateTime(aSinceYear, 1, 1)) <= x.SongReleaseDate
 						&& x.SongReleaseDate < JulianDay.DateTimeToModifiedJulianDate(new DateTime(aUntilYear, 1, 1))
-						&& (oIsAdult ? x.TieUpAgeLimit >= YlCommon.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlCommon.AGE_LIMIT_CERO_Z)
+						&& (oIsAdult ? x.TieUpAgeLimit >= YlConstants.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlConstants.AGE_LIMIT_CERO_Z)
 						orderby x.Head, x.TieUpRuby, x.TieUpName, x.SongRuby, x.SongName
 						select x;
 				TFound aPrevTFound = null;
@@ -1064,7 +1062,7 @@ namespace YukaLister.Models.OutputWriters
 
 			IQueryable<TFound> aQueryResult =
 					from x in TableFound
-					where x.TieUpGroupName != null && (oIsAdult ? x.TieUpAgeLimit >= YlCommon.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlCommon.AGE_LIMIT_CERO_Z)
+					where x.TieUpGroupName != null && (oIsAdult ? x.TieUpAgeLimit >= YlConstants.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlConstants.AGE_LIMIT_CERO_Z)
 					orderby x.TieUpGroupRuby, x.TieUpGroupName, x.Head, x.TieUpRuby, x.TieUpName, x.SongRuby, x.SongName
 					select x;
 			TFound aPrevTFound = null;
@@ -1079,7 +1077,7 @@ namespace YukaLister.Models.OutputWriters
 				{
 					// 頭文字またはページが新しくなったので 1 ページ分出力
 					GenerateOneList(aPageInfoTree, aTieUpNamesAndTFounds, oIsAdult,
-							KIND_FILE_NAME_TIE_UP_GROUP, aPrevTieUpGroupHead, aPrevTFound.TieUpGroupName + YlCommon.TIE_UP_GROUP_SUFFIX, OutputItems.TieUpName);
+							KIND_FILE_NAME_TIE_UP_GROUP, aPrevTieUpGroupHead, aPrevTFound.TieUpGroupName + YlConstants.TIE_UP_GROUP_SUFFIX, OutputItems.TieUpName);
 				}
 
 				if (aPrevTFound == null
@@ -1100,7 +1098,7 @@ namespace YukaLister.Models.OutputWriters
 			if (aPrevTFound != null)
 			{
 				GenerateOneList(aPageInfoTree, aTieUpNamesAndTFounds, oIsAdult,
-						KIND_FILE_NAME_TIE_UP_GROUP, aPrevTieUpGroupHead, aPrevTFound.TieUpGroupName + YlCommon.TIE_UP_GROUP_SUFFIX, OutputItems.TieUpName);
+						KIND_FILE_NAME_TIE_UP_GROUP, aPrevTieUpGroupHead, aPrevTFound.TieUpGroupName + YlConstants.TIE_UP_GROUP_SUFFIX, OutputItems.TieUpName);
 			}
 
 			// インデックス
@@ -1161,7 +1159,7 @@ namespace YukaLister.Models.OutputWriters
 					from x in TableFound
 					where JulianDay.DateTimeToModifiedJulianDate(new DateTime(oSinceYear, oSinceMonth, 1)) <= x.SongReleaseDate
 					&& x.SongReleaseDate < JulianDay.DateTimeToModifiedJulianDate(new DateTime(oUntilYear, oUntilMonth, 1))
-					&& (oIsAdult ? x.TieUpAgeLimit >= YlCommon.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlCommon.AGE_LIMIT_CERO_Z)
+					&& (oIsAdult ? x.TieUpAgeLimit >= YlConstants.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlConstants.AGE_LIMIT_CERO_Z)
 					orderby x.Head, x.TieUpRuby, x.TieUpName, x.SongRuby, x.SongName
 					select x;
 			TFound aPrevTFound = null;
@@ -1229,11 +1227,11 @@ namespace YukaLister.Models.OutputWriters
 		{
 			if (oKindFileName == KIND_FILE_NAME_CATEGORY)
 			{
-				return Path.GetFileNameWithoutExtension(TopFileName) + (oIsAdult ? "_" + YlCommon.AGE_LIMIT_CERO_Z.ToString() : null) + Path.GetExtension(TopFileName);
+				return Path.GetFileNameWithoutExtension(TopFileName) + (oIsAdult ? "_" + YlConstants.AGE_LIMIT_CERO_Z.ToString() : null) + Path.GetExtension(TopFileName);
 			}
 			else
 			{
-				return FILE_NAME_PREFIX + "_index_" + oKindFileName + (oIsAdult ? "_" + YlCommon.AGE_LIMIT_CERO_Z.ToString() : null) + mListExt;
+				return FILE_NAME_PREFIX + "_index_" + oKindFileName + (oIsAdult ? "_" + YlConstants.AGE_LIMIT_CERO_Z.ToString() : null) + mListExt;
 			}
 		}
 
@@ -1324,7 +1322,7 @@ namespace YukaLister.Models.OutputWriters
 		// --------------------------------------------------------------------
 		private String OutputFileName(Boolean oIsAdult, String oKindFileName, String oGroupName, String oPageName)
 		{
-			return FILE_NAME_PREFIX + "_" + oKindFileName + "_" + (oIsAdult ? YlCommon.AGE_LIMIT_CERO_Z.ToString() + "_" : null)
+			return FILE_NAME_PREFIX + "_" + oKindFileName + "_" + (oIsAdult ? YlConstants.AGE_LIMIT_CERO_Z.ToString() + "_" : null)
 					+ StringToHex(oGroupName) + (String.IsNullOrEmpty(oPageName) ? null : "_" + StringToHex(oPageName)) + mListExt;
 		}
 

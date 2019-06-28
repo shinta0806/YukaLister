@@ -8,30 +8,24 @@
 // 
 // ----------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.ComponentModel;
-
 using Livet;
 using Livet.Commands;
-using Livet.Messaging;
-using Livet.Messaging.IO;
-using Livet.EventListeners;
 using Livet.Messaging.Windows;
 
-using YukaLister.Models;
-using System.Diagnostics;
-using System.Collections.ObjectModel;
-using System.Windows.Controls;
-using YukaLister.Models.OutputWriters;
-using System.Reflection;
 using Shinta;
+
+using System;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
-using System.Xml;
-using System.Windows.Markup;
+using System.Reflection;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Markup;
+using System.Xml;
+
+using YukaLister.Models;
+using YukaLister.Models.OutputWriters;
 using YukaLister.Models.SharedMisc;
 
 namespace YukaLister.ViewModels
@@ -245,31 +239,9 @@ namespace YukaLister.ViewModels
 		#region 基本設定タブのコマンド
 
 		#region ヘルプリンクの制御
-		private ListenerCommand<String> mHelpClickedCommand;
-
 		public ListenerCommand<String> HelpClickedCommand
 		{
-			get
-			{
-				if (mHelpClickedCommand == null)
-				{
-					mHelpClickedCommand = new ListenerCommand<String>(HelpClicked);
-				}
-				return mHelpClickedCommand;
-			}
-		}
-
-		public void HelpClicked(String oParameter)
-		{
-			try
-			{
-				YlCommon.ShowHelp(Environment, oParameter);
-			}
-			catch (Exception oExcep)
-			{
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "詳細情報リンククリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
-			}
+			get => Environment?.HelpClickedCommand;
 		}
 		#endregion
 
@@ -309,7 +281,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "出力項目追加ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -350,7 +322,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "出力項目削除ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -393,7 +365,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "出力項目上へボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -436,7 +408,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "出力項目下へボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -478,7 +450,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "OK ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -508,7 +480,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "リスト出力設定ウィンドウビューモデル初期化時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 
@@ -564,7 +536,7 @@ namespace YukaLister.ViewModels
 			OutputWriter.OutputSettings.SelectedOutputItems.Clear();
 			for (Int32 i = 0; i < AddedOutputItems.Count; i++)
 			{
-				Int32 aItem = Array.IndexOf(YlCommon.OUTPUT_ITEM_NAMES, (String)AddedOutputItems[i]);
+				Int32 aItem = Array.IndexOf(YlConstants.OUTPUT_ITEM_NAMES, (String)AddedOutputItems[i]);
 				if (aItem < 0)
 				{
 					continue;
@@ -588,14 +560,14 @@ namespace YukaLister.ViewModels
 			{
 				if (!OutputWriter.OutputSettings.SelectedOutputItems.Contains(aOutputItems[i]))
 				{
-					RemovedOutputItems.Add(YlCommon.OUTPUT_ITEM_NAMES[(Int32)aOutputItems[i]]);
+					RemovedOutputItems.Add(YlConstants.OUTPUT_ITEM_NAMES[(Int32)aOutputItems[i]]);
 				}
 			}
 
 			// 出力される項目
 			for (Int32 i = 0; i < OutputWriter.OutputSettings.SelectedOutputItems.Count; i++)
 			{
-				AddedOutputItems.Add(YlCommon.OUTPUT_ITEM_NAMES[(Int32)OutputWriter.OutputSettings.SelectedOutputItems[i]]);
+				AddedOutputItems.Add(YlConstants.OUTPUT_ITEM_NAMES[(Int32)OutputWriter.OutputSettings.SelectedOutputItems[i]]);
 			}
 		}
 

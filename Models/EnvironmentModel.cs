@@ -5,6 +5,7 @@
 // ============================================================================
 
 using Livet;
+using Livet.Commands;
 
 using Shinta;
 
@@ -13,11 +14,9 @@ using System.Collections.Generic;
 using System.Data.Linq;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading;
-using System.Windows.Threading;
+
 using YukaLister.Models.Database;
 using YukaLister.Models.SharedMisc;
 
@@ -53,6 +52,10 @@ namespace YukaLister.Models
 		// public プロパティー
 		// ====================================================================
 
+		// --------------------------------------------------------------------
+		// 一般のプロパティー
+		// --------------------------------------------------------------------
+
 		// ログ
 		public LogWriter LogWriter { get; private set; }
 
@@ -64,6 +67,39 @@ namespace YukaLister.Models
 
 		// アプリケーション終了時タスク安全中断用
 		public CancellationTokenSource AppCancellationTokenSource { get; private set; } = new CancellationTokenSource();
+
+		// --------------------------------------------------------------------
+		// コマンド
+		// --------------------------------------------------------------------
+
+		#region ヘルプリンクの制御
+		private ListenerCommand<String> mHelpClickedCommand;
+
+		public ListenerCommand<String> HelpClickedCommand
+		{
+			get
+			{
+				if (mHelpClickedCommand == null)
+				{
+					mHelpClickedCommand = new ListenerCommand<String>(HelpClicked);
+				}
+				return mHelpClickedCommand;
+			}
+		}
+
+		public void HelpClicked(String oParameter)
+		{
+			try
+			{
+				ShowHelp(oParameter);
+			}
+			catch (Exception oExcep)
+			{
+				LogWriter.ShowLogMessage(TraceEventType.Error, "ヘルプ表示時エラー：\n" + oExcep.Message);
+				LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
+			}
+		}
+		#endregion
 
 		// ====================================================================
 		// public メンバー関数
@@ -81,14 +117,14 @@ namespace YukaLister.Models
 				return null;
 			}
 
-			if (!IsExLenEnabled || oPath.StartsWith(YlCommon.EXTENDED_LENGTH_PATH_PREFIX))
+			if (!IsExLenEnabled || oPath.StartsWith(YlConstants.EXTENDED_LENGTH_PATH_PREFIX))
 			{
 				return oPath;
 			}
 
 			// MAX_PATH 文字以上のフォルダー名をダイアログから取得した場合など、短いファイル名形式になっていることがあるため、
 			// Path.GetFullPath() で長いファイル名形式に変換する
-			return YlCommon.EXTENDED_LENGTH_PATH_PREFIX + Path.GetFullPath(oPath);
+			return YlConstants.EXTENDED_LENGTH_PATH_PREFIX + Path.GetFullPath(oPath);
 		}
 
 		// --------------------------------------------------------------------
@@ -98,8 +134,8 @@ namespace YukaLister.Models
 		{
 			// 終了時の状態
 			YukaListerSettings.PrevLaunchPath = Assembly.GetEntryAssembly().Location;
-			YukaListerSettings.PrevLaunchGeneration = YlCommon.APP_GENERATION;
-			YukaListerSettings.PrevLaunchVer = YlCommon.APP_VER;
+			YukaListerSettings.PrevLaunchGeneration = YlConstants.APP_GENERATION;
+			YukaListerSettings.PrevLaunchVer = YlConstants.APP_VER;
 			YukaListerSettings.Save();
 
 			// テンポラリーフォルダー削除
@@ -111,8 +147,8 @@ namespace YukaLister.Models
 			{
 			}
 
-			LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "終了しました：" + YlCommon.APP_NAME_J + " "
-						+ YlCommon.APP_VER + " --------------------");
+			LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "終了しました：" + YlConstants.APP_NAME_J + " "
+						+ YlConstants.APP_VER + " --------------------");
 		}
 
 		// --------------------------------------------------------------------
@@ -126,13 +162,27 @@ namespace YukaLister.Models
 				return null;
 			}
 
-			if (!oPath.StartsWith(YlCommon.EXTENDED_LENGTH_PATH_PREFIX))
+			if (!oPath.StartsWith(YlConstants.EXTENDED_LENGTH_PATH_PREFIX))
 			{
 				return oPath;
 			}
 
-			return oPath.Substring(YlCommon.EXTENDED_LENGTH_PATH_PREFIX.Length);
+			return oPath.Substring(YlConstants.EXTENDED_LENGTH_PATH_PREFIX.Length);
 		}
+
+		// ====================================================================
+		// private メンバー定数
+		// ====================================================================
+
+		// --------------------------------------------------------------------
+		// ファイル名
+		// --------------------------------------------------------------------
+		private const String FILE_NAME_HELP_PREFIX = YlConstants.APP_ID + "_JPN";
+
+		// --------------------------------------------------------------------
+		// フォルダー名
+		// --------------------------------------------------------------------
+		private const String FOLDER_NAME_HELP_PARTS = "HelpParts\\";
 
 		// ====================================================================
 		// private メンバー関数
@@ -165,17 +215,17 @@ namespace YukaLister.Models
 		{
 			// 更新起動時とパス変更時の記録
 			// 新規起動時は、両フラグが立つのでダブらないように注意
-			Boolean aVerChanged = YukaListerSettings.PrevLaunchVer != YlCommon.APP_VER;
+			Boolean aVerChanged = YukaListerSettings.PrevLaunchVer != YlConstants.APP_VER;
 			if (aVerChanged)
 			{
 				// ユーザーにメッセージ表示する前にログしておく
 				if (String.IsNullOrEmpty(YukaListerSettings.PrevLaunchVer))
 				{
-					LogWriter.LogMessage(TraceEventType.Information, "新規起動：" + YlCommon.APP_VER);
+					LogWriter.LogMessage(TraceEventType.Information, "新規起動：" + YlConstants.APP_VER);
 				}
 				else
 				{
-					LogWriter.LogMessage(TraceEventType.Information, "更新起動：" + YukaListerSettings.PrevLaunchVer + "→" + YlCommon.APP_VER);
+					LogWriter.LogMessage(TraceEventType.Information, "更新起動：" + YukaListerSettings.PrevLaunchVer + "→" + YlConstants.APP_VER);
 				}
 			}
 			Boolean aPathChanged = (String.Compare(YukaListerSettings.PrevLaunchPath, Assembly.GetEntryAssembly().Location, true) != 0);
@@ -228,22 +278,22 @@ namespace YukaLister.Models
 			{
 				// 新規
 				aNewVerMsg = "【初回起動】\n\n";
-				aNewVerMsg += YlCommon.APP_NAME_J + "をダウンロードしていただき、ありがとうございます。";
+				aNewVerMsg += YlConstants.APP_NAME_J + "をダウンロードしていただき、ありがとうございます。";
 			}
 			else
 			{
 				aNewVerMsg = "【更新起動】\n\n";
-				aNewVerMsg += YlCommon.APP_NAME_J + "を更新していただき、ありがとうございます。\n";
+				aNewVerMsg += YlConstants.APP_NAME_J + "を更新していただき、ありがとうございます。\n";
 				aNewVerMsg += "更新内容については［ヘルプ→改訂履歴］メニューをご参照ください。";
 			}
 
 			// α・βの注意
-			if (YlCommon.APP_VER.IndexOf("α") >= 0)
+			if (YlConstants.APP_VER.IndexOf("α") >= 0)
 			{
 				aNewVerMsg += "\n\nこのバージョンは開発途上のアルファバージョンです。\n"
 						+ "使用前にヘルプをよく読み、注意してお使い下さい。";
 			}
-			else if (YlCommon.APP_VER.IndexOf("β") >= 0)
+			else if (YlConstants.APP_VER.IndexOf("β") >= 0)
 			{
 				aNewVerMsg += "\n\nこのバージョンは開発途上のベータバージョンです。\n"
 						+ "使用前にヘルプをよく読み、注意してお使い下さい。";
@@ -275,11 +325,11 @@ namespace YukaLister.Models
 		private void SetLogWriter()
 		{
 			// 頻度はまれだが、インポート時に大量のログが発生することがあるので、ファイルサイズを大きくしておく
-			LogWriter = new LogWriter(YlCommon.APP_ID);
+			LogWriter = new LogWriter(YlConstants.APP_ID);
 			LogWriter.ApplicationQuitToken = AppCancellationTokenSource.Token;
 			LogWriter.SimpleTraceListener.MaxSize = 5 * 1024 * 1024;
-			LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "起動しました：" + YlCommon.APP_NAME_J + " "
-					+ YlCommon.APP_VER + " ====================");
+			LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "起動しました：" + YlConstants.APP_NAME_J + " "
+					+ YlConstants.APP_VER + " ====================");
 #if DEBUG
 			LogWriter.ShowLogMessage(TraceEventType.Verbose, "デバッグモード：" + Common.DEBUG_ENABLED_MARK);
 #endif
@@ -318,8 +368,45 @@ namespace YukaLister.Models
 					YukaListerSettings.LastIdNumbers.Add(0);
 				}
 			}
-			YukaListerSettings.AnalyzeYukariEasyAuthConfig();
+			YukaListerSettings.AnalyzeYukariEasyAuthConfig(this);
 
+		}
+
+		// --------------------------------------------------------------------
+		// ヘルプの表示
+		// --------------------------------------------------------------------
+		private void ShowHelp(String oAnchor = null)
+		{
+			String aHelpPath = null;
+
+			try
+			{
+				String aHelpPathBase = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + "\\";
+
+				// アンカーが指定されている場合は状況依存型ヘルプを表示
+				if (!String.IsNullOrEmpty(oAnchor))
+				{
+					aHelpPath = aHelpPathBase + FOLDER_NAME_HELP_PARTS + FILE_NAME_HELP_PREFIX + "_" + oAnchor + Common.FILE_EXT_HTML;
+					try
+					{
+						Process.Start(aHelpPath);
+						return;
+					}
+					catch (Exception oExcep)
+					{
+						LogWriter.ShowLogMessage(TraceEventType.Error, "状況に応じたヘルプを表示できませんでした：\n" + oExcep.Message + "\n" + aHelpPath
+								+ "\n通常のヘルプを表示します。");
+					}
+				}
+
+				// アンカーが指定されていない場合・状況依存型ヘルプを表示できなかった場合は通常のヘルプを表示
+				aHelpPath = aHelpPathBase + FILE_NAME_HELP_PREFIX + Common.FILE_EXT_HTML;
+				Process.Start(aHelpPath);
+			}
+			catch (Exception oExcep)
+			{
+				LogWriter.ShowLogMessage(TraceEventType.Error, "ヘルプを表示できませんでした。\n" + oExcep.Message + "\n" + aHelpPath);
+			}
 		}
 
 	}

@@ -9,11 +9,13 @@
 // ----------------------------------------------------------------------------
 
 using Shinta;
+
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+
 using YukaLister.Models.Database;
 using YukaLister.Models.SharedMisc;
 
@@ -61,7 +63,7 @@ namespace YukaLister.Models.OutputWriters
 						aSB.Append(",最終更新日,最終更新時刻");
 						break;
 					default:
-						aSB.Append("," + YlCommon.OUTPUT_ITEM_NAMES[(Int32)aOutputItem]);
+						aSB.Append("," + YlConstants.OUTPUT_ITEM_NAMES[(Int32)aOutputItem]);
 						break;
 				}
 			}
@@ -98,15 +100,15 @@ namespace YukaLister.Models.OutputWriters
 							aSB.Append(",\"" + aTFound.Track + "\"");
 							break;
 						case OutputItems.SmartTrack:
-							aSB.Append(",\"" + (aTFound.SmartTrackOnVocal ? YlCommon.SMART_TRACK_VALID_MARK : null) + "\"");
-							aSB.Append(",\"" + (aTFound.SmartTrackOffVocal ? YlCommon.SMART_TRACK_VALID_MARK : null) + "\"");
+							aSB.Append(",\"" + (aTFound.SmartTrackOnVocal ? YlConstants.SMART_TRACK_VALID_MARK : null) + "\"");
+							aSB.Append(",\"" + (aTFound.SmartTrackOffVocal ? YlConstants.SMART_TRACK_VALID_MARK : null) + "\"");
 							break;
 						case OutputItems.Comment:
 							aSB.Append(",\"" + aTFound.Comment + "\"");
 							break;
 						case OutputItems.LastWriteTime:
-							aSB.Append("," + JulianDay.ModifiedJulianDateToDateTime(aTFound.LastWriteTime).ToString(YlCommon.DATE_FORMAT));
-							aSB.Append("," + JulianDay.ModifiedJulianDateToDateTime(aTFound.LastWriteTime).ToString(YlCommon.TIME_FORMAT));
+							aSB.Append("," + JulianDay.ModifiedJulianDateToDateTime(aTFound.LastWriteTime).ToString(YlConstants.DATE_FORMAT));
+							aSB.Append("," + JulianDay.ModifiedJulianDateToDateTime(aTFound.LastWriteTime).ToString(YlConstants.TIME_FORMAT));
 							break;
 						case OutputItems.FileSize:
 							aSB.Append("," + aTFound.FileSize);
@@ -121,13 +123,13 @@ namespace YukaLister.Models.OutputWriters
 							aSB.Append(",\"" + aTFound.SongOpEd + "\"");
 							break;
 						case OutputItems.SongReleaseDate:
-							if (aTFound.SongReleaseDate <= YlCommon.INVALID_MJD)
+							if (aTFound.SongReleaseDate <= YlConstants.INVALID_MJD)
 							{
 								aSB.Append(",");
 							}
 							else
 							{
-								aSB.Append("," + JulianDay.ModifiedJulianDateToDateTime(aTFound.SongReleaseDate).ToString(YlCommon.DATE_FORMAT));
+								aSB.Append("," + JulianDay.ModifiedJulianDateToDateTime(aTFound.SongReleaseDate).ToString(YlConstants.DATE_FORMAT));
 							}
 							break;
 						case OutputItems.ArtistName:

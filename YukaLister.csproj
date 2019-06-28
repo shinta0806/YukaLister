@@ -94,6 +94,27 @@
     <Compile Include="..\..\_Common\ApplicationSettingsProviderBase.cs">
       <Link>_Common\ApplicationSettingsProviderBase.cs</Link>
     </Compile>
+    <Compile Include="..\..\_Common\Behaviors\DataGridBindingSupportBehavior.cs">
+      <Link>_Common\Behaviors\DataGridBindingSupportBehavior.cs</Link>
+    </Compile>
+    <Compile Include="..\..\_Common\Behaviors\DeviceChangeAttachedBehavior.cs">
+      <Link>_Common\Behaviors\DeviceChangeAttachedBehavior.cs</Link>
+    </Compile>
+    <Compile Include="..\..\_Common\Behaviors\FileDropAttachedBehavior.cs">
+      <Link>_Common\Behaviors\FileDropAttachedBehavior.cs</Link>
+    </Compile>
+    <Compile Include="..\..\_Common\Behaviors\FrameworkElementBindingSupportBehavior.cs">
+      <Link>_Common\Behaviors\FrameworkElementBindingSupportBehavior.cs</Link>
+    </Compile>
+    <Compile Include="..\..\_Common\Behaviors\IsFocusedAttachedBehavior.cs">
+      <Link>_Common\Behaviors\IsFocusedAttachedBehavior.cs</Link>
+    </Compile>
+    <Compile Include="..\..\_Common\Behaviors\LaunchUpdaterAttachedBehavior.cs">
+      <Link>_Common\Behaviors\LaunchUpdaterAttachedBehavior.cs</Link>
+    </Compile>
+    <Compile Include="..\..\_Common\Behaviors\WindowBindingSupportBehavior.cs">
+      <Link>_Common\Behaviors\WindowBindingSupportBehavior.cs</Link>
+    </Compile>
     <Compile Include="..\..\_Common\CsvManager.cs">
       <Link>_Common\CsvManager.cs</Link>
     </Compile>
@@ -124,21 +145,17 @@
     <Compile Include="..\..\_Common\WindowsApi.cs">
       <Link>_Common\WindowsApi.cs</Link>
     </Compile>
-    <Compile Include="Models\Behaviors\DataGridBindingSupportBehavior.cs" />
-    <Compile Include="Models\Behaviors\DeviceChangeAttachedBehavior.cs" />
-    <Compile Include="Models\Behaviors\FileDropAttachedBehavior.cs" />
-    <Compile Include="Models\Behaviors\FrameworkElementBindingSupportBehavior.cs" />
-    <Compile Include="Models\Behaviors\LaunchUpdaterAttachedBehavior.cs" />
-    <Compile Include="Models\Behaviors\WindowBindingSupportBehavior.cs" />
     <Compile Include="Models\Database\DatabaseBase.cs" />
     <Compile Include="Models\Database\DatabaseTables.cs" />
     <Compile Include="Models\Database\MusicInfoDatabaseInDisk.cs" />
     <Compile Include="Models\Database\YukariListDatabaseInDisk.cs" />
     <Compile Include="Models\Database\YukariListDatabaseInMemory.cs" />
     <Compile Include="Models\Database\YukariThumbnailDatabaseInDisk.cs" />
-    <Compile Include="Models\Behaviors\IsFocusedAttachedBehavior.cs" />
     <Compile Include="Models\Http\SyncClient.cs" />
     <Compile Include="Models\Http\WebServer.cs" />
+    <Compile Include="Models\SharedMisc\TargetFolderInfo.cs" />
+    <Compile Include="Models\SharedMisc\YlClasses.cs" />
+    <Compile Include="Models\SharedMisc\YlConstants.cs" />
     <Compile Include="Models\ValueConverters\BooleanInvertConverter.cs" />
     <Compile Include="Models\ValueConverters\FolderSettingsStatusToDescriptionConverter.cs" />
     <Compile Include="ViewModels\AboutWindowViewModel.cs" />

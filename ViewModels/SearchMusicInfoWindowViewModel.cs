@@ -10,24 +10,19 @@
 
 using Livet;
 using Livet.Commands;
-using Livet.Messaging;
-using Livet.Messaging.IO;
-using Livet.EventListeners;
 using Livet.Messaging.Windows;
+
+using Shinta;
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.ComponentModel;
-
-using YukaLister.Models;
-using YukaLister.Models.SharedMisc;
+using System.Data.SQLite;
 using System.Diagnostics;
 using System.Windows.Input;
+
+using YukaLister.Models;
 using YukaLister.Models.Database;
-using System.Data.SQLite;
-using System.Threading;
+using YukaLister.Models.SharedMisc;
 
 namespace YukaLister.ViewModels
 {
@@ -250,10 +245,10 @@ namespace YukaLister.ViewModels
 				{
 					using (SQLiteCommand aCmd = new SQLiteCommand(aMusicInfoDbInDisk.Connection))
 					{
-						aCmd.CommandText = "SELECT DISTINCT " + YlCommon.MUSIC_INFO_DB_NAME_COLUMN_NAMES[(Int32)TableIndex]
-								+ " FROM " + YlCommon.MUSIC_INFO_DB_TABLE_NAMES[(Int32)TableIndex]
-								+ " WHERE (" + YlCommon.MUSIC_INFO_DB_NAME_COLUMN_NAMES[(Int32)TableIndex] + " LIKE @keyword1"
-								+ " OR " + YlCommon.MUSIC_INFO_DB_KEYWORD_COLUMN_NAMES[(Int32)TableIndex] + " LIKE @keyword2";
+						aCmd.CommandText = "SELECT DISTINCT " + YlConstants.MUSIC_INFO_DB_NAME_COLUMN_NAMES[(Int32)TableIndex]
+								+ " FROM " + YlConstants.MUSIC_INFO_DB_TABLE_NAMES[(Int32)TableIndex]
+								+ " WHERE (" + YlConstants.MUSIC_INFO_DB_NAME_COLUMN_NAMES[(Int32)TableIndex] + " LIKE @keyword1"
+								+ " OR " + YlConstants.MUSIC_INFO_DB_KEYWORD_COLUMN_NAMES[(Int32)TableIndex] + " LIKE @keyword2";
 						aCmd.Parameters.Add(new SQLiteParameter("@keyword1", "%" + aKeyword + "%"));
 						aCmd.Parameters.Add(new SQLiteParameter("@keyword2", "%" + aKeyword + "%"));
 
@@ -261,14 +256,14 @@ namespace YukaLister.ViewModels
 						if (!String.IsNullOrEmpty(aRuby) && aRuby.Length == Keyword.Length)
 						{
 							// すべてフリガナとして使える文字が入力された場合は、フリガナでも検索
-							aCmd.CommandText += " OR " + YlCommon.MUSIC_INFO_DB_RUBY_COLUMN_NAMES[(Int32)TableIndex] + " LIKE @ruby1";
+							aCmd.CommandText += " OR " + YlConstants.MUSIC_INFO_DB_RUBY_COLUMN_NAMES[(Int32)TableIndex] + " LIKE @ruby1";
 							aCmd.Parameters.Add(new SQLiteParameter("@ruby1", "%" + aRuby + "%"));
 							// 検索ワードもフリガナでも検索
-							aCmd.CommandText += " OR " + YlCommon.MUSIC_INFO_DB_KEYWORD_COLUMN_NAMES[(Int32)TableIndex] + " LIKE @ruby2";
+							aCmd.CommandText += " OR " + YlConstants.MUSIC_INFO_DB_KEYWORD_COLUMN_NAMES[(Int32)TableIndex] + " LIKE @ruby2";
 							aCmd.Parameters.Add(new SQLiteParameter("@ruby2", "%" + aRuby + "%"));
 						}
 
-						aCmd.CommandText += ") AND " + YlCommon.MUSIC_INFO_DB_INVALID_COLUMN_NAMES[(Int32)TableIndex] + " = 0";
+						aCmd.CommandText += ") AND " + YlConstants.MUSIC_INFO_DB_INVALID_COLUMN_NAMES[(Int32)TableIndex] + " = 0";
 
 
 						using (SQLiteDataReader aReader = aCmd.ExecuteReader())
@@ -312,11 +307,40 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "検索時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 			finally
 			{
 				Cursor = Cursors.Arrow;
+			}
+		}
+		#endregion
+
+		#region データグリッドダブルクリックの制御
+		private ViewModelCommand mDataGridDoubleClickedCommand;
+
+		public ViewModelCommand DataGridDoubleClickedCommand
+		{
+			get
+			{
+				if (mDataGridDoubleClickedCommand == null)
+				{
+					mDataGridDoubleClickedCommand = new ViewModelCommand(DataGridDoubleClicked);
+				}
+				return mDataGridDoubleClickedCommand;
+			}
+		}
+
+		public void DataGridDoubleClicked()
+		{
+			try
+			{
+				Select();
+			}
+			catch (Exception oExcep)
+			{
+				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "データグリッドダブルクリック時エラー：\n" + oExcep.Message);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -345,18 +369,12 @@ namespace YukaLister.ViewModels
 		{
 			try
 			{
-				if (SelectedFound == null)
-				{
-					return;
-				}
-
-				DecidedName = SelectedFound;
-				Messenger.Raise(new WindowActionMessage("Close"));
+				Select();
 			}
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "閉じるボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -389,7 +407,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "楽曲情報データベース検索ウィンドウビューモデル初期化時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 
@@ -406,6 +424,19 @@ namespace YukaLister.ViewModels
 			FoundsDescription = " ";
 		}
 
+		// --------------------------------------------------------------------
+		// 選択中のアイテムで決定
+		// --------------------------------------------------------------------
+		private void Select()
+		{
+			if (SelectedFound == null)
+			{
+				return;
+			}
+
+			DecidedName = SelectedFound;
+			Messenger.Raise(new WindowActionMessage("Close"));
+		}
 
 	}
 	// public class SearchMusicInfoWindowViewModel

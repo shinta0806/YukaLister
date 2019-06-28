@@ -10,32 +10,29 @@
 // するのを避けるため）
 // ----------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.ComponentModel;
-
 using Livet;
 using Livet.Commands;
-using Livet.Messaging;
-using Livet.Messaging.IO;
-using Livet.EventListeners;
 using Livet.Messaging.Windows;
 
-using YukaLister.Models;
-using System.Diagnostics;
-using YukaLister.Models.SharedMisc;
-using System.Threading;
-using YukaLister.Models.Database;
-using System.Windows;
 using Shinta;
-using System.IO;
+
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Data.Linq;
 using System.Data.SQLite;
-using System.Threading.Tasks;
+using System.Diagnostics;
+using System.IO;
 using System.IO.Compression;
-using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
+
+using YukaLister.Models;
+using YukaLister.Models.Database;
+using YukaLister.Models.SharedMisc;
 
 namespace YukaLister.ViewModels
 {
@@ -192,7 +189,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "クローズ処理時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -224,7 +221,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "中止ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -299,7 +296,7 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "インポートウィンドウビューモデル初期化時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 			finally
 			{
@@ -378,11 +375,11 @@ namespace YukaLister.ViewModels
 			if (!String.IsNullOrEmpty(ImportProgramCsvPath))
 			{
 				if (Path.GetExtension(ImportProgramCsvPath).ToLower() != Common.FILE_EXT_CSV && Path.GetExtension(ImportProgramCsvPath).ToLower() != Common.FILE_EXT_ZIP
-						|| Path.GetFileNameWithoutExtension(ImportProgramCsvPath).ToLower() != YlCommon.FILE_BODY_ANISON_INFO_CSV_PROGRAM)
+						|| Path.GetFileNameWithoutExtension(ImportProgramCsvPath).ToLower() != YlConstants.FILE_BODY_ANISON_INFO_CSV_PROGRAM)
 				{
-					throw new Exception(YlCommon.FILE_BODY_ANISON_INFO_CSV_PROGRAM + Common.FILE_EXT_CSV + " 指定欄には、"
-							+ YlCommon.FILE_BODY_ANISON_INFO_CSV_PROGRAM + Common.FILE_EXT_CSV + " または "
-							+ YlCommon.FILE_BODY_ANISON_INFO_CSV_PROGRAM + Common.FILE_EXT_ZIP + " を指定して下さい。");
+					throw new Exception(YlConstants.FILE_BODY_ANISON_INFO_CSV_PROGRAM + Common.FILE_EXT_CSV + " 指定欄には、"
+							+ YlConstants.FILE_BODY_ANISON_INFO_CSV_PROGRAM + Common.FILE_EXT_CSV + " または "
+							+ YlConstants.FILE_BODY_ANISON_INFO_CSV_PROGRAM + Common.FILE_EXT_ZIP + " を指定して下さい。");
 				}
 				if (!File.Exists(ImportProgramCsvPath))
 				{
@@ -394,11 +391,11 @@ namespace YukaLister.ViewModels
 			if (!String.IsNullOrEmpty(ImportAnisonCsvPath))
 			{
 				if (Path.GetExtension(ImportAnisonCsvPath).ToLower() != Common.FILE_EXT_CSV && Path.GetExtension(ImportAnisonCsvPath).ToLower() != Common.FILE_EXT_ZIP
-						|| Path.GetFileNameWithoutExtension(ImportAnisonCsvPath).ToLower() != YlCommon.FILE_BODY_ANISON_INFO_CSV_ANISON)
+						|| Path.GetFileNameWithoutExtension(ImportAnisonCsvPath).ToLower() != YlConstants.FILE_BODY_ANISON_INFO_CSV_ANISON)
 				{
-					throw new Exception(YlCommon.FILE_BODY_ANISON_INFO_CSV_ANISON + Common.FILE_EXT_CSV + " 指定欄には、"
-							+ YlCommon.FILE_BODY_ANISON_INFO_CSV_ANISON + Common.FILE_EXT_CSV + " または "
-							+ YlCommon.FILE_BODY_ANISON_INFO_CSV_ANISON + Common.FILE_EXT_ZIP + " を指定して下さい。");
+					throw new Exception(YlConstants.FILE_BODY_ANISON_INFO_CSV_ANISON + Common.FILE_EXT_CSV + " 指定欄には、"
+							+ YlConstants.FILE_BODY_ANISON_INFO_CSV_ANISON + Common.FILE_EXT_CSV + " または "
+							+ YlConstants.FILE_BODY_ANISON_INFO_CSV_ANISON + Common.FILE_EXT_ZIP + " を指定して下さい。");
 				}
 				if (!File.Exists(ImportAnisonCsvPath))
 				{
@@ -410,11 +407,11 @@ namespace YukaLister.ViewModels
 			if (!String.IsNullOrEmpty(ImportSfCsvPath))
 			{
 				if (Path.GetExtension(ImportSfCsvPath).ToLower() != Common.FILE_EXT_CSV && Path.GetExtension(ImportSfCsvPath).ToLower() != Common.FILE_EXT_ZIP
-					|| Path.GetFileNameWithoutExtension(ImportSfCsvPath).ToLower() != YlCommon.FILE_BODY_ANISON_INFO_CSV_SF)
+					|| Path.GetFileNameWithoutExtension(ImportSfCsvPath).ToLower() != YlConstants.FILE_BODY_ANISON_INFO_CSV_SF)
 				{
-					throw new Exception(YlCommon.FILE_BODY_ANISON_INFO_CSV_SF + Common.FILE_EXT_CSV + " 指定欄には、"
-							+ YlCommon.FILE_BODY_ANISON_INFO_CSV_SF + Common.FILE_EXT_CSV + " または "
-							+ YlCommon.FILE_BODY_ANISON_INFO_CSV_SF + Common.FILE_EXT_ZIP + " を指定して下さい。");
+					throw new Exception(YlConstants.FILE_BODY_ANISON_INFO_CSV_SF + Common.FILE_EXT_CSV + " 指定欄には、"
+							+ YlConstants.FILE_BODY_ANISON_INFO_CSV_SF + Common.FILE_EXT_CSV + " または "
+							+ YlConstants.FILE_BODY_ANISON_INFO_CSV_SF + Common.FILE_EXT_ZIP + " を指定して下さい。");
 				}
 				if (!File.Exists(ImportSfCsvPath))
 				{
@@ -426,11 +423,11 @@ namespace YukaLister.ViewModels
 			if (!String.IsNullOrEmpty(ImportGameCsvPath))
 			{
 				if (Path.GetExtension(ImportGameCsvPath).ToLower() != Common.FILE_EXT_CSV && Path.GetExtension(ImportGameCsvPath).ToLower() != Common.FILE_EXT_ZIP
-					|| Path.GetFileNameWithoutExtension(ImportGameCsvPath).ToLower() != YlCommon.FILE_BODY_ANISON_INFO_CSV_GAME)
+					|| Path.GetFileNameWithoutExtension(ImportGameCsvPath).ToLower() != YlConstants.FILE_BODY_ANISON_INFO_CSV_GAME)
 				{
-					throw new Exception(YlCommon.FILE_BODY_ANISON_INFO_CSV_GAME + Common.FILE_EXT_CSV + " 指定欄には、"
-							+ YlCommon.FILE_BODY_ANISON_INFO_CSV_GAME + Common.FILE_EXT_CSV + " または "
-							+ YlCommon.FILE_BODY_ANISON_INFO_CSV_GAME + Common.FILE_EXT_ZIP + " を指定して下さい。");
+					throw new Exception(YlConstants.FILE_BODY_ANISON_INFO_CSV_GAME + Common.FILE_EXT_CSV + " 指定欄には、"
+							+ YlConstants.FILE_BODY_ANISON_INFO_CSV_GAME + Common.FILE_EXT_CSV + " または "
+							+ YlConstants.FILE_BODY_ANISON_INFO_CSV_GAME + Common.FILE_EXT_ZIP + " を指定して下さい。");
 				}
 				if (!File.Exists(ImportGameCsvPath))
 				{
@@ -450,7 +447,7 @@ namespace YukaLister.ViewModels
 				throw new Exception("ニコカラりすたーでエクスポートしたファイルを指定して下さい。");
 			}
 
-			if (Path.GetExtension(ImportNicoKaraListerPath).ToLower() != YlCommon.FILE_EXT_NKLINFO)
+			if (Path.GetExtension(ImportNicoKaraListerPath).ToLower() != YlConstants.FILE_EXT_NKLINFO)
 			{
 				throw new Exception("ニコカラりすたーでエクスポートしたファイルではないファイルが指定されています。");
 			}
@@ -516,7 +513,7 @@ namespace YukaLister.ViewModels
 		{
 			if (String.IsNullOrEmpty(oCsvDateString) || oCsvDateString.Length < 10)
 			{
-				return YlCommon.INVALID_MJD;
+				return YlConstants.INVALID_MJD;
 			}
 
 			Int32 aYear;
@@ -526,9 +523,9 @@ namespace YukaLister.ViewModels
 			try
 			{
 				aYear = Int32.Parse(oCsvDateString.Substring(0, 4));
-				if (aYear < YlCommon.INVALID_YEAR)
+				if (aYear < YlConstants.INVALID_YEAR)
 				{
-					aYear = YlCommon.INVALID_YEAR;
+					aYear = YlConstants.INVALID_YEAR;
 				}
 				aMonth = Int32.Parse(oCsvDateString.Substring(5, 2));
 				if (aMonth <= 0 || aMonth > 12)
@@ -543,7 +540,7 @@ namespace YukaLister.ViewModels
 			}
 			catch (Exception)
 			{
-				return YlCommon.INVALID_MJD;
+				return YlConstants.INVALID_MJD;
 			}
 
 			return JulianDay.DateTimeToModifiedJulianDate(new DateTime(aYear, aMonth, aDay));
@@ -625,7 +622,7 @@ namespace YukaLister.ViewModels
 					Id = aId,
 					Import = true,
 					Invalid = false,
-					UpdateTime = YlCommon.INVALID_MJD,
+					UpdateTime = YlConstants.INVALID_MJD,
 					Dirty = true,
 
 					// TMaster
@@ -687,7 +684,7 @@ namespace YukaLister.ViewModels
 				catch (Exception oExcep)
 				{
 					Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "anison.info CSV インポート時エラー：\n" + oExcep.Message);
-					Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+					Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 				}
 			});
 		}
@@ -710,14 +707,14 @@ namespace YukaLister.ViewModels
 					String aTempFolder = YlCommon.TempFilePath() + "\\";
 					Directory.CreateDirectory(aTempFolder);
 					ZipFile.ExtractToDirectory(ImportNicoKaraListerPath, aTempFolder);
-					String aExtractedFolderPath = aTempFolder + YlCommon.FILE_PREFIX_INFO + "\\";
+					String aExtractedFolderPath = aTempFolder + YlConstants.FILE_PREFIX_INFO + "\\";
 
 					using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
 					using (SQLiteCommand aCmd = new SQLiteCommand(aMusicInfoDbInDisk.Connection))
 					using (DataContext aContext = new DataContext(aMusicInfoDbInDisk.Connection))
 					{
 						// タイアップ情報
-						String aProgramCsvPath = aExtractedFolderPath + YlCommon.FILE_BODY_ANISON_INFO_CSV_PROGRAM + Common.FILE_EXT_CSV;
+						String aProgramCsvPath = aExtractedFolderPath + YlConstants.FILE_BODY_ANISON_INFO_CSV_PROGRAM + Common.FILE_EXT_CSV;
 						if (File.Exists(aProgramCsvPath))
 						{
 							ImportProgramCsv(aProgramCsvPath, aContext);
@@ -725,10 +722,10 @@ namespace YukaLister.ViewModels
 
 						// 楽曲情報
 						List<String> aSongCsvs = new List<String>();
-						aSongCsvs.Add(YlCommon.FILE_BODY_ANISON_INFO_CSV_ANISON + Common.FILE_EXT_CSV);
-						aSongCsvs.Add(YlCommon.FILE_BODY_ANISON_INFO_CSV_SF + Common.FILE_EXT_CSV);
-						aSongCsvs.Add(YlCommon.FILE_BODY_ANISON_INFO_CSV_GAME + Common.FILE_EXT_CSV);
-						aSongCsvs.Add(YlCommon.FILE_BODY_ANISON_INFO_CSV_MISC + Common.FILE_EXT_CSV);
+						aSongCsvs.Add(YlConstants.FILE_BODY_ANISON_INFO_CSV_ANISON + Common.FILE_EXT_CSV);
+						aSongCsvs.Add(YlConstants.FILE_BODY_ANISON_INFO_CSV_SF + Common.FILE_EXT_CSV);
+						aSongCsvs.Add(YlConstants.FILE_BODY_ANISON_INFO_CSV_GAME + Common.FILE_EXT_CSV);
+						aSongCsvs.Add(YlConstants.FILE_BODY_ANISON_INFO_CSV_MISC + Common.FILE_EXT_CSV);
 						foreach (String aSongCsv in aSongCsvs)
 						{
 							String aSongCsvPath = aExtractedFolderPath + aSongCsv;
@@ -739,7 +736,7 @@ namespace YukaLister.ViewModels
 						}
 
 						// タイアップエイリアス情報
-						String aProgramAliasCsvPath = aExtractedFolderPath + YlCommon.FILE_BODY_ANISON_INFO_CSV_PROGRAM_ALIAS + Common.FILE_EXT_CSV;
+						String aProgramAliasCsvPath = aExtractedFolderPath + YlConstants.FILE_BODY_ANISON_INFO_CSV_PROGRAM_ALIAS + Common.FILE_EXT_CSV;
 						if (File.Exists(aProgramAliasCsvPath))
 						{
 							ImportProgramAliasCsv(aProgramAliasCsvPath, aContext);
@@ -747,10 +744,10 @@ namespace YukaLister.ViewModels
 
 						// 楽曲エイリアス情報
 						List<String> aSongAliasCsvs = new List<String>();
-						aSongAliasCsvs.Add(YlCommon.FILE_BODY_ANISON_INFO_CSV_ANISON_ALIAS + Common.FILE_EXT_CSV);
-						aSongAliasCsvs.Add(YlCommon.FILE_BODY_ANISON_INFO_CSV_SF_ALIAS + Common.FILE_EXT_CSV);
-						aSongAliasCsvs.Add(YlCommon.FILE_BODY_ANISON_INFO_CSV_GAME_ALIAS + Common.FILE_EXT_CSV);
-						aSongAliasCsvs.Add(YlCommon.FILE_BODY_ANISON_INFO_CSV_MISC_ALIAS + Common.FILE_EXT_CSV);
+						aSongAliasCsvs.Add(YlConstants.FILE_BODY_ANISON_INFO_CSV_ANISON_ALIAS + Common.FILE_EXT_CSV);
+						aSongAliasCsvs.Add(YlConstants.FILE_BODY_ANISON_INFO_CSV_SF_ALIAS + Common.FILE_EXT_CSV);
+						aSongAliasCsvs.Add(YlConstants.FILE_BODY_ANISON_INFO_CSV_GAME_ALIAS + Common.FILE_EXT_CSV);
+						aSongAliasCsvs.Add(YlConstants.FILE_BODY_ANISON_INFO_CSV_MISC_ALIAS + Common.FILE_EXT_CSV);
 						foreach (String aSongAliasCsv in aSongAliasCsvs)
 						{
 							String aSongAliasCsvPath = aExtractedFolderPath + aSongAliasCsv;
@@ -770,7 +767,7 @@ namespace YukaLister.ViewModels
 				catch (Exception oExcep)
 				{
 					Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "ニコカラりすたーインポート時エラー：\n" + oExcep.Message);
-					Environment.LogWriter.ShowLogMessage(TraceEventType.Verbose, "　スタックトレース：\n" + oExcep.StackTrace);
+					Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 				}
 			});
 		}
@@ -1190,7 +1187,7 @@ namespace YukaLister.ViewModels
 				Id = aId,
 				Import = true,
 				Invalid = false,
-				UpdateTime = YlCommon.INVALID_MJD,
+				UpdateTime = YlConstants.INVALID_MJD,
 				Dirty = true,
 
 				// TAlias
@@ -1215,7 +1212,7 @@ namespace YukaLister.ViewModels
 				Id = oCsvRecord[(Int32)SongCsvColumns.Id],
 				Import = true,
 				Invalid = false,
-				UpdateTime = YlCommon.INVALID_MJD,
+				UpdateTime = YlConstants.INVALID_MJD,
 				Dirty = true,
 
 				// TMaster
@@ -1224,7 +1221,7 @@ namespace YukaLister.ViewModels
 				Keyword = null,
 
 				// TSong
-				ReleaseDate = YlCommon.INVALID_MJD,
+				ReleaseDate = YlConstants.INVALID_MJD,
 				TieUpId = YlCommon.NullIfEmpty(oCsvRecord[(Int32)SongCsvColumns.ProgramId]),
 				CategoryId = null,
 				OpEd = YlCommon.NullIfEmpty(oCsvRecord[(Int32)SongCsvColumns.OpEd]),
@@ -1246,7 +1243,7 @@ namespace YukaLister.ViewModels
 				Id = aId,
 				Import = true,
 				Invalid = false,
-				UpdateTime = YlCommon.INVALID_MJD,
+				UpdateTime = YlConstants.INVALID_MJD,
 				Dirty = true,
 
 				// TAlias
@@ -1271,7 +1268,7 @@ namespace YukaLister.ViewModels
 				Id = oCsvRecord[(Int32)ProgramCsvColumns.Id],
 				Import = true,
 				Invalid = false,
-				UpdateTime = YlCommon.INVALID_MJD,
+				UpdateTime = YlConstants.INVALID_MJD,
 				Dirty = true,
 
 				// TMaster

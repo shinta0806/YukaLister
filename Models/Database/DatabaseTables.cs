@@ -5,9 +5,10 @@
 // ============================================================================
 
 using Shinta;
+
 using System;
-using System.Data.Linq;
 using System.Data.Linq.Mapping;
+
 using YukaLister.Models.SharedMisc;
 
 namespace YukaLister.Models.Database
@@ -1648,8 +1649,8 @@ namespace YukaLister.Models.Database
 		{
 			get
 			{
-				return (SmartTrackOnVocal ? YlCommon.SMART_TRACK_VALID_MARK : YlCommon.SMART_TRACK_INVALID_MARK) + "/"
-						+ (SmartTrackOffVocal ? YlCommon.SMART_TRACK_VALID_MARK : YlCommon.SMART_TRACK_INVALID_MARK);
+				return (SmartTrackOnVocal ? YlConstants.SMART_TRACK_VALID_MARK : YlConstants.SMART_TRACK_INVALID_MARK) + "/"
+						+ (SmartTrackOffVocal ? YlConstants.SMART_TRACK_VALID_MARK : YlConstants.SMART_TRACK_INVALID_MARK);
 			}
 		}
 
