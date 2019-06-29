@@ -14,7 +14,7 @@
     </Window.DataContext>
 
     <i:Interaction.Behaviors>
-        <sb:WindowBindingSupportBehavior ClosingCommand="{Binding WindowClosingCommand}"/>
+        <sb:WindowBindingSupportBehavior ClosingCommand="{Binding WindowClosingCommand}" IsCascade="True"/>
     </i:Interaction.Behaviors>
 
     <i:Interaction.Triggers>
@@ -34,6 +34,10 @@
         </i:EventTrigger>
 
         <!--WindowのCloseキャンセル処理に対応する場合は、WindowCloseCancelBehaviorの使用を検討してください-->
+
+        <l:InteractionMessageTrigger MessageKey="OpenInputIdPrefixWindow" Messenger="{Binding Messenger}">
+            <l:TransitionInteractionMessageAction WindowType="{x:Type v:InputIdPrefixWindow}" Mode="Modal" IsOwned="True" />
+        </l:InteractionMessageTrigger>
 
         <l:InteractionMessageTrigger MessageKey="Close" Messenger="{Binding Messenger}">
             <l:WindowInteractionMessageAction InvokeActionOnlyWhenWindowIsActive="False" />

@@ -4,6 +4,7 @@
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
         xmlns:l="http://schemas.livet-mvvm.net/2011/wpf"
+        xmlns:sb="clr-namespace:Shinta.Behaviors"
         xmlns:msm="clr-namespace:YukaLister.Models.SharedMisc"
         xmlns:v="clr-namespace:YukaLister.Views"
         xmlns:vm="clr-namespace:YukaLister.ViewModels"
@@ -13,6 +14,10 @@
     <Window.DataContext>
         <vm:EditMusicInfoWindowViewModel/>
     </Window.DataContext>
+
+    <i:Interaction.Behaviors>
+        <sb:WindowBindingSupportBehavior IsCascade="True"/>
+    </i:Interaction.Behaviors>
 
     <i:Interaction.Triggers>
 
@@ -33,13 +38,13 @@
         <!--WindowのCloseキャンセル処理に対応する場合は、WindowCloseCancelBehaviorの使用を検討してください-->
 
         <l:InteractionMessageTrigger MessageKey="OpenSearchMusicInfoWindow" Messenger="{Binding Messenger}">
-            <l:TransitionInteractionMessageAction WindowType="{x:Type v:SearchMusicInfoWindow}" Mode="Modal" />
+            <l:TransitionInteractionMessageAction WindowType="{x:Type v:SearchMusicInfoWindow}" Mode="Modal" IsOwned="True" />
         </l:InteractionMessageTrigger>
         <l:InteractionMessageTrigger MessageKey="OpenEditTieUpWindow" Messenger="{Binding Messenger}">
-            <l:TransitionInteractionMessageAction WindowType="{x:Type v:EditTieUpWindow}" Mode="Modal" />
+            <l:TransitionInteractionMessageAction WindowType="{x:Type v:EditTieUpWindow}" Mode="Modal" IsOwned="True" />
         </l:InteractionMessageTrigger>
         <l:InteractionMessageTrigger MessageKey="OpenEditSongWindow" Messenger="{Binding Messenger}">
-            <l:TransitionInteractionMessageAction WindowType="{x:Type v:EditSongWindow}" Mode="Modal" />
+            <l:TransitionInteractionMessageAction WindowType="{x:Type v:EditSongWindow}" Mode="Modal" IsOwned="True" />
         </l:InteractionMessageTrigger>
 
         <l:InteractionMessageTrigger MessageKey="Close" Messenger="{Binding Messenger}">

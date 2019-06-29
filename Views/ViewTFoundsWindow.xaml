@@ -17,7 +17,11 @@
     <Window.InputBindings>
         <KeyBinding Gesture="Ctrl+F" Command="{Binding ButtonFindKeywordClickedCommand}"/>
     </Window.InputBindings>
-    
+
+    <i:Interaction.Behaviors>
+        <sb:WindowBindingSupportBehavior IsCascade="True"/>
+    </i:Interaction.Behaviors>
+
     <i:Interaction.Triggers>
 
         <!--Viewに特別な要件が存在しない限りは、トリガーやアクションの自作にこだわらず積極的にコードビハインドを使いましょう -->
@@ -37,14 +41,15 @@
         <!--WindowのCloseキャンセル処理に対応する場合は、WindowCloseCancelBehaviorの使用を検討してください-->
 
         <l:InteractionMessageTrigger MessageKey="OpenEditMusicInfoWindow" Messenger="{Binding Messenger}">
-            <l:TransitionInteractionMessageAction WindowType="{x:Type v:EditMusicInfoWindow}" Mode="Modal" />
+            <l:TransitionInteractionMessageAction WindowType="{x:Type v:EditMusicInfoWindow}" Mode="Modal" IsOwned="True" />
         </l:InteractionMessageTrigger>
         <l:InteractionMessageTrigger MessageKey="OpenFolderSettingsWindow" Messenger="{Binding Messenger}">
-            <l:TransitionInteractionMessageAction WindowType="{x:Type v:FolderSettingsWindow}" Mode="Modal" />
+            <l:TransitionInteractionMessageAction WindowType="{x:Type v:FolderSettingsWindow}" Mode="Modal" IsOwned="True" />
         </l:InteractionMessageTrigger>
         <l:InteractionMessageTrigger MessageKey="OpenFindKeywordWindow" Messenger="{Binding Messenger}">
-            <l:TransitionInteractionMessageAction WindowType="{x:Type v:FindKeywordWindow}" Mode="Normal" />
+            <l:TransitionInteractionMessageAction WindowType="{x:Type v:FindKeywordWindow}" Mode="Normal" IsOwned="True"/>
         </l:InteractionMessageTrigger>
+        
         <l:InteractionMessageTrigger MessageKey="FindKeyword" Messenger="{Binding Messenger}">
             <l:LivetCallMethodAction MethodTarget="{Binding}" MethodName="FindKeywordRequested"/>
         </l:InteractionMessageTrigger>

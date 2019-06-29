@@ -14,6 +14,10 @@
         <vm:EditSongWindowViewModel/>
     </Window.DataContext>
 
+    <i:Interaction.Behaviors>
+        <sb:WindowBindingSupportBehavior IsCascade="True"/>
+    </i:Interaction.Behaviors>
+
     <i:Interaction.Triggers>
 
         <!--Viewに特別な要件が存在しない限りは、トリガーやアクションの自作にこだわらず積極的にコードビハインドを使いましょう -->
@@ -33,13 +37,16 @@
         <!--WindowのCloseキャンセル処理に対応する場合は、WindowCloseCancelBehaviorの使用を検討してください-->
 
         <l:InteractionMessageTrigger MessageKey="OpenSearchMusicInfoWindow" Messenger="{Binding Messenger}">
-            <l:TransitionInteractionMessageAction WindowType="{x:Type v:SearchMusicInfoWindow}" Mode="Modal" />
+            <l:TransitionInteractionMessageAction WindowType="{x:Type v:SearchMusicInfoWindow}" Mode="Modal" IsOwned="True" />
         </l:InteractionMessageTrigger>
         <l:InteractionMessageTrigger MessageKey="OpenEditTieUpWindow" Messenger="{Binding Messenger}">
-            <l:TransitionInteractionMessageAction WindowType="{x:Type v:EditTieUpWindow}" Mode="Modal" />
+            <l:TransitionInteractionMessageAction WindowType="{x:Type v:EditTieUpWindow}" Mode="Modal" IsOwned="True" />
         </l:InteractionMessageTrigger>
         <l:InteractionMessageTrigger MessageKey="OpenEditPeopleWindow" Messenger="{Binding Messenger}">
-            <l:TransitionInteractionMessageAction WindowType="{x:Type v:EditPeopleWindow}" Mode="Modal" />
+            <l:TransitionInteractionMessageAction WindowType="{x:Type v:EditPeopleWindow}" Mode="Modal" IsOwned="True" />
+        </l:InteractionMessageTrigger>
+        <l:InteractionMessageTrigger MessageKey="OpenInputIdPrefixWindow" Messenger="{Binding Messenger}">
+            <l:TransitionInteractionMessageAction WindowType="{x:Type v:InputIdPrefixWindow}" Mode="Modal" IsOwned="True" />
         </l:InteractionMessageTrigger>
 
         <l:InteractionMessageTrigger MessageKey="Close" Messenger="{Binding Messenger}">

@@ -13,6 +13,10 @@
         <vm:OutputSettingsWindowViewModel/>
     </Window.DataContext>
 
+    <i:Interaction.Behaviors>
+        <sb:WindowBindingSupportBehavior IsCascade="True"/>
+    </i:Interaction.Behaviors>
+
     <i:Interaction.Triggers>
      
      	<!--Viewに特別な要件が存在しない限りは、トリガーやアクションの自作にこだわらず積極的にコードビハインドを使いましょう -->

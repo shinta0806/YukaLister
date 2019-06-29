@@ -4,6 +4,7 @@
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
         xmlns:l="http://schemas.livet-mvvm.net/2011/wpf"
+        xmlns:sb="clr-namespace:Shinta.Behaviors"
         xmlns:vm="clr-namespace:YukaLister.ViewModels"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         Title="{Binding Title}" ShowInTaskbar="False" ResizeMode="NoResize" SizeToContent="WidthAndHeight">
@@ -11,6 +12,10 @@
     <Window.DataContext>
         <vm:AboutWindowViewModel/>
     </Window.DataContext>
+
+    <i:Interaction.Behaviors>
+        <sb:WindowBindingSupportBehavior IsCascade="True"/>
+    </i:Interaction.Behaviors>
 
     <i:Interaction.Triggers>
 

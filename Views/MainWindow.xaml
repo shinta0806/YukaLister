@@ -36,16 +36,16 @@
         <!--WindowのCloseキャンセル処理に対応する場合は、WindowCloseCancelBehaviorの使用を検討してください-->
 
         <l:InteractionMessageTrigger MessageKey="OpenYukaListerSettingsWindow" Messenger="{Binding Messenger}">
-            <l:TransitionInteractionMessageAction WindowType="{x:Type v:YukaListerSettingsWindow}" Mode="Modal" />
+            <l:TransitionInteractionMessageAction WindowType="{x:Type v:YukaListerSettingsWindow}" Mode="Modal" IsOwned="True"/>
         </l:InteractionMessageTrigger>
         <l:InteractionMessageTrigger MessageKey="OpenAboutWindow" Messenger="{Binding Messenger}">
-            <l:TransitionInteractionMessageAction WindowType="{x:Type v:AboutWindow}" Mode="Modal" />
+            <l:TransitionInteractionMessageAction WindowType="{x:Type v:AboutWindow}" Mode="Modal" IsOwned="True" />
         </l:InteractionMessageTrigger>
         <l:InteractionMessageTrigger MessageKey="OpenViewTFoundsWindow" Messenger="{Binding Messenger}">
-            <l:TransitionInteractionMessageAction WindowType="{x:Type v:ViewTFoundsWindow}" Mode="Modal" />
+            <l:TransitionInteractionMessageAction WindowType="{x:Type v:ViewTFoundsWindow}" Mode="Modal" IsOwned="True" />
         </l:InteractionMessageTrigger>
         <l:InteractionMessageTrigger MessageKey="OpenFolderSettingsWindow" Messenger="{Binding Messenger}">
-            <l:TransitionInteractionMessageAction WindowType="{x:Type v:FolderSettingsWindow}" Mode="Modal" />
+            <l:TransitionInteractionMessageAction WindowType="{x:Type v:FolderSettingsWindow}" Mode="Modal" IsOwned="True" />
         </l:InteractionMessageTrigger>
 
     </i:Interaction.Triggers>

@@ -17,6 +17,7 @@ using Shinta;
 
 using System;
 using System.Diagnostics;
+using System.Windows;
 
 using YukaLister.Models;
 
