@@ -51,7 +51,7 @@
                 <Label Content="  " />
                 <Label Content="{x:Static msm:YlConstants.APP_NAME_J}" />
             </StackPanel>
-            <Image Margin="0" Source="pack://siteoforigin:,,,/アイコン/YukaListerアイコン_1.ico" DockPanel.Dock="Top"/>
+            <Image Margin="0" Source="pack://application:,,,/アイコン/YukaListerアイコン.png" DockPanel.Dock="Top"/>
         </DockPanel>
     </Border>
 </Window>

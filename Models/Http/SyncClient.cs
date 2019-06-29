@@ -1808,21 +1808,6 @@ namespace YukaLister.Models.Http
 			}
 		}
 
-#if false
-		// --------------------------------------------------------------------
-		// バックグラウンド動作状況を表示
-		// 画面下部のステータスバーに表示（主に同期など、直ちにはリスト化に影響しない情報）
-		// --------------------------------------------------------------------
-		private void SetStatusLabelMessageWithInvoke(TraceEventType oTraceEventType, String oMsg)
-		{
-			mStatusLabel.Dispatcher.Invoke(new Action(() =>
-			{
-				YlCommon.SetStatusLabelMessage(mStatusLabel, oTraceEventType, oMsg);
-			}));
-			mLogWriterSync.ShowLogMessage(oTraceEventType, oMsg, true);
-		}
-#endif
-
 		// --------------------------------------------------------------------
 		// 文字列で受信した同期データを Boolean に変換
 		// --------------------------------------------------------------------

@@ -63,7 +63,8 @@ namespace YukaLister
 			}
 			else
 			{
-				MessageBox.Show("不明なエラーが発生しました。アプリケーションを終了します。", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+				Exception aExcep = oUnhandledExceptionEventArgs.ExceptionObject as Exception;
+				MessageBox.Show("不明なエラーが発生しました。アプリケーションを終了します。\n" + aExcep?.StackTrace, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
 			}
 
 			Environment.Exit(1);

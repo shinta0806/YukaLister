@@ -1224,45 +1224,6 @@ namespace YukaLister.Models.SharedMisc
 			return aPath;
 		}
 
-#if false
-		// --------------------------------------------------------------------
-		// ヘルプの表示
-		// --------------------------------------------------------------------
-		public static void ShowHelp(EnvironmentModel oEnvironment, String oAnchor = null)
-		{
-			String aHelpPath = null;
-
-			try
-			{
-				String aHelpPathBase = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + "\\";
-
-				// アンカーが指定されている場合は状況依存型ヘルプを表示
-				if (!String.IsNullOrEmpty(oAnchor))
-				{
-					aHelpPath = aHelpPathBase + FOLDER_NAME_HELP_PARTS + FILE_NAME_HELP_PREFIX + "_" + oAnchor + Common.FILE_EXT_HTML;
-					try
-					{
-						Process.Start(aHelpPath);
-						return;
-					}
-					catch (Exception oExcep)
-					{
-						oEnvironment.LogWriter.ShowLogMessage(TraceEventType.Error, "状況に応じたヘルプを表示できませんでした：\n" + oExcep.Message + "\n" + aHelpPath
-								+ "\n通常のヘルプを表示します。");
-					}
-				}
-
-				// アンカーが指定されていない場合・状況依存型ヘルプを表示できなかった場合は通常のヘルプを表示
-				aHelpPath = aHelpPathBase + FILE_NAME_HELP_PREFIX + Common.FILE_EXT_HTML;
-				Process.Start(aHelpPath);
-			}
-			catch (Exception oExcep)
-			{
-				oEnvironment.LogWriter.ShowLogMessage(TraceEventType.Error, "ヘルプを表示できませんでした。\n" + oExcep.Message + "\n" + aHelpPath);
-			}
-		}
-#endif
-
 		// --------------------------------------------------------------------
 		// カンマ区切り ID をリストに分割
 		// 引数が空の場合は null ではなく空リストを返す

@@ -1278,12 +1278,6 @@ namespace YukaLister.Models
 					mMainWindowViewModel.Messenger.Raise(new TransitionMessage(aFolderSettingsWindowViewModel, "OpenFolderSettingsWindow"));
 				}
 
-				Debug.WriteLine("FolderSettings() done");
-#if false
-				FolderSettingsWindow aFolderSettingsWindow = new FolderSettingsWindow(aTargetFolderInfo.Path, mYukaListerSettings, mLogWriter);
-				aFolderSettingsWindow.Owner = this;
-				aFolderSettingsWindow.ShowDialog();
-
 				// フォルダー設定の有無の表示を更新
 				// キャンセルでも実行（設定削除→キャンセルの場合はフォルダー設定の有無が変わる）
 				lock (mTargetFolderInfos)
@@ -1305,15 +1299,14 @@ namespace YukaLister.Models
 						aIndex++;
 					}
 				}
-				UpdateDirtyDg();
+				UpdateDirtyDgWithInvoke();
 
 				// 楽曲情報データベースが更新された場合は同期を行う
-				DateTime aMusicInfoDbTime = new FileInfo(YlCommon.MusicInfoDbPath()).LastWriteTime;
+				DateTime aMusicInfoDbTime = aMusicInfoDbInDisk.LastWriteTime();
 				if (aMusicInfoDbTime != aMusicInfoDbTimeBak)
 				{
 					RunSyncClientIfNeeded();
 				}
-#endif
 			}
 		}
 
