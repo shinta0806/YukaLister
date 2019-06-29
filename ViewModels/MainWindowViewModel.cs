@@ -28,6 +28,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Windows;
 using System.Windows.Media;
 
@@ -157,6 +158,11 @@ namespace YukaLister.ViewModels
 		// 一般プロパティー
 		// --------------------------------------------------------------------
 
+		// スプラッシュウィンドウ
+		public SplashWindowViewModel SplashWindowVm { get; set; }
+
+		// ゆかりすたー本体
+		public YukaListerModel YukaLister { get; set; }
 
 		// --------------------------------------------------------------------
 		// コマンド
@@ -181,12 +187,12 @@ namespace YukaLister.ViewModels
 		{
 			try
 			{
-				mYukaLister.ButtonYukaListerSettingsClicked();
+				YukaLister.ButtonYukaListerSettingsClicked();
 			}
 			catch (Exception oExcep)
 			{
-				mYukaLister.Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "環境設定ボタンクリック時エラー：\n" + oExcep.Message);
-				mYukaLister.Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
+				YukaLister.Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "環境設定ボタンクリック時エラー：\n" + oExcep.Message);
+				YukaLister.Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -194,7 +200,7 @@ namespace YukaLister.ViewModels
 		#region ヘルプメニューアイテムの制御
 		public ListenerCommand<String> MehuItemHelpClickedCommand
 		{
-			get => mYukaLister.Environment.HelpClickedCommand;
+			get => YukaLister.Environment.HelpClickedCommand;
 		}
 		#endregion
 
@@ -221,8 +227,8 @@ namespace YukaLister.ViewModels
 			}
 			catch (Exception oExcep)
 			{
-				mYukaLister.Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "改訂履歴メニュークリック時エラー：\n" + oExcep.Message);
-				mYukaLister.Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
+				YukaLister.Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "改訂履歴メニュークリック時エラー：\n" + oExcep.Message);
+				YukaLister.Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -249,14 +255,14 @@ namespace YukaLister.ViewModels
 				// ViewModel 経由でウィンドウを開く
 				using (AboutWindowViewModel aAboutWindowViewModel = new AboutWindowViewModel())
 				{
-					aAboutWindowViewModel.Environment = mYukaLister.Environment;
+					aAboutWindowViewModel.Environment = YukaLister.Environment;
 					Messenger.Raise(new TransitionMessage(aAboutWindowViewModel, "OpenAboutWindow"));
 				}
 			}
 			catch (Exception oExcep)
 			{
-				mYukaLister.Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "バージョン情報メニュークリック時エラー：\n" + oExcep.Message);
-				mYukaLister.Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
+				YukaLister.Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "バージョン情報メニュークリック時エラー：\n" + oExcep.Message);
+				YukaLister.Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -280,12 +286,12 @@ namespace YukaLister.ViewModels
 		{
 			try
 			{
-				mYukaLister.YukariDb.ButtonFolderSettingsClicked();
+				YukaLister.YukariDb.ButtonFolderSettingsClicked();
 			}
 			catch (Exception oExcep)
 			{
-				mYukaLister.Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "データグリッドダブルクリック時エラー：\n" + oExcep.Message);
-				mYukaLister.Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
+				YukaLister.Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "データグリッドダブルクリック時エラー：\n" + oExcep.Message);
+				YukaLister.Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -314,12 +320,12 @@ namespace YukaLister.ViewModels
 		{
 			try
 			{
-				mYukaLister.YukariDb.ButtonRemoveTargetFolderClicked();
+				YukaLister.YukariDb.ButtonRemoveTargetFolderClicked();
 			}
 			catch (Exception oExcep)
 			{
-				mYukaLister.Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "削除ボタンクリック時エラー：\n" + oExcep.Message);
-				mYukaLister.Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
+				YukaLister.Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "削除ボタンクリック時エラー：\n" + oExcep.Message);
+				YukaLister.Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -349,12 +355,12 @@ namespace YukaLister.ViewModels
 		{
 			try
 			{
-				mYukaLister.YukariDb.ButtonTFoundsClicked();
+				YukaLister.YukariDb.ButtonTFoundsClicked();
 			}
 			catch (Exception oExcep)
 			{
-				mYukaLister.Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "ファイル一覧ボタンクリック時エラー：\n" + oExcep.Message);
-				mYukaLister.Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
+				YukaLister.Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "ファイル一覧ボタンクリック時エラー：\n" + oExcep.Message);
+				YukaLister.Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -383,12 +389,12 @@ namespace YukaLister.ViewModels
 		{
 			try
 			{
-				mYukaLister.YukariDb.ButtonFolderSettingsClicked();
+				YukaLister.YukariDb.ButtonFolderSettingsClicked();
 			}
 			catch (Exception oExcep)
 			{
-				mYukaLister.Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "フォルダー設定ボタンクリック時エラー：\n" + oExcep.Message);
-				mYukaLister.Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
+				YukaLister.Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "フォルダー設定ボタンクリック時エラー：\n" + oExcep.Message);
+				YukaLister.Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -414,19 +420,19 @@ namespace YukaLister.ViewModels
 			{
 				foreach (String aFile in oFiles)
 				{
-					if (!Directory.Exists(mYukaLister.Environment.ExtendPath(aFile)))
+					if (!Directory.Exists(YukaLister.Environment.ExtendPath(aFile)))
 					{
 						// フォルダーでない場合は何もしない
 						continue;
 					}
 
-					mYukaLister.YukariDb.AddFolderSelected(aFile);
+					YukaLister.YukariDb.AddFolderSelected(aFile);
 				}
 			}
 			catch (Exception oExcep)
 			{
-				mYukaLister.Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "ファイルドロップ時エラー：\n" + oExcep.Message);
-				mYukaLister.Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
+				YukaLister.Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "ファイルドロップ時エラー：\n" + oExcep.Message);
+				YukaLister.Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -450,12 +456,12 @@ namespace YukaLister.ViewModels
 		{
 			try
 			{
-				mYukaLister.YukariDb.DeviceChange(oDeviceChangeInfo);
+				YukaLister.YukariDb.DeviceChange(oDeviceChangeInfo);
 			}
 			catch (Exception oExcep)
 			{
-				mYukaLister.Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "デバイス着脱時エラー：\n" + oExcep.Message);
-				mYukaLister.Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
+				YukaLister.Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "デバイス着脱時エラー：\n" + oExcep.Message);
+				YukaLister.Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 		#endregion
@@ -472,12 +478,12 @@ namespace YukaLister.ViewModels
 		{
 			try
 			{
-				mYukaLister.YukariDb.AddFolderSelected(oFolderSelectionMessage.Response);
+				YukaLister.YukariDb.AddFolderSelected(oFolderSelectionMessage.Response);
 			}
 			catch (Exception oExcep)
 			{
-				mYukaLister.Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "追加フォルダー選択時エラー：\n" + oExcep.Message);
-				mYukaLister.Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
+				YukaLister.Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "追加フォルダー選択時エラー：\n" + oExcep.Message);
+				YukaLister.Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 
@@ -488,26 +494,8 @@ namespace YukaLister.ViewModels
 		{
 			try
 			{
-				mYukaLister = new YukaListerModel(this);
-
-#if false
-				// リスナー
-				mYukariDbListener = new PropertyChangedEventListener(mYukaLister.YukariDb)
-				{
-#if false
-					{
-						() => mYukaLister.YukariDb.LaunchFolderTaskRequested, (s, e) => LaunchFolderTaskRequested()
-					},
-#endif
-					(s, e)=>
-					{
-						RaisePropertyChanged(e.PropertyName);
-					},
-				};
-#endif
-
 				// 子要素の初期化
-				mYukaLister.Initialize();
+				YukaLister.Initialize();
 
 				// タイトルバー
 				Title = YlConstants.APP_NAME_J;
@@ -518,14 +506,13 @@ namespace YukaLister.ViewModels
 				// ステータスバー
 				ClearStatusBarMessage();
 
-				// マテリアルデザインの外観を変更
-				IEnumerable<Swatch> Swatches = new SwatchesProvider().Swatches;
-				new PaletteHelper().ReplacePrimaryColor(Swatches.FirstOrDefault(x => x.Name == "orange"));
+				// スプラッシュウィンドウを閉じる
+				SplashWindowVm.Close();
 			}
 			catch (Exception oExcep)
 			{
-				mYukaLister.Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "メインウィンドウビューモデル初期化時エラー：\n" + oExcep.Message);
-				mYukaLister.Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
+				YukaLister.Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "メインウィンドウビューモデル初期化時エラー：\n" + oExcep.Message);
+				YukaLister.Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 
@@ -555,7 +542,7 @@ namespace YukaLister.ViewModels
 				{
 					StatusBarColor = new SolidColorBrush(Colors.Black);
 				}
-				mYukaLister.Environment.LogWriter.ShowLogMessage(oTraceEventType, oMsg, true);
+				YukaLister.Environment.LogWriter.ShowLogMessage(oTraceEventType, oMsg, true);
 			}));
 		}
 
@@ -573,7 +560,7 @@ namespace YukaLister.ViewModels
 				if (!mIsDisposed)
 				{
 					// 終了処理
-					mYukaLister.Quit();
+					YukaLister.Quit();
 
 					// マネージドリソース解放
 					if (oIsDisposing)
@@ -592,8 +579,8 @@ namespace YukaLister.ViewModels
 			}
 			catch (Exception oExcep)
 			{
-				mYukaLister.Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "終了時エラー：\n" + oExcep.Message);
-				mYukaLister.Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
+				YukaLister.Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "終了時エラー：\n" + oExcep.Message);
+				YukaLister.Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
 
@@ -610,9 +597,6 @@ namespace YukaLister.ViewModels
 		// ====================================================================
 		// private メンバー変数
 		// ====================================================================
-
-		// ゆかりすたー本体
-		private YukaListerModel mYukaLister;
 
 		// Dispose フラグ
 		private Boolean mIsDisposed = false;

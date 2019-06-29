@@ -191,6 +191,7 @@
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
     <Compile Include="ViewModels\OutputSettingsWindowViewModel.cs" />
     <Compile Include="ViewModels\SearchMusicInfoWindowViewModel.cs" />
+    <Compile Include="ViewModels\SplashWindowViewModel.cs" />
     <Compile Include="ViewModels\WebOutputSettingsWindowViewModel.cs" />
     <Compile Include="ViewModels\YukaListerSettingsWindowViewModel.cs" />
     <Compile Include="Views\EditMusicInfoWindow.xaml.cs">
@@ -222,6 +223,9 @@
     </Compile>
     <Compile Include="Views\SearchMusicInfoWindow.xaml.cs">
       <DependentUpon>SearchMusicInfoWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SplashWindow.xaml.cs">
+      <DependentUpon>SplashWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\ViewTFoundsWindow.xaml.cs">
       <DependentUpon>ViewTFoundsWindow.xaml</DependentUpon>
@@ -304,6 +308,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </EmbeddedResource>
+    <Page Include="Views\SplashWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\ViewTFoundsWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

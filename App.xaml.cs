@@ -9,6 +9,7 @@ using Livet;
 using Shinta;
 
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Windows;
 
@@ -56,7 +57,7 @@ namespace YukaLister
 		// --------------------------------------------------------------------
 		private void CurrentDomain_UnhandledException(Object oSender, UnhandledExceptionEventArgs oUnhandledExceptionEventArgs)
 		{
-			if(oUnhandledExceptionEventArgs.ExceptionObject is MultiInstanceException)
+			if (oUnhandledExceptionEventArgs.ExceptionObject is MultiInstanceException)
 			{
 				// 多重起動の場合は何もしない
 			}
