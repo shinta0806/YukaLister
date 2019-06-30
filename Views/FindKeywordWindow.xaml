@@ -14,7 +14,7 @@
     </Window.DataContext>
 
     <i:Interaction.Behaviors>
-        <sb:WindowBindingSupportBehavior IsActive="{Binding IsActive}" IsCascade="True"/>
+        <sb:WindowBindingSupportBehavior IsActive="{Binding IsActive}" IsCascade="True" MinimizeBox="False"/>
     </i:Interaction.Behaviors>
 
     <i:Interaction.Triggers>
