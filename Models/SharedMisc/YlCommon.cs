@@ -60,9 +60,14 @@ namespace YukaLister.Models.SharedMisc
 		// ＜返値＞ 正規化後の ID 接頭辞
 		// ＜例外＞ Exception
 		// --------------------------------------------------------------------
-		public static String CheckIdPrefix(String oIdPrefix)
+		public static String CheckIdPrefix(String oIdPrefix, Boolean oIsNullable)
 		{
 			oIdPrefix = NormalizeDbString(oIdPrefix);
+
+			if (oIsNullable && String.IsNullOrEmpty(oIdPrefix))
+			{
+				return null;
+			}
 
 			if (String.IsNullOrEmpty(oIdPrefix))
 			{
@@ -74,11 +79,25 @@ namespace YukaLister.Models.SharedMisc
 			}
 			if (oIdPrefix.IndexOf('_') >= 0)
 			{
-				throw new Exception("各種 ID の先頭に付与する接頭辞に \"_\" は使えません。");
+				throw new Exception("各種 ID の先頭に付与する接頭辞に \"_\"（アンダースコア）は使えません。");
 			}
 			if (oIdPrefix.IndexOf(',') >= 0)
 			{
-				throw new Exception("各種 ID の先頭に付与する接頭辞に \",\" は使えません。");
+				throw new Exception("各種 ID の先頭に付与する接頭辞に \",\"（カンマ）は使えません。");
+			}
+
+			// 以下は Ver 2.14 で追加した条件のため、既存データには存在する可能性があることに注意
+			if (oIdPrefix.IndexOf(' ') >= 0)
+			{
+				throw new Exception("各種 ID の先頭に付与する接頭辞に \" \"（スペース）は使えません。");
+			}
+			if (oIdPrefix.IndexOf('"') >= 0)
+			{
+				throw new Exception("各種 ID の先頭に付与する接頭辞に \"\"\"（ダブルクオート）は使えません。");
+			}
+			if (oIdPrefix.IndexOf('\\') >= 0)
+			{
+				throw new Exception("各種 ID の先頭に付与する接頭辞に \"\\\"（円マーク）は使えません。");
 			}
 
 			return oIdPrefix;

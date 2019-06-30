@@ -18,6 +18,7 @@ using System;
 using System.Diagnostics;
 
 using YukaLister.Models;
+using YukaLister.Models.SharedMisc;
 
 namespace YukaLister.ViewModels
 {
@@ -157,7 +158,7 @@ namespace YukaLister.ViewModels
 					return;
 				}
 
-				Environment.YukaListerSettings.IdPrefix = IdPrefix;
+				Environment.YukaListerSettings.IdPrefix = YlCommon.CheckIdPrefix(IdPrefix, false);
 				Environment.YukaListerSettings.Save();
 
 				Messenger.Raise(new WindowActionMessage("Close"));

@@ -151,6 +151,14 @@ namespace YukaLister.ViewModels
 			}
 		}
 
+		// ID 接頭辞
+		private String mIdPrefix;
+		public String IdPrefix
+		{
+			get => mIdPrefix;
+			set => RaisePropertyChangedIfSet(ref mIdPrefix, value);
+		}
+
 		#endregion
 
 		#region リスト対象タブのプロパティー
@@ -1275,6 +1283,9 @@ namespace YukaLister.ViewModels
 					aImportWindowViewModel.ImportNicoKaraListerPath = ImportNicoKaraListerPath;
 
 					Messenger.Raise(new TransitionMessage(aImportWindowViewModel, "OpenImportWindow"));
+
+					// IdPrefix の更新を反映
+					IdPrefix = Environment.YukaListerSettings.IdPrefix;
 				}
 			}
 			catch (Exception oExcep)
@@ -1404,6 +1415,7 @@ namespace YukaLister.ViewModels
 			{
 				throw new Exception("ゆかり設定ファイルを指定して下さい。");
 			}
+			IdPrefix = YlCommon.CheckIdPrefix(IdPrefix, true);
 
 			// リスト対象タブ
 			if (TargetExts.Count == 0)
@@ -1551,6 +1563,7 @@ namespace YukaLister.ViewModels
 		{
 			// 設定タブ
 			Environment.YukaListerSettings.YukariConfigPathSeed = YukariConfigPathSeed;
+			Environment.YukaListerSettings.IdPrefix = IdPrefix;
 
 			// リスト対象タブ
 			Environment.YukaListerSettings.TargetExts.Clear();
@@ -1592,6 +1605,7 @@ namespace YukaLister.ViewModels
 		{
 			// 設定タブ
 			YukariConfigPathSeed = Environment.YukaListerSettings.YukariConfigPathSeed;
+			IdPrefix = Environment.YukaListerSettings.IdPrefix;
 
 			// リスト対象タブ
 			foreach (String aExt in Environment.YukaListerSettings.TargetExts)

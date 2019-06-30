@@ -14,9 +14,6 @@ using Livet.Commands;
 using Livet.Messaging;
 using Livet.Messaging.IO;
 
-using MaterialDesignColors;
-using MaterialDesignThemes.Wpf;
-
 using Shinta;
 using Shinta.Behaviors;
 
@@ -24,9 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Threading;
 using System.Windows;
 using System.Windows.Media;
 
