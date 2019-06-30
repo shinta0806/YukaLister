@@ -96,14 +96,6 @@ namespace YukaLister.ViewModels
 			set => RaisePropertyChangedIfSet(ref mTitle, value);
 		}
 
-		// ウィンドウを閉じても良いか
-		private Boolean mCanClose;
-		public Boolean CanClose
-		{
-			get => mCanClose;
-			set => RaisePropertyChangedIfSet(ref mCanClose, value);
-		}
-
 		// 説明
 		private String mDescription;
 		public String Description
@@ -300,6 +292,9 @@ namespace YukaLister.ViewModels
 			}
 			finally
 			{
+				// 終了確認を出さないようにする
+				mAbortCancellationTokenSource.Cancel();
+
 				Environment.LogWriter.AppendDisplayText = null;
 				Messenger.Raise(new WindowActionMessage("Close"));
 			}
@@ -326,7 +321,7 @@ namespace YukaLister.ViewModels
 		private Dictionary<String, String> mInsertingTieUps = new Dictionary<String, String>();
 
 		// 番組分類統合用マップ
-		Dictionary<String, String> mCategoryUnityMap;
+		private Dictionary<String, String> mCategoryUnityMap;
 
 		// タスク中止用
 		private CancellationTokenSource mAbortCancellationTokenSource = new CancellationTokenSource();

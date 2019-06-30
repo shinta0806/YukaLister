@@ -47,6 +47,7 @@
         </Border.BorderBrush>
         <DockPanel Margin="20">
             <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" FlowDirection="RightToLeft">
+                <Label Content="...起動しています  " Foreground="Gray" />
                 <Label Content="{x:Static msm:YlConstants.APP_VER}" />
                 <Label Content="  " />
                 <Label Content="{x:Static msm:YlConstants.APP_NAME_J}" />

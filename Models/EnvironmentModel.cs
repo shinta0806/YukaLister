@@ -132,11 +132,7 @@ namespace YukaLister.Models
 		// --------------------------------------------------------------------
 		public void Quit()
 		{
-			// 終了時の状態
-			YukaListerSettings.PrevLaunchPath = Assembly.GetEntryAssembly().Location;
-			YukaListerSettings.PrevLaunchGeneration = YlConstants.APP_GENERATION;
-			YukaListerSettings.PrevLaunchVer = YlConstants.APP_VER;
-			YukaListerSettings.Save();
+			SavePrevLaunchInfo();
 
 			// テンポラリーフォルダー削除
 			try
@@ -195,16 +191,20 @@ namespace YukaLister.Models
 		private void AddMusicInfoDbCategoryDefaultRecordsIfNeeded()
 		{
 			using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(this))
-			using (DataContext aContext = new DataContext(aMusicInfoDbInDisk.Connection))
 			{
-				Table<TCategory> aTableCategory = aContext.GetTable<TCategory>();
+				aMusicInfoDbInDisk.CreateDatabaseIfNeeded();
 
-				if (YlCommon.SelectMastersByName<TCategory>(aMusicInfoDbInDisk.Connection, "一般").Count == 0)
+				using (DataContext aContext = new DataContext(aMusicInfoDbInDisk.Connection))
 				{
-					aTableCategory.InsertOnSubmit(aMusicInfoDbInDisk.CreateCategoryRecord(103, "一般", "イッパン"));
-				}
+					Table<TCategory> aTableCategory = aContext.GetTable<TCategory>();
 
-				aContext.SubmitChanges();
+					if (YlCommon.SelectMastersByName<TCategory>(aMusicInfoDbInDisk.Connection, "一般").Count == 0)
+					{
+						aTableCategory.InsertOnSubmit(aMusicInfoDbInDisk.CreateCategoryRecord(103, "一般", "イッパン"));
+					}
+
+					aContext.SubmitChanges();
+				}
 			}
 		}
 
@@ -301,9 +301,21 @@ namespace YukaLister.Models
 
 			// 表示
 			LogWriter.ShowLogMessage(TraceEventType.Information, aNewVerMsg);
+			SavePrevLaunchInfo();
 
 			// Zone ID 削除
 			Common.DeleteZoneID(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), SearchOption.AllDirectories);
+		}
+
+		// --------------------------------------------------------------------
+		// 終了時の状態を保存
+		// --------------------------------------------------------------------
+		private void SavePrevLaunchInfo()
+		{
+			YukaListerSettings.PrevLaunchPath = Assembly.GetEntryAssembly().Location;
+			YukaListerSettings.PrevLaunchGeneration = YlConstants.APP_GENERATION;
+			YukaListerSettings.PrevLaunchVer = YlConstants.APP_VER;
+			YukaListerSettings.Save();
 		}
 
 		// --------------------------------------------------------------------
