@@ -54,13 +54,21 @@
     </i:Interaction.Triggers>
 
     <StackPanel>
-        <StackPanel Orientation="Horizontal" Margin="0,15">
-            <Label Content="ファイル：" Margin="20,0,0,0" HorizontalAlignment="Left"/>
+        <StackPanel Margin="20,15,20,0" Orientation="Horizontal">
+            <Label Content="ファイル名等から取得した名称が間違っている場合でも楽曲情報データベースを適用できるようにします。" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Center"/>
+            <Label x:Name="LabelHelp" Grid.Column="1" Margin="0" VerticalAlignment="Center" HorizontalAlignment="Left">
+                <Hyperlink Command="{Binding HelpClickedCommand}" CommandParameter="NamaewoSoroeru" >
+                    <TextBlock Text="詳細情報" />
+                </Hyperlink>
+            </Label>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Margin="20,5,20,0">
+            <Label Content="ファイル名：" Margin="0" HorizontalAlignment="Left"/>
             <Label x:Name="LabelPath" Margin="0" HorizontalAlignment="Left">
                 <ContentPresenter  RecognizesAccessKey="False" Content="{Binding FileName}" ></ContentPresenter>
             </Label>
         </StackPanel>
-        <StackPanel Orientation="Horizontal" Margin="20,0">
+        <StackPanel Orientation="Horizontal" Margin="20,10,20,0">
             <GroupBox Header="ファイル名・フォルダー固定値から取得した名称" Padding="5" Margin="0" materialDesign:ColorZoneAssist.Mode="Accent">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -156,15 +164,31 @@
                 </Grid>
             </GroupBox>
         </StackPanel>
-        <DockPanel Margin="20">
+        <StackPanel Margin="20,15,20,0">
+            <Label Content="上記の名寄せを踏まえた上で、タイアップ名や楽曲名等を楽曲情報データベースから総合的に検索した結果、リスト出力される項目は以下となります。" />
+        </StackPanel>
+        <StackPanel Margin="40,0,20,0" Orientation="Horizontal">
+            <Label Content="カテゴリー：" Width="90" HorizontalContentAlignment="Right" />
+            <Label Content="{Binding ListCategoryName}" />
+        </StackPanel>
+        <StackPanel Margin="40,0,20,0" Orientation="Horizontal">
+            <Label Content="タイアップ名：" Width="90" HorizontalContentAlignment="Right" />
+            <Label Content="{Binding ListTieUpName}" />
+        </StackPanel>
+        <StackPanel Margin="40,0,20,0" Orientation="Horizontal">
+            <Label Content="楽曲名：" Width="90" HorizontalContentAlignment="Right" />
+            <Label Content="{Binding ListSongName}" />
+        </StackPanel>
+        <StackPanel Margin="40,0,20,0" Orientation="Horizontal">
+            <Label Content="歌手名：" Width="90" HorizontalContentAlignment="Right" />
+            <Label Content="{Binding ListArtistName}" />
+        </StackPanel>
+        <StackPanel Margin="20,0,0,0">
+            <Label Content="※ファイル名等から取得したタイアップ名と、リスト出力されるタイアップ名が異なる場合、楽曲名に紐付くタイアップ名が優先されています。" Foreground="Gray" />
+        </StackPanel>
+        <StackPanel Margin="20" Orientation="Horizontal" FlowDirection="RightToLeft">
             <Button x:Name="ButtonCancel" Content="キャンセル" Margin="0" Height="Auto" Style="{StaticResource MaterialDesignRaisedLightButton}" IsCancel="True" Width="100" DockPanel.Dock="Right" Padding="4"/>
-            <Button x:Name="ButtonOk" Content="OK" Margin="0,0,20,0" Height="Auto" IsDefault="True" Width="100" DockPanel.Dock="Right" Command="{Binding ButtonOkClickedCommand}"/>
-            <Label Content="ファイル名等から取得した名称が間違っている場合でも楽曲情報データベースを適用できるようにします。" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Center"/>
-            <Label x:Name="LabelHelp" Grid.Column="1" Margin="0" VerticalAlignment="Center" HorizontalAlignment="Left">
-                <Hyperlink Command="{Binding HelpClickedCommand}" CommandParameter="NamaewoSoroeru" >
-                    <TextBlock Text="詳細情報" />
-                </Hyperlink>
-            </Label>
-        </DockPanel>
+            <Button x:Name="ButtonOk" Content="OK" Margin="20,0,0,0" Height="Auto" IsDefault="True" Width="100" DockPanel.Dock="Right" Command="{Binding ButtonOkClickedCommand}"/>
+        </StackPanel>
     </StackPanel>
 </Window>

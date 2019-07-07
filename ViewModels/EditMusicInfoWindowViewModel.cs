@@ -18,6 +18,7 @@ using Shinta;
 using System;
 using System.Collections.Generic;
 using System.Data.Linq;
+using System.Data.SQLite;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
@@ -146,6 +147,7 @@ namespace YukaLister.ViewModels
 				if (RaisePropertyChangedIfSet(ref mUseTieUpAlias, value))
 				{
 					ButtonSearchTieUpOriginClickedCommand.RaiseCanExecuteChanged();
+					UpdateListItems();
 					if (!mUseTieUpAlias)
 					{
 						TieUpOrigin = null;
@@ -177,6 +179,7 @@ namespace YukaLister.ViewModels
 				if (RaisePropertyChangedIfSet(ref mUseSongAlias, value))
 				{
 					ButtonSearchSongOriginClickedCommand.RaiseCanExecuteChanged();
+					UpdateListItems();
 					if (!mUseSongAlias)
 					{
 						SongOrigin = null;
@@ -191,6 +194,38 @@ namespace YukaLister.ViewModels
 		{
 			get => mSongOrigin;
 			set => RaisePropertyChangedIfSet(ref mSongOrigin, value);
+		}
+
+		// リスト出力時のカテゴリー名
+		private String mListCategoryName;
+		public String ListCategoryName
+		{
+			get => mListCategoryName;
+			set => RaisePropertyChangedIfSet(ref mListCategoryName, value);
+		}
+
+		// リスト出力時のタイアップ名
+		private String mListTieUpName;
+		public String ListTieUpName
+		{
+			get => mListTieUpName;
+			set => RaisePropertyChangedIfSet(ref mListTieUpName, value);
+		}
+
+		// リスト出力時の楽曲名
+		private String mListSongName;
+		public String ListSongName
+		{
+			get => mListSongName;
+			set => RaisePropertyChangedIfSet(ref mListSongName, value);
+		}
+
+		// リスト出力時の歌手名
+		private String mListArtistName;
+		public String ListArtistName
+		{
+			get => mListArtistName;
+			set => RaisePropertyChangedIfSet(ref mListArtistName, value);
 		}
 
 
@@ -255,6 +290,8 @@ namespace YukaLister.ViewModels
 						TieUpOrigin = aSearchMusicInfoWindowViewModel.DecidedName;
 					}
 				}
+
+				UpdateListItems();
 			}
 			catch (Exception oExcep)
 			{
@@ -377,6 +414,7 @@ namespace YukaLister.ViewModels
 						}
 						RaisePropertyChanged(nameof(IsTieUpNameRegistered));
 					}
+					UpdateListItems();
 				}
 			}
 			catch (Exception oExcep)
@@ -425,6 +463,8 @@ namespace YukaLister.ViewModels
 						SongOrigin = aSearchMusicInfoWindowViewModel.DecidedName;
 					}
 				}
+
+				UpdateListItems();
 			}
 			catch (Exception oExcep)
 			{
@@ -583,6 +623,7 @@ namespace YukaLister.ViewModels
 						}
 						RaisePropertyChanged(nameof(IsSongNameRegistered));
 					}
+					UpdateListItems();
 				}
 			}
 			catch (Exception oExcep)
@@ -646,14 +687,50 @@ namespace YukaLister.ViewModels
 			Debug.Assert(Environment != null, "Environment is null");
 			try
 			{
+#if DEBUGz
+				Int32 DBC = 10000;
+				using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
+				using (SQLiteCommand aMusicInfoDbCmd = new SQLiteCommand(aMusicInfoDbInDisk.Connection))
+				using (DataContext aMusicInfoDbContext = new DataContext(aMusicInfoDbInDisk.Connection))
+				{
+					String aOrigin;
+
+					Int32 aCmdStart = System.Environment.TickCount;
+					for (Int32 i = 0; i < DBC; i++)
+					{
+						aOrigin = MusicInfoDatabaseCommon.ProgramOrigin("祝福のカンパネラ PC", aMusicInfoDbCmd);
+					}
+					Int32 aCmdTime = System.Environment.TickCount - aCmdStart;
+
+					Int32 aContextStart = System.Environment.TickCount;
+					for (Int32 i = 0; i < DBC; i++)
+					{
+						aOrigin = MusicInfoDatabaseCommon.ProgramOrigin("祝福のカンパネラ PC", aMusicInfoDbContext);
+					}
+					Int32 aContextTime = System.Environment.TickCount - aContextStart;
+
+					Environment.LogWriter.ShowLogMessage(TraceEventType.Information, "aCmdTime: " + aCmdTime + ", aContextTime: " + aContextTime);
+				}
+#endif
+
+
+
+
 				// タイトルバー
 				Title = "名称の編集";
 #if DEBUG
 				Title = "［デバッグ］" + Title;
 #endif
 				// 別名解決
-				ApplySongAlias();
-				ApplyTieUpAlias();
+				using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
+				using (TFoundSetter aTFoundSetter = new TFoundSetter(aMusicInfoDbInDisk))
+				{
+					ApplySongAlias(aMusicInfoDbInDisk, aTFoundSetter);
+					ApplyTieUpAlias(aMusicInfoDbInDisk, aTFoundSetter);
+				}
+
+				// リスト表示予定項目
+				UpdateListItems();
 			}
 			catch (Exception oExcep)
 			{
@@ -679,64 +756,64 @@ namespace YukaLister.ViewModels
 		// --------------------------------------------------------------------
 		// 適用可能な楽曲名の別名を検索してコンポーネントに反映
 		// --------------------------------------------------------------------
-		private void ApplySongAlias()
+		private void ApplySongAlias(MusicInfoDatabaseInDisk oMusicInfoDbInDisk, TFoundSetter oTFoundSetter)
 		{
 			if (String.IsNullOrEmpty(DicByFile[YlConstants.RULE_VAR_TITLE]))
 			{
 				return;
 			}
 
-			using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
+			String aSongOrigin = oTFoundSetter.SongOrigin(DicByFile[YlConstants.RULE_VAR_TITLE]);
+			if (aSongOrigin != DicByFile[YlConstants.RULE_VAR_TITLE])
 			{
-				List<TSongAlias> aSongAliases = YlCommon.SelectAliasesByAlias<TSongAlias>(aMusicInfoDbInDisk.Connection, DicByFile[YlConstants.RULE_VAR_TITLE]);
-				if (aSongAliases.Count > 0)
+				List<TSong> aSongs = YlCommon.SelectMastersByName<TSong>(oMusicInfoDbInDisk.Connection, aSongOrigin);
+				if (aSongs.Count > 0)
 				{
-					TSong aSong = YlCommon.SelectMasterById<TSong>(aMusicInfoDbInDisk.Connection, aSongAliases[0].OriginalId);
-					if (aSong != null)
-					{
-						UseSongAlias = true;
-						SongOrigin = aSong.Name;
-						return;
-					}
+					// 有効なエイリアスが設定されている
+					UseSongAlias = true;
+					SongOrigin = aSongs[0].Name;
+					return;
 				}
 
-				if (YlCommon.SelectMastersByName<TSong>(aMusicInfoDbInDisk.Connection, DicByFile[YlConstants.RULE_VAR_TITLE]).Count == 0)
-				{
-					UseSongAlias = true;
-					SongOrigin = null;
-				}
+			}
+
+			if (YlCommon.SelectMastersByName<TSong>(oMusicInfoDbInDisk.Connection, DicByFile[YlConstants.RULE_VAR_TITLE]).Count == 0)
+			{
+				// ファイル名から取得された情報が登録されていない
+				UseSongAlias = true;
+				SongOrigin = null;
 			}
 		}
 
 		// --------------------------------------------------------------------
 		// 適用可能なタイアップ名の別名を検索してコンポーネントに反映
 		// --------------------------------------------------------------------
-		private void ApplyTieUpAlias()
+		private void ApplyTieUpAlias(MusicInfoDatabaseInDisk oMusicInfoDbInDisk, TFoundSetter oTFoundSetter)
 		{
 			if (String.IsNullOrEmpty(DicByFile[YlConstants.RULE_VAR_PROGRAM]))
 			{
 				return;
 			}
 
-			using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
+			String aProgramOrigin = oTFoundSetter.ProgramOrigin(DicByFile[YlConstants.RULE_VAR_PROGRAM]);
+			if (aProgramOrigin != DicByFile[YlConstants.RULE_VAR_PROGRAM])
 			{
-				List<TTieUpAlias> aTieUpAliases = YlCommon.SelectAliasesByAlias<TTieUpAlias>(aMusicInfoDbInDisk.Connection, DicByFile[YlConstants.RULE_VAR_PROGRAM]);
-				if (aTieUpAliases.Count > 0)
+				List<TTieUp> aTieUps = YlCommon.SelectMastersByName<TTieUp>(oMusicInfoDbInDisk.Connection, aProgramOrigin);
+				if (aTieUps.Count > 0)
 				{
-					TTieUp aTieUp = YlCommon.SelectMasterById<TTieUp>(aMusicInfoDbInDisk.Connection, aTieUpAliases[0].OriginalId);
-					if (aTieUp != null)
-					{
-						UseTieUpAlias = true;
-						TieUpOrigin = aTieUp.Name;
-						return;
-					}
+					// 有効なエイリアスが設定されている
+					UseTieUpAlias = true;
+					TieUpOrigin = aTieUps[0].Name;
+					return;
 				}
 
-				if (YlCommon.SelectMastersByName<TTieUp>(aMusicInfoDbInDisk.Connection, DicByFile[YlConstants.RULE_VAR_PROGRAM]).Count == 0)
-				{
-					UseTieUpAlias = true;
-					TieUpOrigin = null;
-				}
+			}
+
+			if (YlCommon.SelectMastersByName<TTieUp>(oMusicInfoDbInDisk.Connection, DicByFile[YlConstants.RULE_VAR_PROGRAM]).Count == 0)
+			{
+				// ファイル名から取得された情報が登録されていない
+				UseTieUpAlias = true;
+				TieUpOrigin = null;
 			}
 		}
 
@@ -899,6 +976,47 @@ namespace YukaLister.ViewModels
 				aContext.SubmitChanges();
 			}
 		}
+
+		// --------------------------------------------------------------------
+		// リストに表示される項目を更新
+		// --------------------------------------------------------------------
+		private void UpdateListItems()
+		{
+			try
+			{
+				FolderSettingsInDisk aFolderSettingsInDisk = YlCommon.LoadFolderSettings2Ex(Path.GetDirectoryName(PathExLen));
+				FolderSettingsInMemory aFolderSettingsInMemory = YlCommon.CreateFolderSettingsInMemory(aFolderSettingsInDisk);
+				TFound aTFound = new TFound();
+				aTFound.Path = Environment.ShortenPath(PathExLen);
+
+				using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
+				using (TFoundSetterAliasSpecify aTFoundSetterAliasSpecify = new TFoundSetterAliasSpecify(aMusicInfoDbInDisk))
+				{
+					// エイリアス指定
+					if (UseTieUpAlias)
+					{
+						aTFoundSetterAliasSpecify.SpecifiedProgramOrigin = TieUpOrigin;
+					}
+					if (UseSongAlias)
+					{
+						aTFoundSetterAliasSpecify.SpecifiedSongOrigin = SongOrigin;
+					}
+
+					aTFoundSetterAliasSpecify.SetTFoundValue(aTFound, aFolderSettingsInMemory);
+				}
+
+				ListCategoryName = aTFound.Category;
+				ListTieUpName = aTFound.TieUpName;
+				ListSongName = aTFound.SongName;
+				ListArtistName = aTFound.ArtistName;
+			}
+			catch (Exception oExcep)
+			{
+				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "リスト表示予定項目更新時エラー：\n" + oExcep.Message);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
+			}
+		}
+
 
 	}
 	// public class EditMusicInfoWindowViewModel ___END___
