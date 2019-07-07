@@ -90,30 +90,6 @@ namespace YukaLister.Models.Database
 			return oAlias;
 		}
 
-#if false
-		public String ProgramOrigin(String oAlias, DataContext oContext)
-		{
-			if (String.IsNullOrEmpty(oAlias))
-			{
-				return null;
-			}
-
-			List<TTieUpAlias> aTieUpAliases = YlCommon.SelectAliasesByAlias<TTieUpAlias>(oContext, oAlias);
-			if (aTieUpAliases.Count == 0)
-			{
-				return null;
-			}
-
-			TTieUp aTieUp = YlCommon.SelectMasterById<TTieUp>(oContext, aTieUpAliases[0].OriginalId);
-			if (aTieUp == null)
-			{
-				return null;
-			}
-
-			return aTieUp.Name;
-		}
-#endif
-
 		// --------------------------------------------------------------------
 		// 検出ファイルレコードの値を、フォルダー設定や楽曲情報データベースから検索して設定する
 		// oRecord.Path は事前に設定されている必要がある

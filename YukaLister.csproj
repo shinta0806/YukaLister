@@ -147,7 +147,6 @@
     </Compile>
     <Compile Include="Models\Database\DatabaseBase.cs" />
     <Compile Include="Models\Database\DatabaseTables.cs" />
-    <Compile Include="Models\Database\MusicInfoDatabaseCommon.cs" />
     <Compile Include="Models\Database\MusicInfoDatabaseInDisk.cs" />
     <Compile Include="Models\Database\TFoundSetter.cs" />
     <Compile Include="Models\Database\TFoundSetterAliasSpecify.cs" />

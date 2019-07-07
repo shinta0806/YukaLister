@@ -1613,7 +1613,7 @@ namespace YukaLister.ViewModels
 
 					// 追加
 					PreviewInfos.Add(aPreviewInfo);
-#if DEBUG
+#if DEBUGz
 					Thread.Sleep(100);
 #endif
 				}

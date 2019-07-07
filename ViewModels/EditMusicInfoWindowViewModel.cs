@@ -687,35 +687,6 @@ namespace YukaLister.ViewModels
 			Debug.Assert(Environment != null, "Environment is null");
 			try
 			{
-#if DEBUGz
-				Int32 DBC = 10000;
-				using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
-				using (SQLiteCommand aMusicInfoDbCmd = new SQLiteCommand(aMusicInfoDbInDisk.Connection))
-				using (DataContext aMusicInfoDbContext = new DataContext(aMusicInfoDbInDisk.Connection))
-				{
-					String aOrigin;
-
-					Int32 aCmdStart = System.Environment.TickCount;
-					for (Int32 i = 0; i < DBC; i++)
-					{
-						aOrigin = MusicInfoDatabaseCommon.ProgramOrigin("祝福のカンパネラ PC", aMusicInfoDbCmd);
-					}
-					Int32 aCmdTime = System.Environment.TickCount - aCmdStart;
-
-					Int32 aContextStart = System.Environment.TickCount;
-					for (Int32 i = 0; i < DBC; i++)
-					{
-						aOrigin = MusicInfoDatabaseCommon.ProgramOrigin("祝福のカンパネラ PC", aMusicInfoDbContext);
-					}
-					Int32 aContextTime = System.Environment.TickCount - aContextStart;
-
-					Environment.LogWriter.ShowLogMessage(TraceEventType.Information, "aCmdTime: " + aCmdTime + ", aContextTime: " + aContextTime);
-				}
-#endif
-
-
-
-
 				// タイトルバー
 				Title = "名称の編集";
 #if DEBUG
