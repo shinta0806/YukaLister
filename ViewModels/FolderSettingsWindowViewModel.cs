@@ -18,6 +18,7 @@ using Shinta;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Data.Linq;
 using System.Diagnostics;
 using System.Globalization;
@@ -816,6 +817,104 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "名称の編集ボタンクリック時エラー：\n" + oExcep.Message);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
+			}
+		}
+		#endregion
+
+		#region ソートの制御
+		private ListenerCommand<DataGridSortingEventArgs> mDataGridPreviewSortingCommand;
+
+		public ListenerCommand<DataGridSortingEventArgs> DataGridPreviewSortingCommand
+		{
+			get
+			{
+				if (mDataGridPreviewSortingCommand == null)
+				{
+					mDataGridPreviewSortingCommand = new ListenerCommand<DataGridSortingEventArgs>(DataGridPreviewSorting);
+				}
+				return mDataGridPreviewSortingCommand;
+			}
+		}
+
+		public void DataGridPreviewSorting(DataGridSortingEventArgs oDataGridSortingEventArgs)
+		{
+			try
+			{
+				PreviewInfo aPrevSelectedPreviewInfo = SelectedPreviewInfo;
+
+				// 並び替えの方向（昇順か降順か）を決める
+				ListSortDirection aNewDirection;
+				if (oDataGridSortingEventArgs.Column.SortDirection == ListSortDirection.Ascending)
+				{
+					aNewDirection = ListSortDirection.Descending;
+				}
+				else
+				{
+					aNewDirection = ListSortDirection.Ascending;
+				}
+
+				// データのソート
+				List<PreviewInfo> aNewPreviewInfos = new List<PreviewInfo>();
+				if (aNewDirection == ListSortDirection.Ascending)
+				{
+					switch (oDataGridSortingEventArgs.Column.DisplayIndex)
+					{
+						case 0:
+							// ファイル名でのソート
+							aNewPreviewInfos = PreviewInfos.OrderBy(x => x.FileName).ToList();
+							break;
+						case 1:
+							// 項目と値でのソート
+							aNewPreviewInfos = PreviewInfos.OrderBy(x => x.Items).ToList();
+							break;
+						case 2:
+							// 更新日でのソート
+							aNewPreviewInfos = PreviewInfos.OrderBy(x => x.LastWriteTime).ToList();
+							break;
+						default:
+							Debug.Assert(false, "DataGridPreviewSorting() bad specified target item: " + oDataGridSortingEventArgs.Column.DisplayIndex.ToString());
+							break;
+					}
+				}
+				else
+				{
+					switch (oDataGridSortingEventArgs.Column.DisplayIndex)
+					{
+						case 0:
+							// ファイル名でのソート
+							aNewPreviewInfos = PreviewInfos.OrderByDescending(x => x.FileName).ToList();
+							break;
+						case 1:
+							// 項目と値でのソート
+							aNewPreviewInfos = PreviewInfos.OrderByDescending(x => x.Items).ToList();
+							break;
+						case 2:
+							// 更新日でのソート
+							aNewPreviewInfos = PreviewInfos.OrderByDescending(x => x.LastWriteTime).ToList();
+							break;
+						default:
+							Debug.Assert(false, "DataGridPreviewSorting() bad specified target item: " + oDataGridSortingEventArgs.Column.DisplayIndex.ToString());
+							break;
+					}
+				}
+
+				// 結果の表示
+				PreviewInfos.Clear();
+				foreach (PreviewInfo aNewPreviewInfo in aNewPreviewInfos)
+				{
+					PreviewInfos.Add(aNewPreviewInfo);
+				}
+				SelectedPreviewInfo = aPrevSelectedPreviewInfo;
+
+				// 並び替えグリフの表示
+				oDataGridSortingEventArgs.Column.SortDirection = aNewDirection;
+
+				oDataGridSortingEventArgs.Handled = true;
+			}
+			catch (Exception oExcep)
+			{
+				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "DGV ヘッダークリック時エラー：\n" + oExcep.Message);
 				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}

@@ -9,7 +9,7 @@
         xmlns:v="clr-namespace:YukaLister.Views"
         xmlns:vm="clr-namespace:YukaLister.ViewModels"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-        Title="{Binding Title}" ShowInTaskbar="False" ResizeMode="CanResizeWithGrip" Height="750" Width="800">
+        Title="{Binding Title}" ShowInTaskbar="False" ResizeMode="CanResizeWithGrip" Height="750" Width="900">
 
     <Window.Resources>
         <mvc:BooleanInvertConverter x:Key="BooleanInvertConverter"/>
@@ -161,11 +161,11 @@
         <Border BorderBrush="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}" BorderThickness="1" Height="3" Margin="0,10,0,0" DockPanel.Dock="Bottom"/>
         <CheckBox x:Name="CheckBoxExclude" Content="このフォルダーを検索対象としない (_X)" Margin="20,10,0,0" DockPanel.Dock="Bottom" IsChecked="{Binding IsExcluded}"/>
         <Border BorderBrush="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}" BorderThickness="1" Height="3" Margin="0,10,0,0" DockPanel.Dock="Bottom"/>
-        <DataGrid x:Name="DataGridPreview" AutoGenerateColumns="False" CanUserReorderColumns="False" CanUserSortColumns="False" CanUserResizeRows="False" IsReadOnly="True" SelectionMode="Single" Margin="20,10,20,0" 
+        <DataGrid x:Name="DataGridPreview" AutoGenerateColumns="False" CanUserReorderColumns="False" CanUserResizeRows="False" IsReadOnly="True" SelectionMode="Single" Margin="20,10,20,0" 
                   materialDesign:DataGridAssist.ColumnHeaderPadding="3 5 3 5" materialDesign:DataGridAssist.CellPadding="3" DockPanel.Dock="Top" ItemsSource="{Binding PreviewInfos}" 
                   IsEnabled="{Binding IsExcluded, Converter={StaticResource BooleanInvertConverter}}">
             <i:Interaction.Behaviors>
-                <sb:DataGridBindingSupportBehavior SelectedItem="{Binding SelectedPreviewInfo}" />
+                <sb:DataGridBindingSupportBehavior SelectedItem="{Binding SelectedPreviewInfo}" SortingCommand="{Binding DataGridPreviewSortingCommand}" />
             </i:Interaction.Behaviors>
             <DataGrid.Columns>
                 <DataGridTextColumn Header="ファイル" Width="250" Binding="{Binding FileName}" />
