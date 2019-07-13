@@ -714,7 +714,7 @@ namespace YukaLister.ViewModels
 			}
 		}
 
-		public bool CanButtonPreviewClicked()
+		public Boolean CanButtonPreviewClicked()
 		{
 			return !IsExcluded && ProgressBarPreviewVisibility == Visibility.Hidden;
 		}
@@ -755,7 +755,7 @@ namespace YukaLister.ViewModels
 			}
 		}
 
-		public bool CanButtonJumpClicked()
+		public Boolean CanButtonJumpClicked()
 		{
 			return !IsExcluded && PreviewInfos.Count > 0;
 		}
@@ -1130,6 +1130,52 @@ namespace YukaLister.ViewModels
 			SelectedFolderNameRuleValue = null;
 			InputFolderNameRuleValue = null;
 			mIsDirty = true;
+		}
+
+		// --------------------------------------------------------------------
+		// 指定フォルダーのファイル情報を解析結果に追加
+		// --------------------------------------------------------------------
+		private void AddPreviewInfos(String oPathExLen)
+		{
+			// 検索
+			String[] aAllPathes = Directory.GetFiles(PathExLen);
+
+			// マッチをリストに追加
+			FolderSettingsInDisk aFolderSettingsInDisk = YlCommon.LoadFolderSettings2Ex(PathExLen);
+			FolderSettingsInMemory aFolderSettingsInMemory = YlCommon.CreateFolderSettingsInMemory(aFolderSettingsInDisk);
+			Dictionary<String, String> aRuleMap = YlCommon.CreateRuleDictionaryWithDescription();
+			foreach (String aPath in aAllPathes)
+			{
+				if (!Environment.YukaListerSettings.TargetExts.Contains(Path.GetExtension(aPath).ToLower()))
+				{
+					continue;
+				}
+
+				// ファイル命名規則とフォルダー固定値を適用
+				Dictionary<String, String> aDic = YlCommon.MatchFileNameRulesAndFolderRule(Path.GetFileNameWithoutExtension(aPath), aFolderSettingsInMemory);
+
+				// ファイル
+				PreviewInfo aPreviewInfo = new PreviewInfo();
+				aPreviewInfo.FileName = Path.GetFileName(aPath);
+				aPreviewInfo.LastWriteTime = JulianDay.DateTimeToModifiedJulianDate(new FileInfo(aPath).LastWriteTime);
+
+				// 項目と値
+				StringBuilder aSB = new StringBuilder();
+				foreach (KeyValuePair<String, String> aKvp in aDic)
+				{
+					if (aKvp.Key != YlConstants.RULE_VAR_ANY && !String.IsNullOrEmpty(aKvp.Value))
+					{
+						aSB.Append(aRuleMap[aKvp.Key] + "=" + aKvp.Value + ", ");
+					}
+				}
+				aPreviewInfo.Items = aSB.ToString();
+
+				// 追加
+				PreviewInfos.Add(aPreviewInfo);
+#if DEBUGz
+					Thread.Sleep(100);
+#endif
+			}
 		}
 
 		// --------------------------------------------------------------------
@@ -1678,46 +1724,14 @@ namespace YukaLister.ViewModels
 				PreviewInfos.Clear();
 				ButtonJumpClickedCommand.RaiseCanExecuteChanged();
 
-				// 検索
-				String[] aAllPathes = Directory.GetFiles(PathExLen);
+				// 追加
+				AddPreviewInfos(PathExLen);
 
-				// マッチをリストに追加
-				FolderSettingsInDisk aFolderSettingsInDisk = YlCommon.LoadFolderSettings2Ex(PathExLen);
-				FolderSettingsInMemory aFolderSettingsInMemory = YlCommon.CreateFolderSettingsInMemory(aFolderSettingsInDisk);
-				Dictionary<String, String> aRuleMap = YlCommon.CreateRuleDictionaryWithDescription();
-				foreach (String aPath in aAllPathes)
+				// 結果
+				if (PreviewInfos.Count == 0)
 				{
-					if (!Environment.YukaListerSettings.TargetExts.Contains(Path.GetExtension(aPath).ToLower()))
-					{
-						continue;
-					}
-
-					// ファイル命名規則とフォルダー固定値を適用
-					Dictionary<String, String> aDic = YlCommon.MatchFileNameRulesAndFolderRule(Path.GetFileNameWithoutExtension(aPath), aFolderSettingsInMemory);
-
-					// ファイル
-					PreviewInfo aPreviewInfo = new PreviewInfo();
-					aPreviewInfo.FileName = Path.GetFileName(aPath);
-					aPreviewInfo.LastWriteTime = JulianDay.DateTimeToModifiedJulianDate(new FileInfo(aPath).LastWriteTime);
-
-					// 項目と値
-					StringBuilder aSB = new StringBuilder();
-					foreach (KeyValuePair<String, String> aKvp in aDic)
-					{
-						if (aKvp.Key != YlConstants.RULE_VAR_ANY && !String.IsNullOrEmpty(aKvp.Value))
-						{
-							aSB.Append(aRuleMap[aKvp.Key] + "=" + aKvp.Value + ", ");
-						}
-					}
-					aPreviewInfo.Items = aSB.ToString();
-
-					// 追加
-					PreviewInfos.Add(aPreviewInfo);
-#if DEBUGz
-					Thread.Sleep(100);
-#endif
+					throw new Exception("フォルダー内にリスト化対象のファイルがありません。");
 				}
-
 				ButtonJumpClickedCommand.RaiseCanExecuteChanged();
 			}
 			catch (OperationCanceledException)
