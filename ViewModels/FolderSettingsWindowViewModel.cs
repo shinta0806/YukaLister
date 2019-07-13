@@ -1599,6 +1599,7 @@ namespace YukaLister.ViewModels
 					// ファイル
 					PreviewInfo aPreviewInfo = new PreviewInfo();
 					aPreviewInfo.FileName = Path.GetFileName(aPath);
+					aPreviewInfo.LastWriteTime = JulianDay.DateTimeToModifiedJulianDate(new FileInfo(aPath).LastWriteTime);
 
 					// 項目と値
 					StringBuilder aSB = new StringBuilder();

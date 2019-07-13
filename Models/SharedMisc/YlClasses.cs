@@ -8,6 +8,7 @@
 //
 // ----------------------------------------------------------------------------
 
+using Shinta;
 using System;
 using System.Collections.Generic;
 
@@ -52,6 +53,15 @@ namespace YukaLister.Models.SharedMisc
 
 		// 取得項目
 		public String Items { get; set; }
+
+		// ファイル最終更新日時（修正ユリウス日）
+		public Double LastWriteTime { get; set; }
+
+		// ファイル最終更新日時（修正ユリウス日）表示用
+		public String LastWriteTimeText
+		{
+			get => JulianDay.ModifiedJulianDateToDateTime(LastWriteTime).ToString(YlConstants.DATE_FORMAT);
+		}
 
 	} // public class PreviewInfo ___END___
 
