@@ -872,6 +872,10 @@ namespace YukaLister.ViewModels
 							// 更新日でのソート
 							aNewPreviewInfos = PreviewInfos.OrderBy(x => x.LastWriteTime).ToList();
 							break;
+						case 3:
+							// サブフォルダーでのソート
+							aNewPreviewInfos = PreviewInfos.OrderBy(x => x.SubFolder).ToList();
+							break;
 						default:
 							Debug.Assert(false, "DataGridPreviewSorting() bad specified target item: " + oDataGridSortingEventArgs.Column.DisplayIndex.ToString());
 							break;
@@ -892,6 +896,10 @@ namespace YukaLister.ViewModels
 						case 2:
 							// 更新日でのソート
 							aNewPreviewInfos = PreviewInfos.OrderByDescending(x => x.LastWriteTime).ToList();
+							break;
+						case 3:
+							// サブフォルダーでのソート
+							aNewPreviewInfos = PreviewInfos.OrderByDescending(x => x.SubFolder).ToList();
 							break;
 						default:
 							Debug.Assert(false, "DataGridPreviewSorting() bad specified target item: " + oDataGridSortingEventArgs.Column.DisplayIndex.ToString());
@@ -1158,6 +1166,10 @@ namespace YukaLister.ViewModels
 				PreviewInfo aPreviewInfo = new PreviewInfo();
 				aPreviewInfo.FileName = Path.GetFileName(aPath);
 				aPreviewInfo.LastWriteTime = JulianDay.DateTimeToModifiedJulianDate(new FileInfo(aPath).LastWriteTime);
+				if (oFolderPathExLen.Length > PathExLen.Length)
+				{
+					aPreviewInfo.SubFolder = oFolderPathExLen.Substring(PathExLen.Length + 1);
+				}
 
 				// 項目と値
 				StringBuilder aSB = new StringBuilder();
@@ -1173,7 +1185,7 @@ namespace YukaLister.ViewModels
 				// 追加
 				PreviewInfos.Add(aPreviewInfo);
 #if DEBUGz
-					Thread.Sleep(100);
+				Thread.Sleep(100);
 #endif
 			}
 

@@ -63,6 +63,9 @@ namespace YukaLister.Models.SharedMisc
 			get => JulianDay.ModifiedJulianDateToDateTime(LastWriteTime).ToString(YlConstants.DATE_FORMAT);
 		}
 
+		// サブフォルダー
+		public String SubFolder { get; set; }
+
 	} // public class PreviewInfo ___END___
 
 }

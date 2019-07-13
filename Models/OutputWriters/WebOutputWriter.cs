@@ -555,7 +555,7 @@ namespace YukaLister.Models.OutputWriters
 							KIND_FILE_NAME_ARTIST, "歌手別", aPrevArtistHead, OutputItems.ArtistName);
 				}
 
-				if (/*aPrevTFound == null*/aArtistNamesAndTFounds.Count == 0
+				if (aArtistNamesAndTFounds.Count == 0
 						|| aPrevTFound != null && aTFound.ArtistName != aPrevTFound.ArtistName)
 				{
 					// 歌手名が新しくなった
@@ -602,7 +602,7 @@ namespace YukaLister.Models.OutputWriters
 
 			IQueryable<TFound> aQueryResult =
 					from x in TableFound
-					where oIsAdult ? x.TieUpAgeLimit >= YlConstants.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlConstants.AGE_LIMIT_CERO_Z
+					where x.TieUpName != null && (oIsAdult ? x.TieUpAgeLimit >= YlConstants.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlConstants.AGE_LIMIT_CERO_Z)
 					orderby x.Category, x.Head, x.TieUpRuby, x.TieUpName, x.SongRuby, x.SongName
 					select x;
 
@@ -903,7 +903,8 @@ namespace YukaLister.Models.OutputWriters
 
 			IQueryable<TFound> aQueryResult =
 					from x in TableFound
-					where x.LastWriteTime >= aNewDate && (oIsAdult ? x.TieUpAgeLimit >= YlConstants.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlConstants.AGE_LIMIT_CERO_Z)
+					where x.TieUpName != null && x.LastWriteTime >= aNewDate
+					&& (oIsAdult ? x.TieUpAgeLimit >= YlConstants.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlConstants.AGE_LIMIT_CERO_Z)
 					orderby x.Category, x.Head, x.TieUpRuby, x.TieUpName, x.SongRuby, x.SongName
 					select x;
 			TFound aPrevTFound = null;
@@ -1047,7 +1048,8 @@ namespace YukaLister.Models.OutputWriters
 
 				IQueryable<TFound> aQueryResult =
 						from x in TableFound
-						where JulianDay.DateTimeToModifiedJulianDate(new DateTime(aSinceYear, 1, 1)) <= x.SongReleaseDate
+						where x.TieUpName != null
+						&& JulianDay.DateTimeToModifiedJulianDate(new DateTime(aSinceYear, 1, 1)) <= x.SongReleaseDate
 						&& x.SongReleaseDate < JulianDay.DateTimeToModifiedJulianDate(new DateTime(aUntilYear, 1, 1))
 						&& (oIsAdult ? x.TieUpAgeLimit >= YlConstants.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlConstants.AGE_LIMIT_CERO_Z)
 						orderby x.Head, x.TieUpRuby, x.TieUpName, x.SongRuby, x.SongName
@@ -1116,7 +1118,7 @@ namespace YukaLister.Models.OutputWriters
 
 			IQueryable<TFound> aQueryResult =
 					from x in TableFound
-					where x.TieUpGroupName != null && (oIsAdult ? x.TieUpAgeLimit >= YlConstants.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlConstants.AGE_LIMIT_CERO_Z)
+					where x.TieUpName != null && x.TieUpGroupName != null && (oIsAdult ? x.TieUpAgeLimit >= YlConstants.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlConstants.AGE_LIMIT_CERO_Z)
 					orderby x.TieUpGroupRuby, x.TieUpGroupName, x.Head, x.TieUpRuby, x.TieUpName, x.SongRuby, x.SongName
 					select x;
 			TFound aPrevTFound = null;
@@ -1211,7 +1213,8 @@ namespace YukaLister.Models.OutputWriters
 
 			IQueryable<TFound> aQueryResult =
 					from x in TableFound
-					where JulianDay.DateTimeToModifiedJulianDate(new DateTime(oSinceYear, oSinceMonth, 1)) <= x.SongReleaseDate
+					where x.TieUpName != null
+					&& JulianDay.DateTimeToModifiedJulianDate(new DateTime(oSinceYear, oSinceMonth, 1)) <= x.SongReleaseDate
 					&& x.SongReleaseDate < JulianDay.DateTimeToModifiedJulianDate(new DateTime(oUntilYear, oUntilMonth, 1))
 					&& (oIsAdult ? x.TieUpAgeLimit >= YlConstants.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlConstants.AGE_LIMIT_CERO_Z)
 					orderby x.Head, x.TieUpRuby, x.TieUpName, x.SongRuby, x.SongName
@@ -1224,6 +1227,7 @@ namespace YukaLister.Models.OutputWriters
 						|| aPrevTFound != null && aTFound.TieUpName != aPrevTFound.TieUpName)
 				{
 					// 番組名が新しくなった
+					Debug.Assert(aTFound.TieUpName != null, "GenerateYearsAndSeasonsOneSeason() tie up name is null");
 					aTieUpNamesAndTFounds[aTFound.TieUpName] = new List<TFound>();
 				}
 

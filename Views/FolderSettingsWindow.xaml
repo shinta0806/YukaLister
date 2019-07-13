@@ -171,6 +171,7 @@
                 <DataGridTextColumn Header="ファイル" Width="250" Binding="{Binding FileName}" />
                 <DataGridTextColumn Header="項目と値" Width="*" Binding="{Binding Items}" />
                 <DataGridTextColumn Header="更新日" Width="80" Binding="{Binding LastWriteTimeText}" />
+                <DataGridTextColumn Header="サブフォルダー" Width="40" Binding="{Binding SubFolder}" />
             </DataGrid.Columns>
         </DataGrid>
     </DockPanel>
