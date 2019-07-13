@@ -967,6 +967,7 @@ namespace YukaLister.Models
 					switch (oPrevParentTargetFolderInfo.FolderTask)
 					{
 						case FolderTask.AddFileName:
+							break;
 						case FolderTask.AddInfo:
 							DoFolderTaskByWorkerPrevParentChangedAdd(oPrevParentTargetFolderInfo);
 							break;
