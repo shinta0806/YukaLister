@@ -1135,13 +1135,13 @@ namespace YukaLister.ViewModels
 		// --------------------------------------------------------------------
 		// 指定フォルダーのファイル情報を解析結果に追加
 		// --------------------------------------------------------------------
-		private void AddPreviewInfos(String oPathExLen)
+		private void AddPreviewInfos(String oFolderPathExLen)
 		{
 			// 検索
-			String[] aAllPathes = Directory.GetFiles(PathExLen);
+			String[] aAllPathes = Directory.GetFiles(oFolderPathExLen);
 
 			// マッチをリストに追加
-			FolderSettingsInDisk aFolderSettingsInDisk = YlCommon.LoadFolderSettings2Ex(PathExLen);
+			FolderSettingsInDisk aFolderSettingsInDisk = YlCommon.LoadFolderSettings2Ex(oFolderPathExLen);
 			FolderSettingsInMemory aFolderSettingsInMemory = YlCommon.CreateFolderSettingsInMemory(aFolderSettingsInDisk);
 			Dictionary<String, String> aRuleMap = YlCommon.CreateRuleDictionaryWithDescription();
 			foreach (String aPath in aAllPathes)
@@ -1175,6 +1175,16 @@ namespace YukaLister.ViewModels
 #if DEBUGz
 					Thread.Sleep(100);
 #endif
+			}
+
+			// 単独設定のないサブフォルダーを検索
+			String[] aSubFolders = Directory.GetDirectories(oFolderPathExLen, "*", SearchOption.TopDirectoryOnly);
+			foreach (String aPath in aSubFolders)
+			{
+				if (YlCommon.FindSettingsFolder2Ex(aPath) != aPath)
+				{
+					AddPreviewInfos(aPath);
+				}
 			}
 		}
 
