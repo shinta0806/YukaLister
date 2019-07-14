@@ -48,10 +48,11 @@ namespace YukaLister.Models.Http
 		// --------------------------------------------------------------------
 		// コンストラクター
 		// --------------------------------------------------------------------
-		public WebServer(EnvironmentModel oEnvironment, YukariListDatabaseInMemory oYukariListDbInMemory)
+		public WebServer(EnvironmentModel oEnvironment, YukariListDatabaseInMemory oYukariListDbInMemory, CancellationToken oToken)
 		{
 			mEnvironment = oEnvironment;
 			mYukariListDbInMemory = oYukariListDbInMemory;
+			mToken = oToken;
 		}
 
 		// ====================================================================
@@ -135,6 +136,9 @@ namespace YukaLister.Models.Http
 
 		// ゆかり用リストデータベース（作業用インメモリ）
 		private YukariListDatabaseInMemory mYukariListDbInMemory;
+
+		// 終了用
+		private CancellationToken mToken;
 
 		// 排他制御
 		private static Object mTaskLockWebServer = new Object();
@@ -569,7 +573,7 @@ namespace YukaLister.Models.Http
 							mEnvironment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 						}
 						aNumRetries++;
-						mEnvironment.AppCancellationTokenSource.Token.ThrowIfCancellationRequested();
+						mToken.ThrowIfCancellationRequested();
 
 						// 少し待ってみる
 						Thread.Sleep(5 * 1000);
@@ -811,7 +815,7 @@ namespace YukaLister.Models.Http
 						// タスク上限を超えないように調整
 						while (aNumWebServerTasks >= mWebServerTasksLimit)
 						{
-							mEnvironment.AppCancellationTokenSource.Token.ThrowIfCancellationRequested();
+							mToken.ThrowIfCancellationRequested();
 							Thread.Sleep(Common.GENERAL_SLEEP_TIME);
 						}
 
@@ -829,7 +833,7 @@ namespace YukaLister.Models.Http
 						mEnvironment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 					}
 
-					mEnvironment.AppCancellationTokenSource.Token.ThrowIfCancellationRequested();
+					mToken.ThrowIfCancellationRequested();
 				}
 			}
 			catch (OperationCanceledException)

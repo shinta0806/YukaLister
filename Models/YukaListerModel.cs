@@ -25,6 +25,7 @@ using Shinta;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 using YukaLister.Models.Database;
@@ -58,9 +59,6 @@ namespace YukaLister.Models
 		// ゆかり用データベース
 		public YukariDatabaseModel YukariDb { get; private set; }
 
-		// Web サーバー（null のままのこともあり得る）
-		public WebServer WebServer { get; private set; }
-
 		// ====================================================================
 		// public メンバー関数
 		// ====================================================================
@@ -71,6 +69,7 @@ namespace YukaLister.Models
 		public void ButtonYukaListerSettingsClicked()
 		{
 			String aYukariConfigPathBak = Environment.YukaListerSettings.YukariConfigPath();
+			Boolean aProvideYukariPreviewBak = Environment.YukaListerSettings.ProvideYukariPreview;
 			Boolean aSyncMusicInfoDbBak = Environment.YukaListerSettings.SyncMusicInfoDb;
 			String aSyncServerBak = Environment.YukaListerSettings.SyncServer;
 			String aSyncAccountBak = Environment.YukaListerSettings.SyncAccount;
@@ -103,6 +102,19 @@ namespace YukaLister.Models
 				Environment.YukaListerSettings.AnalyzeYukariEasyAuthConfig(Environment);
 				SetFileSystemWatcherYukariConfig();
 				YukariDb.YukariConfigPathChanged();
+			}
+
+			// サーバー設定が変更された場合は起動・終了を行う
+			if (Environment.YukaListerSettings.ProvideYukariPreview != aProvideYukariPreviewBak)
+			{
+				if (Environment.YukaListerSettings.ProvideYukariPreview)
+				{
+					RunPreviewServerIfNeeded();
+				}
+				else
+				{
+					StopPreviewServerIfNeeded();
+				}
 			}
 
 			if (aRegetSyncDataNeeded)
@@ -148,26 +160,6 @@ namespace YukaLister.Models
 		}
 
 		// --------------------------------------------------------------------
-		// プレビュー設定が有効ならプレビュー用サーバーを開始
-		// --------------------------------------------------------------------
-		public void RunPreviewServerIfNeeded()
-		{
-			if (!Environment.YukaListerSettings.ProvideYukariPreview)
-			{
-				return;
-			}
-			if (WebServer != null)
-			{
-				return;
-			}
-
-			WebServer = new WebServer(Environment, YukariDb.YukariListDbInMemory);
-
-			// async を待機しない
-			Task aSuppressWarning = WebServer.RunAsync();
-		}
-
-		// --------------------------------------------------------------------
 		// 終了処理
 		// --------------------------------------------------------------------
 		public void Quit()
@@ -177,12 +169,7 @@ namespace YukaLister.Models
 			Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "終了処理中...");
 
 			// 子要素終了処理
-			if (WebServer != null)
-			{
-				// async を待機しない
-				Task aSuppressWarning = WebServer.StopAsync();
-			}
-
+			StopPreviewServerIfNeeded();
 			YukariDb.Quit();
 			Environment.Quit();
 		}
@@ -193,6 +180,12 @@ namespace YukaLister.Models
 
 		// VM
 		private MainWindowViewModel mMainWindowViewModel;
+
+		// Web サーバー（null のままのこともあり得る）
+		private WebServer mWebServer;
+
+		// Web サーバー終了用
+		private CancellationTokenSource mWebServerTokenSource;
 
 		// config.ini 監視用
 		private FileSystemWatcher mFileSystemWatcherYukariConfig;
@@ -211,6 +204,27 @@ namespace YukaLister.Models
 		}
 
 		// --------------------------------------------------------------------
+		// プレビュー設定が有効ならプレビュー用サーバーを開始
+		// --------------------------------------------------------------------
+		private void RunPreviewServerIfNeeded()
+		{
+			if (!Environment.YukaListerSettings.ProvideYukariPreview)
+			{
+				return;
+			}
+			if (mWebServer != null)
+			{
+				return;
+			}
+
+			mWebServerTokenSource = new CancellationTokenSource();
+			mWebServer = new WebServer(Environment, YukariDb.YukariListDbInMemory, mWebServerTokenSource.Token);
+
+			// async を待機しない
+			Task aSuppressWarning = mWebServer.RunAsync();
+		}
+
+		// --------------------------------------------------------------------
 		// ゆかり設定ファイルの監視設定
 		// --------------------------------------------------------------------
 		private void SetFileSystemWatcherYukariConfig()
@@ -224,6 +238,22 @@ namespace YukaLister.Models
 			else
 			{
 				mFileSystemWatcherYukariConfig.EnableRaisingEvents = false;
+			}
+		}
+
+		// --------------------------------------------------------------------
+		// プレビュー用サーバーが実行中なら終了
+		// --------------------------------------------------------------------
+		private void StopPreviewServerIfNeeded()
+		{
+			if (mWebServer != null)
+			{
+				mWebServerTokenSource.Cancel();
+				mWebServerTokenSource = null;
+
+				// async を待機しない
+				Task aSuppressWarning = mWebServer.StopAsync();
+				mWebServer = null;
 			}
 		}
 

@@ -159,6 +159,14 @@ namespace YukaLister.ViewModels
 			set => RaisePropertyChangedIfSet(ref mIdPrefix, value);
 		}
 
+		// ゆかりでのプレビューを可能にするか
+		private Boolean mProvideYukariPreview;
+		public Boolean ProvideYukariPreview
+		{
+			get => mProvideYukariPreview;
+			set => RaisePropertyChangedIfSet(ref mProvideYukariPreview, value);
+		}
+
 		#endregion
 
 		#region リスト対象タブのプロパティー
@@ -1563,6 +1571,7 @@ namespace YukaLister.ViewModels
 		{
 			// 設定タブ
 			Environment.YukaListerSettings.YukariConfigPathSeed = YukariConfigPathSeed;
+			Environment.YukaListerSettings.ProvideYukariPreview = ProvideYukariPreview;
 			Environment.YukaListerSettings.IdPrefix = IdPrefix;
 
 			// リスト対象タブ
@@ -1605,6 +1614,7 @@ namespace YukaLister.ViewModels
 		{
 			// 設定タブ
 			YukariConfigPathSeed = Environment.YukaListerSettings.YukariConfigPathSeed;
+			ProvideYukariPreview = Environment.YukaListerSettings.ProvideYukariPreview;
 			IdPrefix = Environment.YukaListerSettings.IdPrefix;
 
 			// リスト対象タブ
