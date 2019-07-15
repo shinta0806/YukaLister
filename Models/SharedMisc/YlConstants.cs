@@ -459,6 +459,14 @@ namespace YukaLister.Models.SharedMisc
 		public const String RSRC_NAME_RAISED_LIGHT_BUTTON = "MaterialDesignRaisedLightButton";
 
 		// --------------------------------------------------------------------
+		// Web サーバーコマンドオプション
+		// --------------------------------------------------------------------
+
+		public const String SERVER_OPTION_NAME_EASY_PASS = "easypass";
+		public const String SERVER_OPTION_NAME_UID = "uid";
+		public const String SERVER_OPTION_NAME_WIDTH = "width";
+
+		// --------------------------------------------------------------------
 		// その他
 		// --------------------------------------------------------------------
 

@@ -11,7 +11,11 @@
 using Shinta;
 
 using System;
+using System.Text;
 using System.Web;
+
+using YukaLister.Models.Database;
+using YukaLister.Models.SharedMisc;
 
 namespace YukaLister.Models.OutputWriters
 {
@@ -36,7 +40,7 @@ namespace YukaLister.Models.OutputWriters
 			OutputSettings = new YukariOutputSettings();
 
 			// メンバー変数
-			String aListLinkArg = "<?php empty($yukarisearchlink) ? print \"\" : print \"?yukarihost=\".$yukarihost;?>";
+			String aListLinkArg = ListLinkArg();
 
 			mListExt = Common.FILE_EXT_PHP;
 			mAdditionalDescription = "ファイル名をクリックすると、ゆかりでリクエストできます。<br>";
@@ -61,6 +65,24 @@ namespace YukaLister.Models.OutputWriters
 		// ====================================================================
 		// protected メンバー関数
 		// ====================================================================
+
+		// --------------------------------------------------------------------
+		// 曲情報を文字列に追加する際のテーブル内容を追加
+		// --------------------------------------------------------------------
+		protected override void AppendSongInfoAddTd(StringBuilder oSB, OutputItems oChapterItem, TFound oTFound)
+		{
+			base.AppendSongInfoAddTd(oSB, oChapterItem, oTFound);
+			oSB.Append("<td class=\"small\"><a href=\"" + FILE_NAME_REPORT_ENTRY + ListLinkArg(YlConstants.SERVER_OPTION_NAME_UID + "=" + oTFound.Uid) + "\">報告</a></td>");
+		}
+
+		// --------------------------------------------------------------------
+		// 章を開始する際のテーブル見出しを追加
+		// --------------------------------------------------------------------
+		protected override void BeginChapterAddTh(StringBuilder oSB, OutputItems oChapterItem)
+		{
+			base.BeginChapterAddTh(oSB, oChapterItem);
+			oSB.Append("<th>報告</th>");
+		}
 
 		// --------------------------------------------------------------------
 		// リストに出力するファイル名の表現
@@ -89,9 +111,23 @@ namespace YukaLister.Models.OutputWriters
 		// private 定数
 		// ====================================================================
 
+		// 報告用フォーム（STEP 1：情報入力）
+		private const String FILE_NAME_REPORT_ENTRY = "Report_Entry" + Common.FILE_EXT_PHP;
+
 		// ====================================================================
 		// private メンバー関数
 		// ====================================================================
+
+		// --------------------------------------------------------------------
+		// リストのリンクの引数
+		// oAdditionalArgs: "hoge=1&fuga=2" の形式
+		// --------------------------------------------------------------------
+		private String ListLinkArg(String oAdditionalArgs = null)
+		{
+			return "<?php empty($yukarisearchlink) ? print \"" + (String.IsNullOrEmpty(oAdditionalArgs) ? null : "?" + oAdditionalArgs)
+					+ "\" : print \"?yukarihost=\".$yukarihost" + (String.IsNullOrEmpty(oAdditionalArgs) ? null : ".\"&" + oAdditionalArgs + "\"") + ";?>";
+		}
+
 
 	}
 	// public class YukariOutputWriter ___END___

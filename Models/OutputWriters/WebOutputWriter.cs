@@ -124,6 +124,139 @@ namespace YukaLister.Models.OutputWriters
 		// ====================================================================
 
 		// --------------------------------------------------------------------
+		// 曲情報を文字列に追加する際のテーブル内容を追加
+		// --------------------------------------------------------------------
+		protected virtual void AppendSongInfoAddTd(StringBuilder oSB, OutputItems oChapterItem, TFound oTFound)
+		{
+			foreach (OutputItems aOutputItem in mRuntimeOutputItems)
+			{
+				if (aOutputItem == oChapterItem)
+				{
+					continue;
+				}
+
+				switch (aOutputItem)
+				{
+					case OutputItems.Path:
+						oSB.Append("<td class=\"small\">" + FileNameDescription(oTFound.Path) + "</td>");
+						break;
+					case OutputItems.FileName:
+						oSB.Append("<td class=\"small\">" + FileNameDescription(Path.GetFileName(oTFound.Path)) + "</td>");
+						break;
+					case OutputItems.Head:
+						oSB.Append("<td>" + oTFound.Head + "</td>");
+						break;
+					case OutputItems.Worker:
+						oSB.Append("<td>" + oTFound.Worker + "</td>");
+						break;
+					case OutputItems.Track:
+						oSB.Append("<td>" + oTFound.Track + "</td>");
+						break;
+					case OutputItems.SmartTrack:
+						oSB.Append("<td>" + (oTFound.SmartTrackOnVocal ? YlConstants.SMART_TRACK_VALID_MARK : null) + "</td>");
+						oSB.Append("<td>" + (oTFound.SmartTrackOffVocal ? YlConstants.SMART_TRACK_VALID_MARK : null) + "</td>");
+						break;
+					case OutputItems.Comment:
+						oSB.Append("<td class=\"small\">" + oTFound.Comment + "</td>");
+						break;
+					case OutputItems.LastWriteTime:
+						oSB.Append("<td class=\"small\">" + JulianDay.ModifiedJulianDateToDateTime(oTFound.LastWriteTime).ToString(
+								YlConstants.DATE_FORMAT + " " + YlConstants.TIME_FORMAT) + "</td>");
+						break;
+					case OutputItems.FileSize:
+						oSB.Append("<td class=\"small\">" + (oTFound.FileSize / (1024 * 1024)).ToString("#,0") + " MB</td>");
+						break;
+					case OutputItems.SongName:
+						oSB.Append("<td>" + oTFound.SongName + "</td>");
+						break;
+					case OutputItems.SongRuby:
+						oSB.Append("<td>" + oTFound.SongRuby + "</td>");
+						break;
+					case OutputItems.SongOpEd:
+						oSB.Append("<td>" + oTFound.SongOpEd + "</td>");
+						break;
+					case OutputItems.SongReleaseDate:
+						if (oTFound.SongReleaseDate <= YlConstants.INVALID_MJD)
+						{
+							oSB.Append("<td></td>");
+						}
+						else
+						{
+							oSB.Append("<td class=\"small\">" + JulianDay.ModifiedJulianDateToDateTime(oTFound.SongReleaseDate).ToString(YlConstants.DATE_FORMAT) + "</td>");
+						}
+						break;
+					case OutputItems.ArtistName:
+						oSB.Append("<td>" + oTFound.ArtistName + "</td>");
+						break;
+					case OutputItems.ArtistRuby:
+						oSB.Append("<td>" + oTFound.ArtistRuby + "</td>");
+						break;
+					case OutputItems.LyristName:
+						oSB.Append("<td>" + oTFound.LyristName + "</td>");
+						break;
+					case OutputItems.LyristRuby:
+						oSB.Append("<td>" + oTFound.LyristRuby + "</td>");
+						break;
+					case OutputItems.ComposerName:
+						oSB.Append("<td>" + oTFound.ComposerName + "</td>");
+						break;
+					case OutputItems.ComposerRuby:
+						oSB.Append("<td>" + oTFound.ComposerRuby + "</td>");
+						break;
+					case OutputItems.ArrangerName:
+						oSB.Append("<td>" + oTFound.ArrangerName + "</td>");
+						break;
+					case OutputItems.ArrangerRuby:
+						oSB.Append("<td>" + oTFound.ArrangerRuby + "</td>");
+						break;
+					case OutputItems.TieUpName:
+						oSB.Append("<td>" + oTFound.TieUpName + "</td>");
+						break;
+					case OutputItems.TieUpRuby:
+						oSB.Append("<td>" + oTFound.TieUpRuby + "</td>");
+						break;
+					case OutputItems.TieUpAgeLimit:
+						oSB.Append("<td>" + oTFound.TieUpAgeLimit + "</td>");
+						break;
+					case OutputItems.Category:
+						oSB.Append("<td>" + oTFound.Category + "</td>");
+						break;
+					case OutputItems.TieUpGroupName:
+						oSB.Append("<td>" + oTFound.TieUpGroupName + "</td>");
+						break;
+					case OutputItems.TieUpGroupRuby:
+						oSB.Append("<td>" + oTFound.TieUpGroupRuby + "</td>");
+						break;
+					case OutputItems.MakerName:
+						oSB.Append("<td>" + oTFound.MakerName + "</td>");
+						break;
+					case OutputItems.MakerRuby:
+						oSB.Append("<td>" + oTFound.MakerRuby + "</td>");
+						break;
+					default:
+						Debug.Assert(false, "AppendSongInfo() bad aOutputItem");
+						break;
+				}
+			}
+		}
+
+		// --------------------------------------------------------------------
+		// 章を開始する際のテーブル見出しを追加
+		// --------------------------------------------------------------------
+		protected virtual void BeginChapterAddTh(StringBuilder oSB, OutputItems oChapterItem)
+		{
+			foreach (OutputItems aOutputItem in mRuntimeOutputItems)
+			{
+				if (aOutputItem == oChapterItem)
+				{
+					continue;
+				}
+
+				oSB.Append("<th>" + mThNames[(Int32)aOutputItem] + "</th>");
+			}
+		}
+
+		// --------------------------------------------------------------------
 		// リストに出力するファイル名の表現
 		// --------------------------------------------------------------------
 		protected abstract String FileNameDescription(String oFileName);
@@ -292,118 +425,7 @@ namespace YukaLister.Models.OutputWriters
 				oSB.Append("odd");
 			}
 			oSB.Append("\">\n    ");
-
-			foreach (OutputItems aOutputItem in mRuntimeOutputItems)
-			{
-				if (aOutputItem == oChapterItem)
-				{
-					continue;
-				}
-
-				switch (aOutputItem)
-				{
-					case OutputItems.Path:
-						oSB.Append("<td class=\"small\">" + FileNameDescription(oTFound.Path) + "</td>");
-						break;
-					case OutputItems.FileName:
-						oSB.Append("<td class=\"small\">" + FileNameDescription(Path.GetFileName(oTFound.Path)) + "</td>");
-						break;
-					case OutputItems.Head:
-						oSB.Append("<td>" + oTFound.Head + "</td>");
-						break;
-					case OutputItems.Worker:
-						oSB.Append("<td>" + oTFound.Worker + "</td>");
-						break;
-					case OutputItems.Track:
-						oSB.Append("<td>" + oTFound.Track + "</td>");
-						break;
-					case OutputItems.SmartTrack:
-						oSB.Append("<td>" + (oTFound.SmartTrackOnVocal ? YlConstants.SMART_TRACK_VALID_MARK : null) + "</td>");
-						oSB.Append("<td>" + (oTFound.SmartTrackOffVocal ? YlConstants.SMART_TRACK_VALID_MARK : null) + "</td>");
-						break;
-					case OutputItems.Comment:
-						oSB.Append("<td class=\"small\">" + oTFound.Comment + "</td>");
-						break;
-					case OutputItems.LastWriteTime:
-						oSB.Append("<td class=\"small\">" + JulianDay.ModifiedJulianDateToDateTime(oTFound.LastWriteTime).ToString(
-								YlConstants.DATE_FORMAT + " " + YlConstants.TIME_FORMAT) + "</td>");
-						break;
-					case OutputItems.FileSize:
-						oSB.Append("<td class=\"small\">" + (oTFound.FileSize / (1024 * 1024)).ToString("#,0") + " MB</td>");
-						break;
-					case OutputItems.SongName:
-						oSB.Append("<td>" + oTFound.SongName + "</td>");
-						break;
-					case OutputItems.SongRuby:
-						oSB.Append("<td>" + oTFound.SongRuby + "</td>");
-						break;
-					case OutputItems.SongOpEd:
-						oSB.Append("<td>" + oTFound.SongOpEd + "</td>");
-						break;
-					case OutputItems.SongReleaseDate:
-						if (oTFound.SongReleaseDate <= YlConstants.INVALID_MJD)
-						{
-							oSB.Append("<td></td>");
-						}
-						else
-						{
-							oSB.Append("<td class=\"small\">" + JulianDay.ModifiedJulianDateToDateTime(oTFound.SongReleaseDate).ToString(YlConstants.DATE_FORMAT) + "</td>");
-						}
-						break;
-					case OutputItems.ArtistName:
-						oSB.Append("<td>" + oTFound.ArtistName + "</td>");
-						break;
-					case OutputItems.ArtistRuby:
-						oSB.Append("<td>" + oTFound.ArtistRuby + "</td>");
-						break;
-					case OutputItems.LyristName:
-						oSB.Append("<td>" + oTFound.LyristName + "</td>");
-						break;
-					case OutputItems.LyristRuby:
-						oSB.Append("<td>" + oTFound.LyristRuby + "</td>");
-						break;
-					case OutputItems.ComposerName:
-						oSB.Append("<td>" + oTFound.ComposerName + "</td>");
-						break;
-					case OutputItems.ComposerRuby:
-						oSB.Append("<td>" + oTFound.ComposerRuby + "</td>");
-						break;
-					case OutputItems.ArrangerName:
-						oSB.Append("<td>" + oTFound.ArrangerName + "</td>");
-						break;
-					case OutputItems.ArrangerRuby:
-						oSB.Append("<td>" + oTFound.ArrangerRuby + "</td>");
-						break;
-					case OutputItems.TieUpName:
-						oSB.Append("<td>" + oTFound.TieUpName + "</td>");
-						break;
-					case OutputItems.TieUpRuby:
-						oSB.Append("<td>" + oTFound.TieUpRuby + "</td>");
-						break;
-					case OutputItems.TieUpAgeLimit:
-						oSB.Append("<td>" + oTFound.TieUpAgeLimit + "</td>");
-						break;
-					case OutputItems.Category:
-						oSB.Append("<td>" + oTFound.Category + "</td>");
-						break;
-					case OutputItems.TieUpGroupName:
-						oSB.Append("<td>" + oTFound.TieUpGroupName + "</td>");
-						break;
-					case OutputItems.TieUpGroupRuby:
-						oSB.Append("<td>" + oTFound.TieUpGroupRuby + "</td>");
-						break;
-					case OutputItems.MakerName:
-						oSB.Append("<td>" + oTFound.MakerName + "</td>");
-						break;
-					case OutputItems.MakerRuby:
-						oSB.Append("<td>" + oTFound.MakerRuby + "</td>");
-						break;
-					default:
-						Debug.Assert(false, "AppendSongInfo() bad aOutputItem");
-						break;
-				}
-			}
-
+			AppendSongInfoAddTd(oSB, oChapterItem, oTFound);
 			oSB.Append("\n  </tr>\n");
 		}
 
@@ -437,15 +459,7 @@ namespace YukaLister.Models.OutputWriters
 			// テーブルを開く
 			oSB.Append("<table>\n");
 			oSB.Append("  <tr>\n    ");
-			foreach (OutputItems aOutputItem in mRuntimeOutputItems)
-			{
-				if (aOutputItem == oChapterItem)
-				{
-					continue;
-				}
-
-				oSB.Append("<th>" + mThNames[(Int32)aOutputItem] + "</th>");
-			}
+			BeginChapterAddTh(oSB, oChapterItem);
 			oSB.Append("\n  </tr>\n");
 		}
 
@@ -1367,6 +1381,7 @@ namespace YukaLister.Models.OutputWriters
 
 		// --------------------------------------------------------------------
 		// CSS を出力
+		// HtmlCss テンプレートは WebServer でも使用するので内容を変更せずに出力する前提
 		// --------------------------------------------------------------------
 		private void OutputCss()
 		{

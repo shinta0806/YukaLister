@@ -25,7 +25,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -76,16 +75,11 @@ namespace YukaLister.Models.Http
 			{
 				try
 				{
-					// ダミーデータを送信してサーバーの待機を終了させる
-					TcpClient aClient = new TcpClient("localhost", mEnvironment.YukaListerSettings.WebServerPort);
-					using (NetworkStream aNetworkStream = aClient.GetStream())
+					// 終了コマンドを送信してサーバーの待機を終了させる
+					WebRequest aRequest = WebRequest.Create("http://localhost:" + mEnvironment.YukaListerSettings.WebServerPort.ToString() + "/" + SERVER_COMMAND_QUIT);
+					using (WebResponse aResponse = aRequest.GetResponse())
 					{
-						aNetworkStream.ReadTimeout = YlConstants.TCP_TIMEOUT;
-						aNetworkStream.WriteTimeout = YlConstants.TCP_TIMEOUT;
-						Byte[] aSendBytes = Encoding.UTF8.GetBytes("End");
-						aNetworkStream.Write(aSendBytes, 0, aSendBytes.Length);
 					}
-					aClient.Close();
 
 					mEnvironment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "プレビューサーバー終了");
 				}
@@ -114,12 +108,8 @@ namespace YukaLister.Models.Http
 
 		// コマンド
 		private const String SERVER_COMMAND_PREVIEW = "preview";
+		private const String SERVER_COMMAND_QUIT = "quit";
 		private const String SERVER_COMMAND_THUMB = "thumb";
-
-		// コマンドオプション
-		private const String OPTION_NAME_EASY_PASS = "easypass";
-		private const String OPTION_NAME_UID = "uid";
-		private const String OPTION_NAME_WIDTH = "width";
 
 		// サムネイル生成時のタイムアウト [ms]
 		private const Int32 THUMB_TIMEOUT = 10 * 1000;
@@ -175,7 +165,7 @@ namespace YukaLister.Models.Http
 		// 簡易認証を満たしているかどうか
 		// ＜返値＞ 満たしている、または、認証不要の場合は true
 		// --------------------------------------------------------------------
-		private Boolean CheckEasyAuth(Dictionary<String, String> oOptions)
+		private Boolean CheckEasyAuth(Dictionary<String, String> oOptions, HttpListenerRequest oRequest, HttpListenerResponse oResponse)
 		{
 			if (!mEnvironment.YukaListerSettings.YukariUseEasyAuth)
 			{
@@ -183,9 +173,20 @@ namespace YukaLister.Models.Http
 				return true;
 			}
 
-			if (oOptions.ContainsKey(OPTION_NAME_EASY_PASS) && oOptions[OPTION_NAME_EASY_PASS] == mEnvironment.YukaListerSettings.YukariEasyAuthKeyword)
+			if (oOptions.ContainsKey(YlConstants.SERVER_OPTION_NAME_EASY_PASS) && oOptions[YlConstants.SERVER_OPTION_NAME_EASY_PASS] == mEnvironment.YukaListerSettings.YukariEasyAuthKeyword)
 			{
-				// 認証成功
+				// URL 認証成功
+				Cookie aNewCookie = new Cookie(YlConstants.SERVER_OPTION_NAME_EASY_PASS, oOptions[YlConstants.SERVER_OPTION_NAME_EASY_PASS]);
+				aNewCookie.Path = "/";
+				aNewCookie.Expires = DateTime.Now.AddDays(1.0);
+				oResponse.Cookies.Add(aNewCookie);
+				return true;
+			}
+
+			Cookie aCookie = oRequest.Cookies[YlConstants.SERVER_OPTION_NAME_EASY_PASS];
+			if (aCookie != null && aCookie.Value == mEnvironment.YukaListerSettings.YukariEasyAuthKeyword)
+			{
+				// クッキー認証成功
 				return true;
 			}
 
@@ -356,11 +357,11 @@ namespace YukaLister.Models.Http
 		// --------------------------------------------------------------------
 		private void GetPathOption(Dictionary<String, String> oOptions, out String oPathExLen)
 		{
-			if (!oOptions.ContainsKey(OPTION_NAME_UID))
+			if (!oOptions.ContainsKey(YlConstants.SERVER_OPTION_NAME_UID))
 			{
-				throw new Exception("Parameter " + OPTION_NAME_UID + " is not specified.");
+				throw new Exception("Parameter " + YlConstants.SERVER_OPTION_NAME_UID + " is not specified.");
 			}
-			Int32 aUid = Int32.Parse(oOptions[OPTION_NAME_UID]);
+			Int32 aUid = Int32.Parse(oOptions[YlConstants.SERVER_OPTION_NAME_UID]);
 
 			// ゆかり用データベースから UID を検索
 			TFound aTarget = null;
@@ -379,7 +380,7 @@ namespace YukaLister.Models.Http
 			}
 			if (aTarget == null)
 			{
-				throw new Exception("Bad " + OPTION_NAME_UID + ".");
+				throw new Exception("Bad " + YlConstants.SERVER_OPTION_NAME_UID + ".");
 			}
 			oPathExLen = mEnvironment.ExtendPath(aTarget.Path);
 		}
@@ -393,13 +394,13 @@ namespace YukaLister.Models.Http
 			GetPathOption(oOptions, out oPathExLen);
 
 			// 横幅を解析
-			if (!oOptions.ContainsKey(OPTION_NAME_WIDTH))
+			if (!oOptions.ContainsKey(YlConstants.SERVER_OPTION_NAME_WIDTH))
 			{
 				oWidth = mEnvironment.YukaListerSettings.ThumbDefaultWidth;
 			}
 			else
 			{
-				oWidth = Int32.Parse(oOptions[OPTION_NAME_WIDTH]);
+				oWidth = Int32.Parse(oOptions[YlConstants.SERVER_OPTION_NAME_WIDTH]);
 				if (oWidth < YlConstants.THUMB_WIDTH_LIST[0] || oWidth > YlConstants.THUMB_WIDTH_LIST[YlConstants.THUMB_WIDTH_LIST.Length - 1])
 				{
 					throw new Exception("Bad width.");
@@ -498,22 +499,35 @@ namespace YukaLister.Models.Http
 
 		// --------------------------------------------------------------------
 		// クライアントにエラーメッセージを返す
-		// メッセージは ASCII のみとする
+		// エラーメッセージは ASCII のみを推奨
 		// --------------------------------------------------------------------
-		private void SendErrorResponse(StreamWriter oWriter, String oMessage)
+		private void SendErrorResponse(HttpListenerResponse oResponse, String oMessage)
 		{
-			oWriter.WriteLine("HTTP/1.1 404 Not Found");
-			oWriter.WriteLine("Content-Length: " + oMessage.Length);
-			oWriter.WriteLine("Content-Type: text/plain");
-			oWriter.WriteLine();
-			oWriter.WriteLine(oMessage);
+			try
+			{
+				Byte[] aData = Encoding.UTF8.GetBytes(oMessage);
+
+				// ヘッダー
+				oResponse.StatusCode = (Int32)HttpStatusCode.NotFound;
+				oResponse.ContentType = "text/plain";
+				oResponse.ContentEncoding = Encoding.UTF8;
+				oResponse.ContentLength64 = aData.Length;
+
+				// メッセージ本体
+				oResponse.OutputStream.Write(aData, 0, aData.Length);
+			}
+			catch (Exception oExcep)
+			{
+				mEnvironment.LogWriter.ShowLogMessage(TraceEventType.Error, "エラー応答送信時エラー：\n" + oExcep.Message, true);
+				mEnvironment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
+			}
 		}
 
 		// --------------------------------------------------------------------
 		// クライアントにファイルの内容を返す
 		// ＜例外＞ Exception, OperationCanceledException
 		// --------------------------------------------------------------------
-		private void SendFile(NetworkStream oNetworkStream, String oPathExLen)
+		private void SendFile(HttpListenerResponse oResponse, String oPathExLen)
 		{
 			FileInfo aFileInfo = new FileInfo(oPathExLen);
 			String aContentType;
@@ -539,12 +553,12 @@ namespace YukaLister.Models.Http
 					break;
 			}
 
-			String aHeader = "HTTP/1.1 200 OK\n"
-					+ "Content-Length: " + aFileInfo.Length.ToString() + "\n"
-					+ "Content-Type: " + aContentType + "\n\n";
-			Byte[] aSendBytes = Encoding.UTF8.GetBytes(aHeader);
-			oNetworkStream.Write(aSendBytes, 0, aSendBytes.Length);
+			// ヘッダー
+			oResponse.StatusCode = (Int32)HttpStatusCode.OK;
+			oResponse.ContentType = aContentType;
+			oResponse.ContentLength64 = aFileInfo.Length;
 
+			// 本体
 #if DEBUG
 			Int32 aReadSizes = 0;
 #endif
@@ -564,7 +578,7 @@ namespace YukaLister.Models.Http
 					{
 						try
 						{
-							oNetworkStream.Write(aBuf, 0, aReadSize);
+							oResponse.OutputStream.Write(aBuf, 0, aReadSize);
 							break;
 						}
 						catch (Exception oExcep)
@@ -596,93 +610,60 @@ namespace YukaLister.Models.Http
 
 		// --------------------------------------------------------------------
 		// クライアントに応答を返す
+		// TcpLister を使用していた頃とは異なりポートノックでは応答に入らない
 		// --------------------------------------------------------------------
-		private void SendResponse(TcpClient oClient)
+		private void SendResponse(HttpListenerContext oContext)
 		{
+			HttpListenerRequest aRequest = oContext.Request;
+			HttpListenerResponse aResponse = oContext.Response;
 			try
 			{
-				using (NetworkStream aNetworkStream = oClient.GetStream())
-				using (StreamReader aReader = new StreamReader(aNetworkStream))
-				using (StreamWriter aWriter = new StreamWriter(aNetworkStream))
+				if (String.IsNullOrEmpty(aRequest.RawUrl))
 				{
-					// ネットワークストリームの設定
-					aNetworkStream.ReadTimeout = YlConstants.TCP_TIMEOUT;
-					aNetworkStream.WriteTimeout = YlConstants.TCP_TIMEOUT;
+					// "http://localhost:13582" が指定されても RawUrl は "/" となるので、空は基本的にありえない
+					throw new Exception("Bad URL.");
+				}
 
-					// ヘッダー部分を読み込む
-					//Debug.WriteLine("[" + Thread.CurrentThread.ManagedThreadId + "] SendResponse() header");
-					List<String> aHeaders = new List<String>();
-					for (; ; )
-					{
-						String aLine = aReader.ReadLine();
-						if (String.IsNullOrWhiteSpace(aLine))
-						{
-							break;
-						}
-						aHeaders.Add(aLine);
-					}
-					if (aHeaders.Count == 0)
-					{
-						// ポートノック（ゆかりがプレビューを有効にするかどうかの判定に使用）の場合はヘッダーも無いが、その場合は何もせずに終了する
-						return;
-					}
+				// 終了コマンドの場合は何もしない
+				if (aRequest.RawUrl.IndexOf(SERVER_COMMAND_QUIT) == 1)
+				{
+					return;
+				}
 
-					// ヘッダーの 1 行目は [GET|POST] /[DocPath] HTTP/1.1 のようになっている
-					String[] aRequests = aHeaders[0].Split(' ');
-					if (aRequests.Length < 3)
-					{
-						throw new Exception("ヘッダーでパスが指定されていません。");
-					}
-					String aDocPath = aRequests[1];
-					//Debug.WriteLine("[" + Thread.CurrentThread.ManagedThreadId + "] SendResponse() aDocPath: " + aDocPath);
-					if (String.IsNullOrEmpty(aDocPath))
-					{
-						throw new Exception("ヘッダーのパスが空です。");
-					}
+				// 簡易認証チェック
+				Dictionary<String, String> aOptions = AnalyzeCommandOptions(aRequest.RawUrl);
+				if (!CheckEasyAuth(aOptions, aRequest, aResponse))
+				{
+					throw new Exception("Bad auth.");
+				}
 
-					// 簡易認証チェック
-					Dictionary<String, String> aOptions = AnalyzeCommandOptions(aDocPath);
-					if (CheckEasyAuth(aOptions))
+				// コマンド解析（先頭が '/' であることに注意）
+				if (aRequest.RawUrl.IndexOf(SERVER_COMMAND_PREVIEW) == 1)
+				{
+					SendResponsePreview(aResponse, aOptions);
+				}
+				else if (aRequest.RawUrl.IndexOf(SERVER_COMMAND_THUMB) == 1)
+				{
+					SendResponseThumb(aResponse, aOptions);
+				}
+				else
+				{
+					// ToDo: obsolete
+					// ゆかり側が新 URL に対応次第削除する
+					// パス解析（先頭の '/' を除く）
+					String aPath = null;
+					if (aRequest.RawUrl.Length == 1)
 					{
-						// コマンド解析（先頭が '/' であることに注意）
-						if (aDocPath.IndexOf(SERVER_COMMAND_PREVIEW) == 1)
-						{
-							SendResponsePreview(aNetworkStream, aWriter, aOptions);
-						}
-						else if (aDocPath.IndexOf(SERVER_COMMAND_THUMB) == 1)
-						{
-							SendResponseThumb(aNetworkStream, aWriter, aOptions);
-						}
-						else
-						{
-							// ToDo: obsolete
-							// ゆかり側が新 URL に対応次第削除する
-							// パス解析（先頭の '/' を除く）
-							String aPath = null;
-							if (aDocPath.Length == 1)
-							{
-								SendErrorResponse(aWriter, "File is not specified.");
-							}
-							else
-							{
-								aPath = mEnvironment.ExtendPath(HttpUtility.UrlDecode(aDocPath, Encoding.UTF8).Substring(1).Replace('/', '\\'));
-								if (File.Exists(aPath))
-								{
-									SendFile(aNetworkStream, aPath);
-								}
-								else
-								{
-									SendErrorResponse(aWriter, "File not found.");
-								}
-							}
-						}
-					}
-					else
-					{
-						SendErrorResponse(aWriter, "Bad auth.");
+						throw new Exception("File is not specified.");
 					}
 
-					aWriter.Flush();
+					aPath = mEnvironment.ExtendPath(HttpUtility.UrlDecode(aRequest.RawUrl, Encoding.UTF8).Substring(1).Replace('/', '\\'));
+					if (!File.Exists(aPath))
+					{
+						throw new Exception("File not found.");
+					}
+
+					SendFile(aResponse, aPath);
 				}
 			}
 			catch (OperationCanceledException)
@@ -691,81 +672,64 @@ namespace YukaLister.Models.Http
 			}
 			catch (Exception oExcep)
 			{
+				SendErrorResponse(aResponse, oExcep.Message);
 				mEnvironment.LogWriter.ShowLogMessage(TraceEventType.Error, "クライアントへの応答時エラー：\n" + oExcep.Message, true);
 				mEnvironment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 			finally
 			{
 				// 閉じる
-				oClient.Close();
+				aResponse.Close();
 			}
 		}
 
 		// --------------------------------------------------------------------
 		// クライアントにプレビュー用動画データを返す
+		// ＜例外＞ Exception
 		// --------------------------------------------------------------------
-		private void SendResponsePreview(NetworkStream oNetworkStream, StreamWriter oWriter, Dictionary<String, String> oOptions)
+		private void SendResponsePreview(HttpListenerResponse oResponse, Dictionary<String, String> oOptions)
 		{
-			try
-			{
-				// 動画の確定
-				GetPathOption(oOptions, out String aPathExLen);
+			// 動画の確定
+			GetPathOption(oOptions, out String aPathExLen);
 
-				// 送信
-				if (File.Exists(aPathExLen))
-				{
-					SendFile(oNetworkStream, aPathExLen);
-				}
-				else
-				{
-					SendErrorResponse(oWriter, "File not found.");
-				}
-			}
-			catch (Exception oExcep)
+			// 送信
+			if (!File.Exists(aPathExLen))
 			{
-				SendErrorResponse(oWriter, oExcep.Message);
+				throw new Exception("File not found.");
 			}
+			SendFile(oResponse, aPathExLen);
 		}
 
 		// --------------------------------------------------------------------
 		// クライアントにサムネイルを返す
 		// --------------------------------------------------------------------
-		private void SendResponseThumb(NetworkStream oNetworkStream, StreamWriter oWriter, Dictionary<String, String> oOptions)
+		private void SendResponseThumb(HttpListenerResponse oResponse, Dictionary<String, String> oOptions)
 		{
-			try
+			// サムネイル対象の確定
+			GetThumbOptions(oOptions, out String aPathExLen, out Int32 aWidth);
+
+			// キャッシュから探す
+			TCacheThumb aCacheThumb = FindCache(aPathExLen, aWidth);
+
+			if (aCacheThumb == null)
 			{
-				// サムネイル対象の確定
-				GetThumbOptions(oOptions, out String aPathExLen, out Int32 aWidth);
-
-				// キャッシュから探す
-				TCacheThumb aCacheThumb = FindCache(aPathExLen, aWidth);
-
-				if (aCacheThumb == null)
-				{
-					// キャッシュに無い場合は新規作成
-					aCacheThumb = CreateThumb(aPathExLen, aWidth);
-				}
-
-				// 更新日
-				DateTime aLastModified = JulianDay.ModifiedJulianDateToDateTime(aCacheThumb.ThumbLastWriteTime);
-				String aLastModifiedStr = aLastModified.ToString("ddd, dd MMM yyyy HH:mm:ss", CultureInfo.CreateSpecificCulture("en-US")) + " GMT";
-				Debug.WriteLine("SendResponseThumb() aLastModifiedStr: " + aLastModifiedStr);
-
-				// ヘッダー
-				String aHeader = "HTTP/1.1 200 OK\n"
-						+ "Content-Length: " + aCacheThumb.Image.Length + "\n"
-						+ "Content-Type: image/jpeg\n"
-						+ "Last-Modified: " + aLastModifiedStr + "\n\n";
-				Byte[] aSendBytes = Encoding.UTF8.GetBytes(aHeader);
-				oNetworkStream.Write(aSendBytes, 0, aSendBytes.Length);
-
-				// サムネイルデータ
-				oNetworkStream.Write(aCacheThumb.Image, 0, aCacheThumb.Image.Length);
+				// キャッシュに無い場合は新規作成
+				aCacheThumb = CreateThumb(aPathExLen, aWidth);
 			}
-			catch (Exception oExcep)
-			{
-				SendErrorResponse(oWriter, oExcep.Message);
-			}
+
+			// 更新日
+			DateTime aLastModified = JulianDay.ModifiedJulianDateToDateTime(aCacheThumb.ThumbLastWriteTime);
+			String aLastModifiedStr = aLastModified.ToString("ddd, dd MMM yyyy HH:mm:ss", CultureInfo.CreateSpecificCulture("en-US")) + " GMT";
+			Debug.WriteLine("SendResponseThumb() aLastModifiedStr: " + aLastModifiedStr);
+
+			// ヘッダー
+			oResponse.StatusCode = (Int32)HttpStatusCode.OK;
+			oResponse.ContentType = "image/jpeg";
+			oResponse.ContentLength64 = aCacheThumb.Image.Length;
+			oResponse.Headers.Add(HttpResponseHeader.LastModified, aLastModifiedStr);
+
+			// サムネイルデータ
+			oResponse.OutputStream.Write(aCacheThumb.Image, 0, aCacheThumb.Image.Length);
 		}
 
 		// --------------------------------------------------------------------
@@ -790,27 +754,24 @@ namespace YukaLister.Models.Http
 		// --------------------------------------------------------------------
 		private void WebServerByWorker(Object oDummy)
 		{
-			TcpListener aListener = null;
+			HttpListener aListener = null;
 			try
 			{
 				mEnvironment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "プレビュータスク開始");
 				SetWebServerTasksLimit();
+				aListener = new HttpListener();
 
-				// IPv4 と IPv6 の全ての IP アドレスを Listen する
-				aListener = new TcpListener(IPAddress.IPv6Any, mEnvironment.YukaListerSettings.WebServerPort);
-				aListener.Server.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, 0);
+				// localhost URL を受け付ける
+				aListener.Prefixes.Add("http://localhost:" + mEnvironment.YukaListerSettings.WebServerPort.ToString() + "/");
 				aListener.Start();
-				mEnvironment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "IP アドレス：" + ((IPEndPoint)aListener.LocalEndpoint).Address
-							+ ", ポート：" + ((IPEndPoint)aListener.LocalEndpoint).Port);
 
 				Int32 aNumWebServerTasks = 0;
 				for (; ; )
 				{
 					try
 					{
-						// 接続要求があったら受け入れる
-						// ToDo: タイムアウト付きにして CancelToken 判定
-						TcpClient aClient = aListener.AcceptTcpClient();
+						// リクエストが来たら受け入れる
+						HttpListenerContext aContext = aListener.GetContext();
 
 						// タスク上限を超えないように調整
 						while (aNumWebServerTasks >= mWebServerTasksLimit)
@@ -823,7 +784,7 @@ namespace YukaLister.Models.Http
 						Interlocked.Increment(ref aNumWebServerTasks);
 						Task.Run(() =>
 						{
-							SendResponse(aClient);
+							SendResponse(aContext);
 							Interlocked.Decrement(ref aNumWebServerTasks);
 						});
 					}
