@@ -1847,7 +1847,8 @@ namespace YukaLister.Models.Database
 		{
 			get
 			{
-				return JulianDay.ModifiedJulianDateToDateTime(RegistTime).ToString(YlConstants.DATE_FORMAT);
+				DateTime aUtc = JulianDay.ModifiedJulianDateToDateTime(RegistTime);
+				return TimeZoneInfo.ConvertTimeFromUtc(aUtc, TimeZoneInfo.Local).ToString(YlConstants.DATE_FORMAT);
 			}
 		}
 
