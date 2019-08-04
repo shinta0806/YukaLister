@@ -143,6 +143,7 @@ namespace YukaLister.Models
 		public void Initialize()
 		{
 			YukariDb.Initialize();
+			Report.Initialize();
 
 			// ゆかり設定ファイル監視
 			mFileSystemWatcherYukariConfig = new FileSystemWatcher();

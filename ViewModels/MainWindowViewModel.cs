@@ -99,6 +99,14 @@ namespace YukaLister.ViewModels
 			set => RaisePropertyChangedIfSet(ref mTitle, value);
 		}
 
+		// 処理を要するリスト問題の数
+		private String mReportsBadge;
+		public String ReportsBadge
+		{
+			get => mReportsBadge;
+			set => RaisePropertyChangedIfSet(ref mReportsBadge, value);
+		}
+
 		// データグリッドの選択
 		private TargetFolderInfo mSelectedTargetFolderInfo;
 		public TargetFolderInfo SelectedTargetFolderInfo

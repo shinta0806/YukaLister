@@ -10,11 +10,15 @@
 
 using Livet;
 using Livet.Messaging;
+
 using System;
 using System.Collections.Generic;
+using System.Data.Linq;
 using System.Linq;
 using System.Text;
 
+using YukaLister.Models.Database;
+using YukaLister.Models.SharedMisc;
 using YukaLister.ViewModels;
 
 namespace YukaLister.Models
@@ -48,6 +52,42 @@ namespace YukaLister.Models
 			{
 				aViewReportsWindowViewModel.Environment = mEnvironment;
 				mMainWindowViewModel.Messenger.Raise(new TransitionMessage(aViewReportsWindowViewModel, "OpenViewTReportsWindow"));
+			}
+		}
+
+		// --------------------------------------------------------------------
+		// 初期化
+		// --------------------------------------------------------------------
+		public void Initialize()
+		{
+			UpdateReportsBadge();
+		}
+
+		// --------------------------------------------------------------------
+		// メインウィンドウのバッジを更新
+		// --------------------------------------------------------------------
+		public void UpdateReportsBadge()
+		{
+			Int32 aNumProgress;
+			using (ReportDatabaseInDisk aReportDbInDisk = new ReportDatabaseInDisk(mEnvironment))
+			using (DataContext aContext = new DataContext(aReportDbInDisk.Connection))
+			{
+				Table<TReport> aTableReport = aContext.GetTable<TReport>();
+				IQueryable<TReport> aQueryResult =
+						from x in aTableReport
+						where x.Status <= (Int32)ReportStatus.Progress
+						orderby x.RegistTime descending
+						select x;
+				aNumProgress = aQueryResult.Count();
+			}
+
+			if (aNumProgress == 0)
+			{
+				mMainWindowViewModel.ReportsBadge = null;
+			}
+			else
+			{
+				mMainWindowViewModel.ReportsBadge = aNumProgress.ToString();
 			}
 		}
 
