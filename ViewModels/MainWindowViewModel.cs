@@ -9,6 +9,14 @@
 // ・処理の多くは Model の範疇のため、View からトリガーされた処理は可能な限り Model に置く
 // ----------------------------------------------------------------------------
 
+// ----------------------------------------------------------------------------
+// ToDo:
+// ID 接頭辞→ID 先頭付与文字列、マニュアルに前回とは違うのにする旨注意書き
+// ファイル名から命名規則で取得できる情報を精査する
+// 同期ダウンロード時、IdPrefix が一致するものは無効でもダウンロードする
+// （Id カウンターリセット時にユニーク制約に引っかかってアップロードできないのを防止）
+// ----------------------------------------------------------------------------
+
 using Livet;
 using Livet.Commands;
 using Livet.Messaging;
@@ -160,6 +168,35 @@ namespace YukaLister.ViewModels
 		// --------------------------------------------------------------------
 		// コマンド
 		// --------------------------------------------------------------------
+
+		#region 報告ボタンの制御
+		private ViewModelCommand mButtonReportsClickedCommand;
+
+		public ViewModelCommand ButtonReportsClickedCommand
+		{
+			get
+			{
+				if (mButtonReportsClickedCommand == null)
+				{
+					mButtonReportsClickedCommand = new ViewModelCommand(ButtonReportsClicked);
+				}
+				return mButtonReportsClickedCommand;
+			}
+		}
+
+		public void ButtonReportsClicked()
+		{
+			try
+			{
+				YukaLister.Report.ButtonReportsClicked();
+			}
+			catch (Exception oExcep)
+			{
+				YukaLister.Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "リスト問題ボタンクリック時エラー：\n" + oExcep.Message);
+				YukaLister.Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
+			}
+		}
+		#endregion
 
 		#region 環境設定ボタンの制御
 		private ViewModelCommand mButtonYukaListerSettingsClickedCommand;
@@ -373,7 +410,7 @@ namespace YukaLister.ViewModels
 			}
 		}
 
-		public bool CanButtonFolderSettingsClick()
+		public Boolean CanButtonFolderSettingsClick()
 		{
 			return SelectedTargetFolderInfo != null;
 		}

@@ -44,8 +44,14 @@
         <l:InteractionMessageTrigger MessageKey="OpenViewTFoundsWindow" Messenger="{Binding Messenger}">
             <l:TransitionInteractionMessageAction WindowType="{x:Type v:ViewTFoundsWindow}" Mode="Modal" IsOwned="True" />
         </l:InteractionMessageTrigger>
+        <l:InteractionMessageTrigger MessageKey="OpenViewTReportsWindow" Messenger="{Binding Messenger}">
+            <l:TransitionInteractionMessageAction WindowType="{x:Type v:ViewTReportsWindow}" Mode="Modal" IsOwned="True" />
+        </l:InteractionMessageTrigger>
         <l:InteractionMessageTrigger MessageKey="OpenFolderSettingsWindow" Messenger="{Binding Messenger}">
             <l:TransitionInteractionMessageAction WindowType="{x:Type v:FolderSettingsWindow}" Mode="Modal" IsOwned="True" />
+        </l:InteractionMessageTrigger>
+        <l:InteractionMessageTrigger MessageKey="OpenInputIdPrefixWindow" Messenger="{Binding Messenger}">
+            <l:TransitionInteractionMessageAction WindowType="{x:Type v:InputIdPrefixWindow}" Mode="Modal" IsOwned="True" />
         </l:InteractionMessageTrigger>
 
     </i:Interaction.Triggers>
@@ -93,6 +99,11 @@
             <Button x:Name="ButtonYukaListerSettings" Style="{StaticResource MaterialDesignRaisedLightButton}" ToolTip="環境設定" Width="50" Height="25" Margin="0,0,10,0" DockPanel.Dock="Right" VerticalAlignment="Center" Command="{Binding ButtonYukaListerSettingsClickedCommand}">
                 <materialDesign:PackIcon Kind="SettingsOutline" Height="18" Width="18" />
             </Button>
+            <materialDesign:Badged Badge="" BadgeColorZoneMode="Accent" DockPanel.Dock="Right" VerticalAlignment="Center" Margin="0,0,15,0" Padding="0,0,-15,0" >
+                <Button x:Name="ButtonReports" Style="{StaticResource MaterialDesignRaisedLightButton}" ToolTip="報告されたリストの問題を一覧表示" Width="50" Height="25" Margin="0,0,10,0" Command="{Binding ButtonReportsClickedCommand}">
+                <materialDesign:PackIcon Kind="MessageWarningOutline" Height="18" Width="18" />
+                </Button>
+            </materialDesign:Badged>
             <Label x:Name="LabelYukaListerStatus" Content="{Binding YukaListerStatusDisplayMessage}" Margin="0,0,10,0" VerticalAlignment="Center" Height="30" VerticalContentAlignment="Center" Padding="5,0" >
                 <Label.Style>
                     <Style TargetType="Label">

@@ -89,6 +89,9 @@ namespace YukaLister.Models.OutputWriters
 			OutputCss();
 			OutputJs();
 
+			// その他のファイルの出力
+			OutputMisc();
+
 			// 一時フォルダーから移動
 			MoveList();
 		}
@@ -96,6 +99,10 @@ namespace YukaLister.Models.OutputWriters
 		// ====================================================================
 		// protected 定数
 		// ====================================================================
+
+		// HTML テンプレートに記載されている変数
+		protected const String HTML_VAR_ADDITIONAL_NAVI = "<!-- $AdditionalNavi$ -->";
+		protected const String HTML_VAR_GENERATOR = "<!-- $Generator$ -->";
 
 		// ====================================================================
 		// protected メンバー変数
@@ -257,9 +264,23 @@ namespace YukaLister.Models.OutputWriters
 		}
 
 		// --------------------------------------------------------------------
+		// その他のファイルの削除
+		// --------------------------------------------------------------------
+		protected virtual void DeleteMisc()
+		{
+		}
+
+		// --------------------------------------------------------------------
 		// リストに出力するファイル名の表現
 		// --------------------------------------------------------------------
 		protected abstract String FileNameDescription(String oFileName);
+
+		// --------------------------------------------------------------------
+		// その他のファイルの出力
+		// --------------------------------------------------------------------
+		protected virtual void OutputMisc()
+		{
+		}
 
 		// --------------------------------------------------------------------
 		// コンストラクターでは行えない準備などを実施
@@ -292,7 +313,6 @@ namespace YukaLister.Models.OutputWriters
 			Directory.CreateDirectory(mTempFolderPath);
 		}
 
-
 		// ====================================================================
 		// private 定数
 		// ====================================================================
@@ -312,7 +332,6 @@ namespace YukaLister.Models.OutputWriters
 		// HTML テンプレートに記載されている変数
 		private const String HTML_VAR_ADDITIONAL_DESCRIPTION = "<!-- $AdditionalDescription$ -->";
 		private const String HTML_VAR_ADDITIONAL_HEADER = "<!-- $AdditionalHeader$ -->";
-		private const String HTML_VAR_ADDITIONAL_NAVI = "<!-- $AdditionalNavi$ -->";
 		private const String HTML_VAR_CATEGORY = "<!-- $Category$ -->";
 		private const String HTML_VAR_CATEGORY_INDEX = "<!-- $CategoryIndex$ -->";
 		private const String HTML_VAR_CHAPTER_NAME = "<!-- $ChapterName$ -->";
@@ -322,7 +341,6 @@ namespace YukaLister.Models.OutputWriters
 		private const String HTML_VAR_CLASS_OF_NUM = "<!-- $ClassOfNum$ -->";
 		private const String HTML_VAR_DIRECTORY = "<!-- $Directory$ -->";
 		private const String HTML_VAR_GENERATE_DATE = "<!-- $GenerateDate$ -->";
-		private const String HTML_VAR_GENERATOR = "<!-- $Generator$ -->";
 		private const String HTML_VAR_GROUP_NAVI = "<!-- $GroupNavi$ -->";
 		private const String HTML_VAR_INDICES = "<!-- $Indices$ -->";
 		private const String HTML_VAR_NEIGHBOR = "<!-- $Neighbor$ -->";
@@ -496,6 +514,7 @@ namespace YukaLister.Models.OutputWriters
 			DeleteOldListContentsCore(KIND_FILE_NAME_SEASON);
 			DeleteOldListContentsCore(KIND_FILE_NAME_ARTIST);
 			DeleteOldListContentsCore(KIND_FILE_NAME_COMPOSER);
+			DeleteMisc();
 		}
 
 		// --------------------------------------------------------------------

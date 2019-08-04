@@ -181,6 +181,10 @@ namespace YukaLister.Models
 			{
 				aYukariThumbDbInDisk.CreateDatabaseIfNeeded();
 			}
+			using (ReportDatabaseInDisk aReportDbInDisk = new ReportDatabaseInDisk(mEnvironment))
+			{
+				aReportDbInDisk.CreateDatabaseIfNeeded();
+			}
 
 			// ゆかり用データベース構築
 			CreateYukariDb();
@@ -1326,6 +1330,9 @@ namespace YukaLister.Models
 
 				// ゆかり用データベースを出力するとフォルダータスクの状態が更新されるため、再描画
 				UpdateDirtyDgWithInvoke();
+
+				// 問題報告用に ID 接頭辞が必要
+				YlCommon.InputIdPrefixIfNeededWithInvoke(mMainWindowViewModel, mEnvironment);
 
 				// リスト出力
 				YukariOutputWriter aYukariOutputWriter = new YukariOutputWriter(mEnvironment);

@@ -678,8 +678,14 @@ namespace YukaLister.Models.Http
 			}
 			finally
 			{
-				// 閉じる
-				aResponse.Close();
+				try
+				{
+					// 閉じる
+					aResponse.Close();
+				}
+				catch (Exception)
+				{
+				}
 			}
 		}
 

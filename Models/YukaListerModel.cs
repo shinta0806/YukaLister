@@ -9,14 +9,6 @@
 // ・外部に書き出すパスはすべて extended-length なパス表記ではないものにする
 // ----------------------------------------------------------------------------
 
-// ----------------------------------------------------------------------------
-// ToDo:
-// ファイル名から命名規則で取得できる情報を精査する
-// データベースクラスのプロパティーをインターフェースにしたらどうか？
-// 同期ダウンロード時、IdPrefix が一致するものは無効でもダウンロードする
-// （Id カウンターリセット時にユニーク制約に引っかかってアップロードできないのを防止）
-// ----------------------------------------------------------------------------
-
 using Livet;
 using Livet.Messaging;
 
@@ -47,6 +39,7 @@ namespace YukaLister.Models
 		{
 			mMainWindowViewModel = oMainWindowViewModel;
 			YukariDb = new YukariDatabaseModel(Environment, oMainWindowViewModel);
+			Report = new ReportModel(Environment, oMainWindowViewModel);
 		}
 
 		// ====================================================================
@@ -58,6 +51,9 @@ namespace YukaLister.Models
 
 		// ゆかり用データベース
 		public YukariDatabaseModel YukariDb { get; private set; }
+
+		// リスト問題
+		public ReportModel Report { get; private set; }
 
 		// ====================================================================
 		// public メンバー関数

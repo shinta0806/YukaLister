@@ -603,7 +603,7 @@ namespace YukaLister.ViewModels
 			}
 		}
 
-		public bool CanButtonDeleteFolderNameRuleClicked()
+		public Boolean CanButtonDeleteFolderNameRuleClicked()
 		{
 			return !String.IsNullOrEmpty(SelectedFolderNameRule);
 		}
@@ -638,7 +638,7 @@ namespace YukaLister.ViewModels
 			}
 		}
 
-		public bool CanButtonUpFolderNameRuleClicked()
+		public Boolean CanButtonUpFolderNameRuleClicked()
 		{
 			return !String.IsNullOrEmpty(SelectedFolderNameRule) && FolderNameRules.IndexOf(SelectedFolderNameRule) > 0;
 		}
@@ -676,7 +676,7 @@ namespace YukaLister.ViewModels
 			}
 		}
 
-		public bool CanButtonDownFolderNameRuleClicked()
+		public Boolean CanButtonDownFolderNameRuleClicked()
 		{
 			return !String.IsNullOrEmpty(SelectedFolderNameRule) && FolderNameRules.IndexOf(SelectedFolderNameRule) < FolderNameRules.Count - 1;
 		}
@@ -793,7 +793,7 @@ namespace YukaLister.ViewModels
 			}
 		}
 
-		public bool CanButtonEditInfoClicked()
+		public Boolean CanButtonEditInfoClicked()
 		{
 			return !IsExcluded && SelectedPreviewInfo != null;
 		}
@@ -943,7 +943,7 @@ namespace YukaLister.ViewModels
 			}
 		}
 
-		public bool CanButtonDeleteSettingsClicked()
+		public Boolean CanButtonDeleteSettingsClicked()
 		{
 			return SettingsFileStatus == FolderSettingsStatus.Set;
 		}

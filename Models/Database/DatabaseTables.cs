@@ -1705,5 +1705,165 @@ namespace YukaLister.Models.Database
 		public Double ThumbLastWriteTime { get; set; }
 	}
 	// public class TCacheThumb ___END___
+
+	// ====================================================================
+	// 報告テーブルテーブル
+	// ====================================================================
+
+	[Table(Name = TABLE_NAME_REPORT)]
+	public class TReport
+	{
+		// ====================================================================
+		// public 定数
+		// ====================================================================
+
+		public const String TABLE_NAME_REPORT = "t_report";
+		public const String FIELD_NAME_REPORT_ID = "report_id";
+		public const String FIELD_NAME_REPORT_IMPORT = "report_import";
+		public const String FIELD_NAME_REPORT_INVALID = "report_invalid";
+		public const String FIELD_NAME_REPORT_UPDATE_TIME = "report_update_time";
+		public const String FIELD_NAME_REPORT_DIRTY = "report_dirty";
+		public const String FIELD_NAME_REPORT_PATH = "report_path";
+		public const String FIELD_NAME_REPORT_ADJUST_KEY = "report_adjust_key";
+		public const String FIELD_NAME_REPORT_BAD_VALUE = "report_bad_value";
+		public const String FIELD_NAME_REPORT_ADJUST_VALUE = "report_adjust_value";
+		public const String FIELD_NAME_REPORT_REPORTER_COMMENT = "report_reporter_comment";
+		public const String FIELD_NAME_REPORT_BY = "report_by";
+		public const String FIELD_NAME_REPORT_IP = "report_ip";
+		public const String FIELD_NAME_REPORT_HOST = "report_host";
+		public const String FIELD_NAME_REPORT_REGIST_TIME = "report_regist_time";
+		public const String FIELD_NAME_REPORT_STATUS_COMMENT = "report_status_comment";
+		public const String FIELD_NAME_REPORT_STATUS = "report_status";
+		public const String FIELD_NAME_REPORT_STATUS_BY = "report_status_by";
+
+		// ====================================================================
+		// フィールド
+		// ====================================================================
+
+		// --------------------------------------------------------------------
+		// IRcBase
+		// --------------------------------------------------------------------
+
+		// 報告 ID
+		[Column(Name = FIELD_NAME_REPORT_ID, DbType = LinqUtils.DB_TYPE_STRING, CanBeNull = false, IsPrimaryKey = true)]
+		public String Id { get; set; }
+
+		// インポートフラグ
+		[Column(Name = FIELD_NAME_REPORT_IMPORT, DbType = LinqUtils.DB_TYPE_BOOLEAN, CanBeNull = false)]
+		public Boolean Import { get; set; }
+
+		// 無効フラグ
+		[Column(Name = FIELD_NAME_REPORT_INVALID, DbType = LinqUtils.DB_TYPE_BOOLEAN, CanBeNull = false)]
+		public Boolean Invalid { get; set; }
+
+		// 更新日時 UTC（修正ユリウス日）
+		[Column(Name = FIELD_NAME_REPORT_UPDATE_TIME, DbType = LinqUtils.DB_TYPE_DOUBLE, CanBeNull = false)]
+		public Double UpdateTime { get; set; }
+
+		// Dirty フラグ
+		[Column(Name = FIELD_NAME_REPORT_DIRTY, DbType = LinqUtils.DB_TYPE_BOOLEAN, CanBeNull = false)]
+		public Boolean Dirty { get; set; }
+
+		// --------------------------------------------------------------------
+		// TReport 独自項目
+		// --------------------------------------------------------------------
+
+		// 対象ファイルフルパス
+		[Column(Name = FIELD_NAME_REPORT_PATH, DbType = LinqUtils.DB_TYPE_STRING, CanBeNull = false)]
+		public String Path { get; set; }
+
+		// 修正項目インデックス
+		[Column(Name = FIELD_NAME_REPORT_ADJUST_KEY, DbType = LinqUtils.DB_TYPE_INT32, CanBeNull = false)]
+		public Int32 AdjustKey { get; set; }
+
+		// 修正前の値
+		[Column(Name = FIELD_NAME_REPORT_BAD_VALUE, DbType = LinqUtils.DB_TYPE_STRING, CanBeNull = true)]
+		public String BadValue { get; set; }
+
+		// 修正後の値
+		[Column(Name = FIELD_NAME_REPORT_ADJUST_VALUE, DbType = LinqUtils.DB_TYPE_STRING, CanBeNull = false)]
+		public String AdjustValue { get; set; }
+
+		// 報告コメント
+		[Column(Name = FIELD_NAME_REPORT_REPORTER_COMMENT, DbType = LinqUtils.DB_TYPE_STRING, CanBeNull = true)]
+		public String ReporterComment { get; set; }
+
+		// 報告者名
+		[Column(Name = FIELD_NAME_REPORT_BY, DbType = LinqUtils.DB_TYPE_STRING, CanBeNull = false)]
+		public String By { get; set; }
+
+		// 報告者 IP
+		[Column(Name = FIELD_NAME_REPORT_IP, DbType = LinqUtils.DB_TYPE_STRING, CanBeNull = false)]
+		public String Ip { get; set; }
+
+		// 報告者ホスト
+		[Column(Name = FIELD_NAME_REPORT_HOST, DbType = LinqUtils.DB_TYPE_STRING, CanBeNull = true)]
+		public String Host { get; set; }
+
+		// 報告日時 UTC（最初に登録した時の日時）
+		[Column(Name = FIELD_NAME_REPORT_REGIST_TIME, DbType = LinqUtils.DB_TYPE_DOUBLE, CanBeNull = false)]
+		public Double RegistTime { get; set; }
+
+		// 対応コメント
+		[Column(Name = FIELD_NAME_REPORT_STATUS_COMMENT, DbType = LinqUtils.DB_TYPE_STRING, CanBeNull = true)]
+		public String StatusComment { get; set; }
+
+		// 対応状況インデックス
+		[Column(Name = FIELD_NAME_REPORT_STATUS, DbType = LinqUtils.DB_TYPE_INT32, CanBeNull = false)]
+		public Int32 Status { get; set; }
+
+		// 対応者
+		[Column(Name = FIELD_NAME_REPORT_STATUS_BY, DbType = LinqUtils.DB_TYPE_STRING, CanBeNull = true)]
+		public String StatusBy { get; set; }
+
+		// --------------------------------------------------------------------
+		// ViewTReportsWindow 表示用
+		// --------------------------------------------------------------------
+
+		// パス無しのファイル名
+		public String FileName
+		{
+			get
+			{
+				return System.IO.Path.GetFileName(Path);
+			}
+		}
+
+		// 修正項目名
+		public String AdjustKeyName
+		{
+			get
+			{
+				if (AdjustKey < (Int32)ReportAdjustKey.Invalid || AdjustKey >= (Int32)ReportAdjustKey.__End__)
+				{
+					return null;
+				}
+				return YlConstants.REPORT_ADJUST_KEY_NAMES[AdjustKey];
+			}
+		}
+
+		// 報告日文字列
+		public String RegistDateString
+		{
+			get
+			{
+				return JulianDay.ModifiedJulianDateToDateTime(RegistTime).ToString(YlConstants.DATE_FORMAT);
+			}
+		}
+
+		// 対応状況名
+		public String StatusName
+		{
+			get
+			{
+				if (Status < 0 || Status >= (Int32)ReportStatus.__End__)
+				{
+					return null;
+				}
+				return YlConstants.REPORT_STATUS_NAMES[Status];
+			}
+		}
+	}
+	// public class TReport ___END___
 }
 // namespace YukaLister.Shared ___END___

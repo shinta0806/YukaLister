@@ -544,6 +544,14 @@ namespace YukaLister.Models.SharedMisc
 		}
 
 		// --------------------------------------------------------------------
+		// リスト問題報告データベースファイル（ディスク）のフルパス
+		// --------------------------------------------------------------------
+		public String ReportDbInDiskPath()
+		{
+			return Path.GetDirectoryName(YukariConfigPath()) + "\\" + FOLDER_NAME_LIST + FILE_NAME_REPORT_DB;
+		}
+
+		// --------------------------------------------------------------------
 		// ゆかり設定ファイルのフルパス
 		// --------------------------------------------------------------------
 		public String YukariConfigPath()
@@ -574,6 +582,9 @@ namespace YukaLister.Models.SharedMisc
 		// --------------------------------------------------------------------
 		// その他
 		// --------------------------------------------------------------------
+
+		// リスト問題報告データベースファイル名
+		private const String FILE_NAME_REPORT_DB = "Report" + Common.FILE_EXT_SQLITE3;
 
 		// ゆかり用リストデータベースファイル名
 		private const String FILE_NAME_YUKARI_LIST_DB = "List" + Common.FILE_EXT_SQLITE3;

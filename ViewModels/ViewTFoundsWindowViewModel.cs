@@ -439,7 +439,7 @@ namespace YukaLister.ViewModels
 			}
 		}
 
-		public bool CanButtonEditMusicInfoClicked()
+		public Boolean CanButtonEditMusicInfoClicked()
 		{
 			return SelectedTFound != null;
 		}
@@ -452,7 +452,7 @@ namespace YukaLister.ViewModels
 			}
 			catch (Exception oExcep)
 			{
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "フォルダー設定ボタンクリック時エラー：\n" + oExcep.Message);
+				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "編集ボタンクリック時エラー：\n" + oExcep.Message);
 				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
@@ -473,7 +473,7 @@ namespace YukaLister.ViewModels
 			}
 		}
 
-		public bool CanButtonFolderSettingsClicked()
+		public Boolean CanButtonFolderSettingsClicked()
 		{
 			return SelectedTFound != null;
 		}
@@ -716,24 +716,20 @@ namespace YukaLister.ViewModels
 			String aPath = SelectedTFound.Path;
 
 			// ファイル命名規則とフォルダー固定値を適用
-			FolderSettingsInDisk aFolderSettingsInDisk = YlCommon.LoadFolderSettings2Ex(Path.GetDirectoryName(aPath));
-			FolderSettingsInMemory aFolderSettingsInMemory = YlCommon.CreateFolderSettingsInMemory(aFolderSettingsInDisk);
-			Dictionary<String, String> aDic = YlCommon.MatchFileNameRulesAndFolderRule
-					(Path.GetFileNameWithoutExtension(aPath), aFolderSettingsInMemory);
+			Dictionary<String, String> aDic = YlCommon.DicByFile(aPath);
 
 			// 楽曲名が取得できていない場合は編集不可
 			if (String.IsNullOrEmpty(aDic[YlConstants.RULE_VAR_TITLE]))
 			{
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "ファイル名から楽曲名を取得できていないため、編集できません。\nファイル命名規則を確認して下さい。");
-				return;
+				throw new Exception("ファイル名から楽曲名を取得できていないため、編集できません。\nファイル命名規則を確認して下さい。");
 			}
 
 			// 楽曲情報等編集ウィンドウを開く
 			using (EditMusicInfoWindowViewModel aEditMusicInfoWindowViewModel = new EditMusicInfoWindowViewModel())
 			{
 				aEditMusicInfoWindowViewModel.Environment = Environment;
-				aEditMusicInfoWindowViewModel.PathExLen = SelectedTFound.Path;
-				aEditMusicInfoWindowViewModel.DicByFile = YlCommon.DicByFile(SelectedTFound.Path);
+				aEditMusicInfoWindowViewModel.PathExLen = aPath;
+				aEditMusicInfoWindowViewModel.DicByFile = aDic;
 				Messenger.Raise(new TransitionMessage(aEditMusicInfoWindowViewModel, "OpenEditMusicInfoWindow"));
 			}
 		}

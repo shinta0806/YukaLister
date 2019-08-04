@@ -148,6 +148,7 @@
     <Compile Include="Models\Database\DatabaseBase.cs" />
     <Compile Include="Models\Database\DatabaseTables.cs" />
     <Compile Include="Models\Database\MusicInfoDatabaseInDisk.cs" />
+    <Compile Include="Models\Database\ReportDatabaseInDisk.cs" />
     <Compile Include="Models\Database\TFoundSetter.cs" />
     <Compile Include="Models\Database\TFoundSetterAliasSpecify.cs" />
     <Compile Include="Models\Database\YukariListDatabaseInDisk.cs" />
@@ -155,6 +156,7 @@
     <Compile Include="Models\Database\YukariThumbnailDatabaseInDisk.cs" />
     <Compile Include="Models\Http\SyncClient.cs" />
     <Compile Include="Models\Http\WebServer.cs" />
+    <Compile Include="Models\ReportModel.cs" />
     <Compile Include="Models\SharedMisc\TargetFolderInfo.cs" />
     <Compile Include="Models\SharedMisc\YlClasses.cs" />
     <Compile Include="Models\SharedMisc\YlConstants.cs" />
@@ -166,6 +168,7 @@
     <Compile Include="ViewModels\EditMusicInfoWindowViewModel.cs" />
     <Compile Include="ViewModels\EditPeopleWindowViewModel.cs" />
     <Compile Include="ViewModels\EditPersonWindowViewModel.cs" />
+    <Compile Include="ViewModels\EditReportWindowViewModel.cs" />
     <Compile Include="ViewModels\EditSongWindowViewModel.cs" />
     <Compile Include="ViewModels\EditTieUpGroupWindowViewModel.cs" />
     <Compile Include="ViewModels\EditTieUpWindowViewModel.cs" />
@@ -194,6 +197,7 @@
     <Compile Include="ViewModels\OutputSettingsWindowViewModel.cs" />
     <Compile Include="ViewModels\SearchMusicInfoWindowViewModel.cs" />
     <Compile Include="ViewModels\SplashWindowViewModel.cs" />
+    <Compile Include="ViewModels\ViewTReportsWindowViewModel.cs" />
     <Compile Include="ViewModels\WebOutputSettingsWindowViewModel.cs" />
     <Compile Include="ViewModels\YukaListerSettingsWindowViewModel.cs" />
     <Compile Include="Views\EditMusicInfoWindow.xaml.cs">
@@ -201,6 +205,9 @@
     </Compile>
     <Compile Include="Views\EditPeopleWindow.xaml.cs">
       <DependentUpon>EditPeopleWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\EditReportWindow.xaml.cs">
+      <DependentUpon>EditReportWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\EditSongWindow.xaml.cs">
       <DependentUpon>EditSongWindow.xaml</DependentUpon>
@@ -229,6 +236,9 @@
     <Compile Include="Views\SplashWindow.xaml.cs">
       <DependentUpon>SplashWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\ViewTReportsWindow.xaml.cs">
+      <DependentUpon>ViewTReportsWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\ViewTFoundsWindow.xaml.cs">
       <DependentUpon>ViewTFoundsWindow.xaml</DependentUpon>
     </Compile>
@@ -244,6 +254,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\EditPeopleWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\EditReportWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -311,6 +325,10 @@
       <Generator>MSBuild:Compile</Generator>
     </EmbeddedResource>
     <Page Include="Views\SplashWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ViewTReportsWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

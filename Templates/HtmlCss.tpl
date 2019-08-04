@@ -8,9 +8,14 @@
 -- 共通
 ---------------------------------------------------------------------------- */
 
-input
+input.accparent
 {
 	display: none;
+}
+
+input.report
+{
+	display: inline;
 }
 
 .additionalnavi
