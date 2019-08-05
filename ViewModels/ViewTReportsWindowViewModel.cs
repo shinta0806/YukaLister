@@ -119,6 +119,35 @@ namespace YukaLister.ViewModels
 		}
 		#endregion
 
+		#region データグリッドダブルクリックの制御
+		private ViewModelCommand mDataGridDoubleClickedCommand;
+
+		public ViewModelCommand DataGridDoubleClickedCommand
+		{
+			get
+			{
+				if (mDataGridDoubleClickedCommand == null)
+				{
+					mDataGridDoubleClickedCommand = new ViewModelCommand(DataGridDoubleClicked);
+				}
+				return mDataGridDoubleClickedCommand;
+			}
+		}
+
+		public void DataGridDoubleClicked()
+		{
+			try
+			{
+				EditDetail();
+			}
+			catch (Exception oExcep)
+			{
+				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "データグリッドダブルクリック時エラー：\n" + oExcep.Message);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
+			}
+		}
+		#endregion
+
 		#region 詳細ボタンの制御
 		private ViewModelCommand mButtonEditDetailClickedCommand;
 
@@ -143,18 +172,7 @@ namespace YukaLister.ViewModels
 		{
 			try
 			{
-				if (SelectedTReport == null)
-				{
-					return;
-				}
-
-				// リスト問題報告編集ウィンドウを開く
-				using (EditReportWindowViewModel aEditReportWindowViewModel = new EditReportWindowViewModel())
-				{
-					aEditReportWindowViewModel.Environment = Environment;
-					aEditReportWindowViewModel.TReport = SelectedTReport;
-					Messenger.Raise(new TransitionMessage(aEditReportWindowViewModel, "OpenEditReportWindow"));
-				}
+				EditDetail();
 			}
 			catch (Exception oExcep)
 			{
@@ -254,6 +272,25 @@ namespace YukaLister.ViewModels
 			if (oResource != null)
 			{
 				oResource.Dispose();
+			}
+		}
+
+		// --------------------------------------------------------------------
+		// 詳細編集
+		// --------------------------------------------------------------------
+		private void EditDetail()
+		{
+			if (SelectedTReport == null)
+			{
+				return;
+			}
+
+			// リスト問題報告編集ウィンドウを開く
+			using (EditReportWindowViewModel aEditReportWindowViewModel = new EditReportWindowViewModel())
+			{
+				aEditReportWindowViewModel.Environment = Environment;
+				aEditReportWindowViewModel.TReport = SelectedTReport;
+				Messenger.Raise(new TransitionMessage(aEditReportWindowViewModel, "OpenEditReportWindow"));
 			}
 		}
 

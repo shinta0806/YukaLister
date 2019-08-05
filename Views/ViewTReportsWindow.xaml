@@ -14,6 +14,10 @@
         <vm:ViewTReportsWindowViewModel/>
     </Window.DataContext>
 
+    <i:Interaction.Behaviors>
+        <sb:WindowBindingSupportBehavior IsCascade="True" MinimizeBox="False"/>
+    </i:Interaction.Behaviors>
+
     <i:Interaction.Triggers>
         <!-- When ContentRendered event raised, Initialize method of ViewModel would be called. -->
         <i:EventTrigger EventName="ContentRendered">
@@ -65,9 +69,6 @@
             <DataGrid.InputBindings>
                 <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding DataGridDoubleClickedCommand}" />
             </DataGrid.InputBindings>
-            <i:Interaction.Behaviors>
-                <sb:DataGridBindingSupportBehavior CurrentCellLocation="{Binding CurrentCellLocation}" SortingCommand="{Binding DataGridListSortingCommand}"/>
-            </i:Interaction.Behaviors>
         </DataGrid>
 
     </DockPanel>
