@@ -1412,7 +1412,7 @@ namespace YukaLister.ViewModels
 						List<TSongAlias> aSongAliases = YlCommon.SelectAliasesByAlias<TSongAlias>(aContext, aDic[YlConstants.RULE_VAR_TITLE]);
 						if (aSongAliases.Count > 0)
 						{
-							TSong aSongOrigin = YlCommon.SelectMasterById<TSong>(aContext, aSongAliases[0].OriginalId);
+							TSong aSongOrigin = YlCommon.SelectBaseById<TSong>(aContext, aSongAliases[0].OriginalId);
 							if (aSongOrigin != null)
 							{
 								aSongNameOrigin = aSongOrigin.Name;
@@ -1431,7 +1431,7 @@ namespace YukaLister.ViewModels
 							List<TTieUpAlias> aTieUpAliases = YlCommon.SelectAliasesByAlias<TTieUpAlias>(aContext, aDic[YlConstants.RULE_VAR_PROGRAM]);
 							if (aTieUpAliases.Count > 0)
 							{
-								TTieUp aTieUpOrigin = YlCommon.SelectMasterById<TTieUp>(aContext, aTieUpAliases[0].OriginalId);
+								TTieUp aTieUpOrigin = YlCommon.SelectBaseById<TTieUp>(aContext, aTieUpAliases[0].OriginalId);
 								if (aTieUpOrigin != null)
 								{
 									aProgramNameOrigin = aTieUpOrigin.Name;

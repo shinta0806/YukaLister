@@ -421,7 +421,7 @@ namespace YukaLister.ViewModels
 					using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
 					using (DataContext aContext = new DataContext(aMusicInfoDbInDisk.Connection))
 					{
-						TTieUp aMaster = YlCommon.SelectMasterById<TTieUp>(aContext, aEditTieUpWindowViewModel.OkSelectedId);
+						TTieUp aMaster = YlCommon.SelectBaseById<TTieUp>(aContext, aEditTieUpWindowViewModel.OkSelectedId);
 						if (aMaster != null)
 						{
 							List<TTieUp> aSameNameTieUps = YlCommon.SelectMastersByName<TTieUp>(aContext, aMaster.Name);
@@ -1000,7 +1000,7 @@ namespace YukaLister.ViewModels
 				else
 				{
 					HasTieUp = true;
-					TTieUp aTieUp = YlCommon.SelectMasterById<TTieUp>(aContext, aSong.TieUpId);
+					TTieUp aTieUp = YlCommon.SelectBaseById<TTieUp>(aContext, aSong.TieUpId);
 					if (aTieUp != null)
 					{
 						List<TTieUp> aSameNameTieUps = YlCommon.SelectMastersByName<TTieUp>(aContext, aTieUp.Name);
@@ -1071,7 +1071,7 @@ namespace YukaLister.ViewModels
 				}
 				else
 				{
-					TSong aExistRecord = YlCommon.SelectMasterById<TSong>(aContext, aNewRecord.Id, true);
+					TSong aExistRecord = YlCommon.SelectBaseById<TSong>(aContext, aNewRecord.Id, true);
 					if (YlCommon.IsRcSongUpdated(aExistRecord, aNewRecord))
 					{
 						// 更新（既存のレコードが無効化されている場合は有効化も行う）
@@ -1192,7 +1192,7 @@ namespace YukaLister.ViewModels
 		{
 			using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
 			{
-				TTieUp aTieUp = YlCommon.SelectMasterById<TTieUp>(aMusicInfoDbInDisk.Connection, TieUpId);
+				TTieUp aTieUp = YlCommon.SelectBaseById<TTieUp>(aMusicInfoDbInDisk.Connection, TieUpId);
 				return aTieUp?.Name;
 			}
 		}

@@ -1067,6 +1067,33 @@ namespace YukaLister.Models.SharedMisc
 		}
 
 		// --------------------------------------------------------------------
+		// 楽曲情報データベースから IRcBase を検索
+		// 見つからない場合は null
+		// --------------------------------------------------------------------
+		public static T SelectBaseById<T>(DataContext oContext, String oId, Boolean oIncludesInvalid = false) where T : class, IRcBase
+		{
+			if (String.IsNullOrEmpty(oId))
+			{
+				return null;
+			}
+
+			Table<T> aTableMaster = oContext.GetTable<T>();
+			return aTableMaster.SingleOrDefault(x => x.Id == oId && (oIncludesInvalid ? true : x.Invalid == false));
+		}
+
+		// --------------------------------------------------------------------
+		// 楽曲情報データベースから IRcMaster を検索
+		// 見つからない場合は null
+		// --------------------------------------------------------------------
+		public static T SelectBaseById<T>(SQLiteConnection oConnection, String oId, Boolean oIncludesInvalid = false) where T : class, IRcBase
+		{
+			using (DataContext aContext = new DataContext(oConnection))
+			{
+				return SelectBaseById<T>(aContext, oId, oIncludesInvalid);
+			}
+		}
+
+		// --------------------------------------------------------------------
 		// 楽曲情報データベースからカテゴリーを列挙
 		// --------------------------------------------------------------------
 		public static List<String> SelectCategoryNames(SQLiteConnection oConnection, Boolean oIncludesInvalid = false)
@@ -1085,33 +1112,6 @@ namespace YukaLister.Models.SharedMisc
 				}
 			}
 			return aCategoryNames;
-		}
-
-		// --------------------------------------------------------------------
-		// 楽曲情報データベースから IRcMaster を検索
-		// 見つからない場合は null
-		// --------------------------------------------------------------------
-		public static T SelectMasterById<T>(DataContext oContext, String oId, Boolean oIncludesInvalid = false) where T : class, IRcMaster
-		{
-			if (String.IsNullOrEmpty(oId))
-			{
-				return null;
-			}
-
-			Table<T> aTableMaster = oContext.GetTable<T>();
-			return aTableMaster.SingleOrDefault(x => x.Id == oId && (oIncludesInvalid ? true : x.Invalid == false));
-		}
-
-		// --------------------------------------------------------------------
-		// 楽曲情報データベースから IRcMaster を検索
-		// 見つからない場合は null
-		// --------------------------------------------------------------------
-		public static T SelectMasterById<T>(SQLiteConnection oConnection, String oId, Boolean oIncludesInvalid = false) where T : class, IRcMaster
-		{
-			using (DataContext aContext = new DataContext(oConnection))
-			{
-				return SelectMasterById<T>(aContext, oId, oIncludesInvalid);
-			}
 		}
 
 		// --------------------------------------------------------------------
@@ -1154,7 +1154,7 @@ namespace YukaLister.Models.SharedMisc
 
 			foreach (T aSequence in aSequences)
 			{
-				TPerson aPerson = SelectMasterById<TPerson>(oContext, aSequence.LinkId);
+				TPerson aPerson = SelectBaseById<TPerson>(oContext, aSequence.LinkId);
 				if (aPerson != null || oIncludesInvalid)
 				{
 					aPeople.Add(aPerson);
@@ -1196,7 +1196,7 @@ namespace YukaLister.Models.SharedMisc
 
 			foreach (TTieUpGroupSequence aSequence in aSequences)
 			{
-				TTieUpGroup aTieUpGroup = SelectMasterById<TTieUpGroup>(oContext, aSequence.LinkId);
+				TTieUpGroup aTieUpGroup = SelectBaseById<TTieUpGroup>(oContext, aSequence.LinkId);
 				if (aTieUpGroup != null || oIncludesInvalid)
 				{
 					aTieUpGroups.Add(aTieUpGroup);

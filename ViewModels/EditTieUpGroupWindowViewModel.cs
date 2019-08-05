@@ -144,7 +144,7 @@ namespace YukaLister.ViewModels
 				}
 				else
 				{
-					TTieUpGroup aExistRecord = YlCommon.SelectMasterById<TTieUpGroup>(aContext, aNewRecord.Id, true);
+					TTieUpGroup aExistRecord = YlCommon.SelectBaseById<TTieUpGroup>(aContext, aNewRecord.Id, true);
 					if (YlCommon.IsRcMasterUpdated(aExistRecord, aNewRecord))
 					{
 						// 更新（既存のレコードが無効化されている場合は有効化も行う）

@@ -256,7 +256,7 @@ namespace YukaLister.ViewModels
 				else
 				{
 					HasCategory = true;
-					TCategory aCategory = YlCommon.SelectMasterById<TCategory>(aContext, aCategorizable.CategoryId);
+					TCategory aCategory = YlCommon.SelectBaseById<TCategory>(aContext, aCategorizable.CategoryId);
 					if (aCategory != null)
 					{
 						CategoryId = aCategory.Id;

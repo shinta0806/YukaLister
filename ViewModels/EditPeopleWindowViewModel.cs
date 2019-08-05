@@ -449,7 +449,7 @@ namespace YukaLister.ViewModels
 					using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
 					using (DataContext aContext = new DataContext(aMusicInfoDbInDisk.Connection))
 					{
-						TPerson aMaster = YlCommon.SelectMasterById<TPerson>(aContext, aEditPersonWindowViewModel.OkSelectedId);
+						TPerson aMaster = YlCommon.SelectBaseById<TPerson>(aContext, aEditPersonWindowViewModel.OkSelectedId);
 						if (aMaster != null)
 						{
 							List<TPerson> aSameNamePeople = YlCommon.SelectMastersByName<TPerson>(aContext, aMaster.Name);
@@ -527,7 +527,7 @@ namespace YukaLister.ViewModels
 				{
 					for (Int32 i = 0; i < InitialIds.Count; i++)
 					{
-						TPerson aPerson = YlCommon.SelectMasterById<TPerson>(aContext, InitialIds[i]);
+						TPerson aPerson = YlCommon.SelectBaseById<TPerson>(aContext, InitialIds[i]);
 						if (aPerson != null)
 						{
 							List<TPerson> aSameNamePeople = YlCommon.SelectMastersByName<TPerson>(aContext, aPerson.Name);
@@ -605,7 +605,7 @@ namespace YukaLister.ViewModels
 				using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
 				using (DataContext aContext = new DataContext(aMusicInfoDbInDisk.Connection))
 				{
-					TPerson aMaster = YlCommon.SelectMasterById<TPerson>(aContext, aEditPersonWindowViewModel.OkSelectedId);
+					TPerson aMaster = YlCommon.SelectBaseById<TPerson>(aContext, aEditPersonWindowViewModel.OkSelectedId);
 					if (aMaster != null)
 					{
 						List<TPerson> aSameNamePeople = YlCommon.SelectMastersByName<TPerson>(aContext, aMaster.Name);

@@ -21,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Linq;
+using System.Data.SQLite;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -297,6 +298,12 @@ namespace YukaLister.ViewModels
 				}
 				StatusStrings = aList;
 
+				// 最新情報読込
+				using (ReportDatabaseInDisk aReportDbInDisk = new ReportDatabaseInDisk(Environment))
+				{
+					TReport = YlCommon.SelectBaseById<TReport>(aReportDbInDisk.Connection, TReport.Id);
+				}
+
 				// 値反映
 				TReportToProperties();
 
@@ -318,33 +325,23 @@ namespace YukaLister.ViewModels
 		private void CheckAndSave()
 		{
 			using (ReportDatabaseInDisk aReportDbInDisk = new ReportDatabaseInDisk(Environment))
+			using (DataContext aContext = new DataContext(aReportDbInDisk.Connection))
 			{
-				using (DataContext aContext = new DataContext(aReportDbInDisk.Connection))
+				TReport aRecord = YlCommon.SelectBaseById<TReport>(aContext, TReport.Id);
+				if (aRecord == null)
 				{
-					Table<TReport> aTableReport = aContext.GetTable<TReport>();
-					IQueryable<TReport> aQueryResult =
-							from x in aTableReport
-							where x.Id == TReport.Id
-							select x;
-					if (aQueryResult.Count() == 0)
-					{
-						throw new Exception("対象の報告が見つかりません：" + TReport.Id);
-					}
-
-					foreach (TReport aRecord in aQueryResult)
-					{
-						aRecord.StatusComment = StatusComment;
-						aRecord.Status = Array.IndexOf(YlConstants.REPORT_STATUS_NAMES, SelectedStatusString);
-						if (aRecord.Status < 0)
-						{
-							throw new Exception("対応状況を選択してください。");
-						}
-						break;
-					}
-
-					// 保存
-					aContext.SubmitChanges();
+					throw new Exception("対象の報告が見つかりません：" + TReport.Id);
 				}
+
+				aRecord.StatusComment = StatusComment;
+				aRecord.Status = Array.IndexOf(YlConstants.REPORT_STATUS_NAMES, SelectedStatusString);
+				if (aRecord.Status < 0)
+				{
+					throw new Exception("対応状況を選択してください。");
+				}
+
+				// 保存
+				aContext.SubmitChanges();
 			}
 		}
 

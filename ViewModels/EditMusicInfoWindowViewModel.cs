@@ -399,7 +399,7 @@ namespace YukaLister.ViewModels
 
 					using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
 					{
-						TTieUp aTieUp = YlCommon.SelectMasterById<TTieUp>(aMusicInfoDbInDisk.Connection, aEditTieUpWindowViewModel.OkSelectedId);
+						TTieUp aTieUp = YlCommon.SelectBaseById<TTieUp>(aMusicInfoDbInDisk.Connection, aEditTieUpWindowViewModel.OkSelectedId);
 						if (aTieUp != null)
 						{
 							if (String.IsNullOrEmpty(DicByFile[YlConstants.RULE_VAR_PROGRAM]) || aTieUp.Name == DicByFile[YlConstants.RULE_VAR_PROGRAM])
@@ -590,7 +590,7 @@ namespace YukaLister.ViewModels
 							// 既存楽曲が 1 つ以上の場合は、タイアップ名が一致するものがあれば優先し、そうでなければ新規をデフォルトにする
 							for (Int32 i = 1; i < aSongs.Count; i++)
 							{
-								TTieUp aTieUpOfSong = YlCommon.SelectMasterById<TTieUp>(aMusicInfoDbInDisk.Connection, aSongs[i].TieUpId);
+								TTieUp aTieUpOfSong = YlCommon.SelectBaseById<TTieUp>(aMusicInfoDbInDisk.Connection, aSongs[i].TieUpId);
 								if (aTieUpOfSong == null && String.IsNullOrEmpty(aTieUpName) || aTieUpOfSong != null && aTieUpOfSong.Name == aTieUpName)
 								{
 									aEditSongWindowViewModel.DefaultId = aSongs[i].Id;
@@ -608,7 +608,7 @@ namespace YukaLister.ViewModels
 
 					using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
 					{
-						TSong aSong = YlCommon.SelectMasterById<TSong>(aMusicInfoDbInDisk.Connection, aEditSongWindowViewModel.OkSelectedId);
+						TSong aSong = YlCommon.SelectBaseById<TSong>(aMusicInfoDbInDisk.Connection, aEditSongWindowViewModel.OkSelectedId);
 						if (aSong != null)
 						{
 							if (aSong.Name == DicByFile[YlConstants.RULE_VAR_TITLE])

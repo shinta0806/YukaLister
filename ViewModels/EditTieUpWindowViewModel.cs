@@ -293,7 +293,7 @@ namespace YukaLister.ViewModels
 
 					using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
 					{
-						TMaker aMaster = YlCommon.SelectMasterById<TMaker>(aMusicInfoDbInDisk.Connection, aEditMakerWindowViewModel.OkSelectedId);
+						TMaker aMaster = YlCommon.SelectBaseById<TMaker>(aMusicInfoDbInDisk.Connection, aEditMakerWindowViewModel.OkSelectedId);
 						if (aMaster != null)
 						{
 							MakerId = aMaster.Id;
@@ -443,7 +443,7 @@ namespace YukaLister.ViewModels
 
 					using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
 					{
-						TTieUpGroup aMaster = YlCommon.SelectMasterById<TTieUpGroup>(aMusicInfoDbInDisk.Connection, aEditTieUpGroupWindowViewModel.OkSelectedId);
+						TTieUpGroup aMaster = YlCommon.SelectBaseById<TTieUpGroup>(aMusicInfoDbInDisk.Connection, aEditTieUpGroupWindowViewModel.OkSelectedId);
 						if (aMaster != null)
 						{
 							TieUpGroupId = aMaster.Id;
@@ -569,7 +569,7 @@ namespace YukaLister.ViewModels
 				else
 				{
 					HasMaker = true;
-					TMaker aMaker = YlCommon.SelectMasterById<TMaker>(aContext, aTieUp.MakerId);
+					TMaker aMaker = YlCommon.SelectBaseById<TMaker>(aContext, aTieUp.MakerId);
 					if (aMaker != null)
 					{
 						MakerId = aMaker.Id;
@@ -630,7 +630,7 @@ namespace YukaLister.ViewModels
 				}
 				else
 				{
-					TTieUp aExistRecord = YlCommon.SelectMasterById<TTieUp>(aContext, aNewRecord.Id, true);
+					TTieUp aExistRecord = YlCommon.SelectBaseById<TTieUp>(aContext, aNewRecord.Id, true);
 					if (YlCommon.IsRcTieUpUpdated(aExistRecord, aNewRecord))
 					{
 						// 更新（既存のレコードが無効化されている場合は有効化も行う）

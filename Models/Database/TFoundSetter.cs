@@ -396,7 +396,7 @@ namespace YukaLister.Models.Database
 				List<TSong> aSongsWithTieUp = new List<TSong>();
 				foreach (TSong aSong in aSongs)
 				{
-					TTieUp aTieUp = YlCommon.SelectMasterById<TTieUp>(mMusicInfoDbContext, aSong.TieUpId);
+					TTieUp aTieUp = YlCommon.SelectBaseById<TTieUp>(mMusicInfoDbContext, aSong.TieUpId);
 					if (aTieUp != null && aTieUp.Name == oDicByFile[YlConstants.RULE_VAR_PROGRAM])
 					{
 						aSongsWithTieUp.Add(aSong);
@@ -414,7 +414,7 @@ namespace YukaLister.Models.Database
 				List<TSong> aSongsWithCategory = new List<TSong>();
 				foreach (TSong aSong in aSongs)
 				{
-					TCategory aCategory = YlCommon.SelectMasterById<TCategory>(mMusicInfoDbContext, aSong.CategoryId);
+					TCategory aCategory = YlCommon.SelectBaseById<TCategory>(mMusicInfoDbContext, aSong.CategoryId);
 					if (aCategory != null && aCategory.Name == oDicByFile[YlConstants.RULE_VAR_CATEGORY])
 					{
 						aSongsWithCategory.Add(aSong);
@@ -469,19 +469,19 @@ namespace YukaLister.Models.Database
 			{
 				// 楽曲情報データベース内に曲情報がある場合は、曲に紐付くタイアップを得る
 				aSelectedSong = aSongs[0];
-				aTieUpOfSong = YlCommon.SelectMasterById<TTieUp>(mMusicInfoDbContext, aSelectedSong.TieUpId);
+				aTieUpOfSong = YlCommon.SelectBaseById<TTieUp>(mMusicInfoDbContext, aSelectedSong.TieUpId);
 			}
 
 			if (aTieUpOfSong != null)
 			{
-				TCategory aCategoryOfTieUp = YlCommon.SelectMasterById<TCategory>(mMusicInfoDbContext, aTieUpOfSong.CategoryId);
+				TCategory aCategoryOfTieUp = YlCommon.SelectBaseById<TCategory>(mMusicInfoDbContext, aTieUpOfSong.CategoryId);
 				if (aCategoryOfTieUp != null)
 				{
 					// TCategory 由来項目の設定
 					oRecord.Category = aCategoryOfTieUp.Name;
 				}
 
-				TMaker aMakerOfTieUp = YlCommon.SelectMasterById<TMaker>(mMusicInfoDbContext, aTieUpOfSong.MakerId);
+				TMaker aMakerOfTieUp = YlCommon.SelectBaseById<TMaker>(mMusicInfoDbContext, aTieUpOfSong.MakerId);
 				if (aMakerOfTieUp != null)
 				{
 					// TMaker 由来項目の設定
@@ -535,7 +535,7 @@ namespace YukaLister.Models.Database
 			}
 			if (String.IsNullOrEmpty(oRecord.Category))
 			{
-				TCategory aCategoryOfSong = YlCommon.SelectMasterById<TCategory>(mMusicInfoDbContext, aSelectedSong.CategoryId);
+				TCategory aCategoryOfSong = YlCommon.SelectBaseById<TCategory>(mMusicInfoDbContext, aSelectedSong.CategoryId);
 				if (aCategoryOfSong != null)
 				{
 					oRecord.Category = aCategoryOfSong.Name;

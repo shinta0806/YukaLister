@@ -407,7 +407,7 @@ namespace YukaLister.Models.Database
 						TCategory aCategory;
 						using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
 						{
-							aCategory = YlCommon.SelectMasterById<TCategory>(aMusicInfoDbInDisk.Connection, CategoryId);
+							aCategory = YlCommon.SelectBaseById<TCategory>(aMusicInfoDbInDisk.Connection, CategoryId);
 						}
 						mDisplayName = Name + "（" + (String.IsNullOrEmpty(aCategory?.Name) ? "カテゴリー無し" : aCategory?.Name) + ", "
 								+ (String.IsNullOrEmpty(Keyword) ? "キーワード無し" : Keyword) + "）";
@@ -1711,7 +1711,7 @@ namespace YukaLister.Models.Database
 	// ====================================================================
 
 	[Table(Name = TABLE_NAME_REPORT)]
-	public class TReport
+	public class TReport : IRcBase
 	{
 		// ====================================================================
 		// public 定数

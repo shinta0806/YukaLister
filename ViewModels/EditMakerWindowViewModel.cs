@@ -144,7 +144,7 @@ namespace YukaLister.ViewModels
 				}
 				else
 				{
-					TMaker aExistRecord = YlCommon.SelectMasterById<TMaker>(aContext, aNewRecord.Id, true);
+					TMaker aExistRecord = YlCommon.SelectBaseById<TMaker>(aContext, aNewRecord.Id, true);
 					if (YlCommon.IsRcMasterUpdated(aExistRecord, aNewRecord))
 					{
 						// 更新（既存のレコードが無効化されている場合は有効化も行う）
