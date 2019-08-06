@@ -488,10 +488,18 @@ namespace YukaLister.ViewModels
 				}
 				CloseFindKeywordWindowIfNeeded();
 
+				// 設定ファイルがあるフォルダー（設定ファイルが無い場合はファイルのフォルダー）
+				String aFolder = Path.GetDirectoryName(SelectedTFound.Path);
+				String aSettingsFolder = YlCommon.FindSettingsFolder2Ex(aFolder);
+				if (String.IsNullOrEmpty(aSettingsFolder))
+				{
+					aSettingsFolder = aFolder;
+				}
+
 				// フォルダー設定ウィンドウを開く
 				using (FolderSettingsWindowViewModel aFolderSettingsWindowViewModel = new FolderSettingsWindowViewModel())
 				{
-					aFolderSettingsWindowViewModel.PathExLen = Path.GetDirectoryName(SelectedTFound.Path);
+					aFolderSettingsWindowViewModel.PathExLen = aSettingsFolder;
 					aFolderSettingsWindowViewModel.Environment = Environment;
 					Messenger.Raise(new TransitionMessage(aFolderSettingsWindowViewModel, "OpenFolderSettingsWindow"));
 				}
