@@ -14,6 +14,8 @@ using Livet.Messaging;
 using System;
 using System.Collections.Generic;
 using System.Data.Linq;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -61,6 +63,13 @@ namespace YukaLister.Models
 		public void Initialize()
 		{
 			UpdateReportsBadge();
+
+			// リスト問題報告データベース監視
+			mFileSystemWatcherReportDb = new FileSystemWatcher();
+			mFileSystemWatcherReportDb.Created += new FileSystemEventHandler(FileSystemWatcherReportDb_Changed);
+			mFileSystemWatcherReportDb.Deleted += new FileSystemEventHandler(FileSystemWatcherReportDb_Changed);
+			mFileSystemWatcherReportDb.Changed += new FileSystemEventHandler(FileSystemWatcherReportDb_Changed);
+			SetFileSystemWatcherReportDb();
 		}
 
 		// --------------------------------------------------------------------
@@ -101,9 +110,31 @@ namespace YukaLister.Models
 		// VM
 		private MainWindowViewModel mMainWindowViewModel;
 
+		// リスト問題報告データベース監視用
+		private FileSystemWatcher mFileSystemWatcherReportDb;
+
 		// ====================================================================
 		// private メンバー関数
 		// ====================================================================
+
+		// --------------------------------------------------------------------
+		// イベントハンドラー
+		// --------------------------------------------------------------------
+		private void FileSystemWatcherReportDb_Changed(Object oSender, FileSystemEventArgs oFileSystemEventArgs)
+		{
+			mMainWindowViewModel.SetStatusBarMessageWithInvoke(TraceEventType.Information, "リスト問題報告データベースが更新されました。");
+			UpdateReportsBadge();
+		}
+
+		// --------------------------------------------------------------------
+		// リスト問題報告データベースの監視設定
+		// --------------------------------------------------------------------
+		private void SetFileSystemWatcherReportDb()
+		{
+			mFileSystemWatcherReportDb.Path = Path.GetDirectoryName(mEnvironment.YukaListerSettings.ReportDbInDiskPath());
+			mFileSystemWatcherReportDb.Filter = Path.GetFileName(mEnvironment.YukaListerSettings.ReportDbInDiskPath());
+			mFileSystemWatcherReportDb.EnableRaisingEvents = true;
+		}
 
 
 	}
