@@ -39,60 +39,8 @@ namespace YukaLister.Models.SharedMisc
 		[DefaultSettingValue(@"..\" + YlConstants.FILE_NAME_YUKARI_CONFIG)]
 		public String YukariConfigPathSeed
 		{
-			get
-			{
-				return (String)this[KEY_NAME_YUKARI_CONFIG_PATH_SEED];
-			}
-			set
-			{
-				this[KEY_NAME_YUKARI_CONFIG_PATH_SEED] = value;
-			}
-		}
-
-		// 起動時に前回のリストをクリアする
-		private const String KEY_NAME_CLEAR_PREV_LIST = "ClearPrevList";
-		[UserScopedSetting]
-		[DefaultSettingValue(Common.BOOLEAN_STRING_TRUE)]
-		public Boolean ClearPrevList
-		{
-			get
-			{
-				return (Boolean)this[KEY_NAME_CLEAR_PREV_LIST];
-			}
-			set
-			{
-				this[KEY_NAME_CLEAR_PREV_LIST] = value;
-			}
-		}
-
-		// リスト化対象ファイルの拡張子
-		private const String KEY_NAME_TARGET_EXTS = "TargetExts";
-		[UserScopedSetting]
-		public List<String> TargetExts
-		{
-			get
-			{
-				return (List<String>)this[KEY_NAME_TARGET_EXTS];
-			}
-			set
-			{
-				this[KEY_NAME_TARGET_EXTS] = value;
-			}
-		}
-
-		// ID の接頭辞
-		private const String KEY_NAME_ID_PREFIX = "IdPrefix";
-		[UserScopedSetting]
-		public String IdPrefix
-		{
-			get
-			{
-				return (String)this[KEY_NAME_ID_PREFIX];
-			}
-			set
-			{
-				this[KEY_NAME_ID_PREFIX] = value;
-			}
+			get => (String)this[KEY_NAME_YUKARI_CONFIG_PATH_SEED];
+			set => this[KEY_NAME_YUKARI_CONFIG_PATH_SEED] = value;
 		}
 
 		// ゆかりでのプレビューを可能にするか
@@ -159,21 +107,43 @@ namespace YukaLister.Models.SharedMisc
 			}
 		}
 
-
-		// CSV 読み込み時の文字コード（書き込みは常に UTF-8）
-		private const String KEY_NAME_CSV_ENCODING = "CsvEncoding";
+		// ID の接頭辞
+		private const String KEY_NAME_ID_PREFIX = "IdPrefix";
 		[UserScopedSetting]
-		public CsvEncoding CsvEncoding
+		public String IdPrefix
 		{
 			get
 			{
-				return (CsvEncoding)this[KEY_NAME_CSV_ENCODING];
+				return (String)this[KEY_NAME_ID_PREFIX];
 			}
 			set
 			{
-				this[KEY_NAME_CSV_ENCODING] = value;
+				this[KEY_NAME_ID_PREFIX] = value;
 			}
 		}
+
+		// --------------------------------------------------------------------
+		// リスト対象
+		// --------------------------------------------------------------------
+
+		// リスト化対象ファイルの拡張子
+		private const String KEY_NAME_TARGET_EXTS = "TargetExts";
+		[UserScopedSetting]
+		public List<String> TargetExts
+		{
+			get
+			{
+				return (List<String>)this[KEY_NAME_TARGET_EXTS];
+			}
+			set
+			{
+				this[KEY_NAME_TARGET_EXTS] = value;
+			}
+		}
+
+		// --------------------------------------------------------------------
+		// リスト出力
+		// --------------------------------------------------------------------
 
 		// ゆかり用 PHP リストを出力するかどうか
 		private const String KEY_NAME_OUTPUT_YUKARI = "OutputYukari";
@@ -191,6 +161,45 @@ namespace YukaLister.Models.SharedMisc
 			}
 		}
 
+		// 起動時に前回のリストをクリアする
+		private const String KEY_NAME_CLEAR_PREV_LIST = "ClearPrevList";
+		[UserScopedSetting]
+		[DefaultSettingValue(Common.BOOLEAN_STRING_TRUE)]
+		public Boolean ClearPrevList
+		{
+			get
+			{
+				return (Boolean)this[KEY_NAME_CLEAR_PREV_LIST];
+			}
+			set
+			{
+				this[KEY_NAME_CLEAR_PREV_LIST] = value;
+			}
+		}
+
+		// リスト出力前に確認
+		private const String KEY_NAME_CONFIRM_OUTPUT_YUKARI_LIST = "ConfirmOutputYukariList";
+		[UserScopedSetting]
+		public Boolean ConfirmOutputYukariList
+		{
+			get => (Boolean)this[KEY_NAME_CONFIRM_OUTPUT_YUKARI_LIST];
+			set => this[KEY_NAME_CONFIRM_OUTPUT_YUKARI_LIST] = value;
+		}
+
+		// リスト出力先フォルダー
+		private const String KEY_NAME_LIST_OUTPUT_FOLDER = "ListOutputFolder";
+		[UserScopedSetting]
+		public String ListOutputFolder
+		{
+			get
+			{
+				return (String)this[KEY_NAME_LIST_OUTPUT_FOLDER];
+			}
+			set
+			{
+				this[KEY_NAME_LIST_OUTPUT_FOLDER] = value;
+			}
+		}
 
 		// --------------------------------------------------------------------
 		// メンテナンス
@@ -271,6 +280,25 @@ namespace YukaLister.Models.SharedMisc
 			set
 			{
 				this[KEY_NAME_SYNC_PASSWORD] = value;
+			}
+		}
+
+		// --------------------------------------------------------------------
+		// インポート
+		// --------------------------------------------------------------------
+
+		// CSV 読み込み時の文字コード（書き込みは常に UTF-8）
+		private const String KEY_NAME_CSV_ENCODING = "CsvEncoding";
+		[UserScopedSetting]
+		public CsvEncoding CsvEncoding
+		{
+			get
+			{
+				return (CsvEncoding)this[KEY_NAME_CSV_ENCODING];
+			}
+			set
+			{
+				this[KEY_NAME_CSV_ENCODING] = value;
 			}
 		}
 
@@ -434,21 +462,6 @@ namespace YukaLister.Models.SharedMisc
 			set
 			{
 				this[KEY_NAME_RSS_CHECK_DATE] = value;
-			}
-		}
-
-		// 環境設定のリスト出力先フォルダー
-		private const String KEY_NAME_LIST_OUTPUT_FOLDER = "ListOutputFolder";
-		[UserScopedSetting]
-		public String ListOutputFolder
-		{
-			get
-			{
-				return (String)this[KEY_NAME_LIST_OUTPUT_FOLDER];
-			}
-			set
-			{
-				this[KEY_NAME_LIST_OUTPUT_FOLDER] = value;
 			}
 		}
 

@@ -663,9 +663,18 @@ namespace YukaLister.Models
 
 		// --------------------------------------------------------------------
 		// ゆかり用リストデータベースを作業用インメモリからディスクにコピー
+		// ＜返値＞ コピーしたかどうか
 		// --------------------------------------------------------------------
-		private void CopyYukariListDb()
+		private Boolean CopyYukariListDb()
 		{
+			if (mEnvironment.YukaListerSettings.ConfirmOutputYukariList)
+			{
+				if (MessageBox.Show("ゆかりリクエスト用リストを出力しますか？", "確認", MessageBoxButton.YesNo, MessageBoxImage.Exclamation) != MessageBoxResult.Yes)
+				{
+					return false;
+				}
+			}
+
 			// コピー
 			using (YukariListDatabaseInDisk aYukariListDbInDisk = new YukariListDatabaseInDisk(mEnvironment))
 			{
@@ -693,6 +702,7 @@ namespace YukaLister.Models
 			}
 
 			mDirtyDg = true;
+			return true;
 		}
 
 		// --------------------------------------------------------------------
@@ -1326,7 +1336,10 @@ namespace YukaLister.Models
 				SetYukaListerStatus();
 
 				// ゆかり用データベース出力
-				CopyYukariListDb();
+				if (!CopyYukariListDb())
+				{
+					return;
+				}
 
 				// ゆかり用データベースを出力するとフォルダータスクの状態が更新されるため、再描画
 				UpdateDirtyDgWithInvoke();

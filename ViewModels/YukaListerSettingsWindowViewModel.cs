@@ -211,6 +211,14 @@ namespace YukaLister.ViewModels
 			set => RaisePropertyChangedIfSet(ref mYukariListFolder, value);
 		}
 
+		// ゆかりリクエスト用リスト出力前に確認する
+		private Boolean mConfirmOutputYukariList;
+		public Boolean ConfirmOutputYukariList
+		{
+			get => mConfirmOutputYukariList;
+			set => RaisePropertyChangedIfSet(ref mConfirmOutputYukariList, value);
+		}
+
 		// 起動時に前回のゆかりリクエスト用リストをクリアする
 		private Boolean mClearPrevList;
 		public Boolean ClearPrevList
@@ -1581,6 +1589,7 @@ namespace YukaLister.ViewModels
 
 			// リスト出力タブ
 			Environment.YukaListerSettings.ListOutputFolder = ListFolder;
+			Environment.YukaListerSettings.ConfirmOutputYukariList = ConfirmOutputYukariList;
 			Environment.YukaListerSettings.ClearPrevList = ClearPrevList;
 
 			// メンテナンスタブ
@@ -1624,6 +1633,7 @@ namespace YukaLister.ViewModels
 			}
 
 			// リスト出力タブ
+			ConfirmOutputYukariList = Environment.YukaListerSettings.ConfirmOutputYukariList;
 			ClearPrevList = Environment.YukaListerSettings.ClearPrevList;
 			foreach (OutputWriter aOutputWriter in mOutputWriters)
 			{

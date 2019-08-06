@@ -109,6 +109,9 @@
                         <TextBox x:Name="TextBoxYukariListFolder" Text="{Binding YukariListFolder}" VerticalAlignment="Center" IsReadOnly="True"/>
                     </DockPanel>
                     <StackPanel Margin="20,10,0,0">
+                        <CheckBox x:Name="CheckBoxConfirmOutputYukariList" IsChecked="{Binding ConfirmOutputYukariList}" Content="ゆかりリクエスト用リスト出力前に確認する (_N)" />
+                    </StackPanel>
+                    <StackPanel Margin="20,10,0,0">
                         <CheckBox x:Name="CheckBoxClearPrevList" IsChecked="{Binding ClearPrevList}" Content="起動時に前回のゆかりリクエスト用リストをクリアする (_C)" />
                     </StackPanel>
                     <DockPanel Margin="0,20,0,0">
