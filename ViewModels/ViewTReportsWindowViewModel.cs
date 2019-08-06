@@ -291,6 +291,12 @@ namespace YukaLister.ViewModels
 				aEditReportWindowViewModel.Environment = Environment;
 				aEditReportWindowViewModel.TReport = SelectedTReport;
 				Messenger.Raise(new TransitionMessage(aEditReportWindowViewModel, "OpenEditReportWindow"));
+
+				// 報告が更新された場合は一覧を更新
+				if (aEditReportWindowViewModel.IsOk)
+				{
+					UpdateTReports();
+				}
 			}
 		}
 

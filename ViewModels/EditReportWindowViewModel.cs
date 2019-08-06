@@ -133,6 +133,9 @@ namespace YukaLister.ViewModels
 		// 環境設定類
 		public EnvironmentModel Environment { get; set; }
 
+		// OK ボタンが押されたか
+		public Boolean IsOk { get; set; }
+
 		// --------------------------------------------------------------------
 		// コマンド
 		// --------------------------------------------------------------------
@@ -260,6 +263,8 @@ namespace YukaLister.ViewModels
 				IsButtonOkFocused = true;
 
 				CheckAndSave();
+				IsOk = true;
+
 				Messenger.Raise(new WindowActionMessage("Close"));
 			}
 			catch (Exception oExcep)
