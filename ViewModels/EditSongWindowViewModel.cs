@@ -147,6 +147,29 @@ namespace YukaLister.ViewModels
 			}
 		}
 
+		// タグあり
+		private Boolean mHasTag;
+		public Boolean HasTag
+		{
+			get => mHasTag;
+			set
+			{
+				if (RaisePropertyChangedIfSet(ref mHasTag, value))
+				{
+					ButtonSearchTagClickedCommand.RaiseCanExecuteChanged();
+					ButtonEditTagClickedCommand.RaiseCanExecuteChanged();
+				}
+			}
+		}
+
+		// タグ名
+		private String mTagName;
+		public String TagName
+		{
+			get => mTagName;
+			set => RaisePropertyChangedIfSet(ref mTagName, value);
+		}
+
 		// 歌手あり
 		private Boolean mHasArtist;
 		public Boolean HasArtist
@@ -268,6 +291,9 @@ namespace YukaLister.ViewModels
 
 		// タイアップ ID
 		public String TieUpId { get; set; }
+
+		// タグ ID
+		public String TagId { get; set; }
 
 		// 歌手 ID
 		public String ArtistId { get; set; }
@@ -460,6 +486,121 @@ namespace YukaLister.ViewModels
 		public void ButtonSelectOpEdClicked()
 		{
 
+		}
+		#endregion
+
+		#region タグ検索ボタンの制御
+		private ViewModelCommand mButtonSearchTagClickedCommand;
+
+		public ViewModelCommand ButtonSearchTagClickedCommand
+		{
+			get
+			{
+				if (mButtonSearchTagClickedCommand == null)
+				{
+					mButtonSearchTagClickedCommand = new ViewModelCommand(ButtonSearchTagClicked, CanButtonSearchTagClicked);
+				}
+				return mButtonSearchTagClickedCommand;
+			}
+		}
+
+		public Boolean CanButtonSearchTagClicked()
+		{
+			return HasTag;
+		}
+
+		public void ButtonSearchTagClicked()
+		{
+			try
+			{
+				using (SearchMusicInfoWindowViewModel aSearchMusicInfoWindowViewModel = new SearchMusicInfoWindowViewModel())
+				{
+					// タグが複数指定されている場合は先頭のみで検索
+					String aKeyword = TagName;
+					if (!String.IsNullOrEmpty(aKeyword))
+					{
+						Int32 aPos = aKeyword.IndexOf(',');
+						if (aPos > 0)
+						{
+							aKeyword = aKeyword.Substring(0, aPos);
+						}
+					}
+
+					aSearchMusicInfoWindowViewModel.Environment = Environment;
+					aSearchMusicInfoWindowViewModel.ItemName = "タグ";
+					aSearchMusicInfoWindowViewModel.TableIndex = MusicInfoDbTables.TTag;
+					aSearchMusicInfoWindowViewModel.SelectedKeyword = aKeyword;
+					Messenger.Raise(new TransitionMessage(aSearchMusicInfoWindowViewModel, "OpenSearchMusicInfoWindow"));
+					if (String.IsNullOrEmpty(aSearchMusicInfoWindowViewModel.DecidedName))
+					{
+						return;
+					}
+
+					using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
+					{
+						List<TTag> aMasters = YlCommon.SelectMastersByName<TTag>(aMusicInfoDbInDisk.Connection, aSearchMusicInfoWindowViewModel.DecidedName);
+						if (aMasters.Count > 0)
+						{
+							TagId = aMasters[0].Id;
+							TagName = aMasters[0].Name;
+						}
+					}
+				}
+			}
+			catch (Exception oExcep)
+			{
+				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "タグ検索ボタンクリック時エラー：\n" + oExcep.Message);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
+			}
+		}
+		#endregion
+
+		#region タグ詳細編集ボタンの制御
+		private ViewModelCommand mButtonEditTagClickedCommand;
+
+		public ViewModelCommand ButtonEditTagClickedCommand
+		{
+			get
+			{
+				if (mButtonEditTagClickedCommand == null)
+				{
+					mButtonEditTagClickedCommand = new ViewModelCommand(ButtonEditTagClicked, CanButtonEditTagClicked);
+				}
+				return mButtonEditTagClickedCommand;
+			}
+		}
+
+		public Boolean CanButtonEditTagClicked()
+		{
+			return HasTag;
+		}
+
+		public void ButtonEditTagClicked()
+		{
+			try
+			{
+				using (EditTagsWindowViewModel aEditTagsWindowViewModel = new EditTagsWindowViewModel())
+				{
+					aEditTagsWindowViewModel.Environment = Environment;
+					aEditTagsWindowViewModel.InitialIds = YlCommon.SplitIds(TagId);
+					Messenger.Raise(new TransitionMessage(aEditTagsWindowViewModel, "OpenEditTagsWindow"));
+
+					if (aEditTagsWindowViewModel.OkSelectedMasters == null)
+					{
+						return;
+					}
+
+					GetMastersProperties(aEditTagsWindowViewModel.OkSelectedMasters, out Boolean aHas, out String aId, out String aName);
+					HasTag = aHas;
+					TagId = aId;
+					TagName = aName;
+				}
+			}
+			catch (Exception oExcep)
+			{
+				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "タグ詳細編集ボタンクリック時エラー：\n" + oExcep.Message);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
+			}
 		}
 		#endregion
 
@@ -1019,27 +1160,33 @@ namespace YukaLister.ViewModels
 				// 概要
 				OpEd = aSong.OpEd;
 
+				// タグ
+				GetMastersProperties(YlCommon.SelectSequenceTagsBySongId(aContext, aSong.Id).ToList<IRcMaster>(), out Boolean aHasTag, out String aTagId, out String aTagName);
+				HasTag = aHasTag;
+				TagId = aTagId;
+				TagName = aTagName;
+
 				// 人物関係
 				Boolean aHasPerson;
 				String aPersonId;
 				String aPersonName;
 
-				GetPeopleProperties(YlCommon.SelectSequencePeopleBySongId<TArtistSequence>(aContext, aSong.Id), out aHasPerson, out aPersonId, out aPersonName);
+				GetMastersProperties(YlCommon.SelectSequencePeopleBySongId<TArtistSequence>(aContext, aSong.Id).ToList<IRcMaster>(), out aHasPerson, out aPersonId, out aPersonName);
 				HasArtist = aHasPerson;
 				ArtistId = aPersonId;
 				ArtistName = aPersonName;
 
-				GetPeopleProperties(YlCommon.SelectSequencePeopleBySongId<TLyristSequence>(aContext, aSong.Id), out aHasPerson, out aPersonId, out aPersonName);
+				GetMastersProperties(YlCommon.SelectSequencePeopleBySongId<TLyristSequence>(aContext, aSong.Id).ToList<IRcMaster>(), out aHasPerson, out aPersonId, out aPersonName);
 				HasLyrist = aHasPerson;
 				LyristId = aPersonId;
 				LyristName = aPersonName;
 
-				GetPeopleProperties(YlCommon.SelectSequencePeopleBySongId<TComposerSequence>(aContext, aSong.Id), out aHasPerson, out aPersonId, out aPersonName);
+				GetMastersProperties(YlCommon.SelectSequencePeopleBySongId<TComposerSequence>(aContext, aSong.Id).ToList<IRcMaster>(), out aHasPerson, out aPersonId, out aPersonName);
 				HasComposer = aHasPerson;
 				ComposerId = aPersonId;
 				ComposerName = aPersonName;
 
-				GetPeopleProperties(YlCommon.SelectSequencePeopleBySongId<TArrangerSequence>(aContext, aSong.Id), out aHasPerson, out aPersonId, out aPersonName);
+				GetMastersProperties(YlCommon.SelectSequencePeopleBySongId<TArrangerSequence>(aContext, aSong.Id).ToList<IRcMaster>(), out aHasPerson, out aPersonId, out aPersonName);
 				HasArranger = aHasPerson;
 				ArrangerId = aPersonId;
 				ArrangerName = aPersonName;
@@ -1080,6 +1227,9 @@ namespace YukaLister.ViewModels
 						Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "楽曲テーブル更新：" + aNewRecord.Id + " / " + aNewRecord.Name);
 					}
 				}
+
+				// タグ紐付け
+				YlCommon.RegisterSequence<TTagSequence>(aContext, aNewRecord.Id, YlCommon.SplitIds(TagId));
 
 				// 人物紐付け
 				YlCommon.RegisterSequence<TArtistSequence>(aContext, aNewRecord.Id, YlCommon.SplitIds(ArtistId));
@@ -1142,44 +1292,44 @@ namespace YukaLister.ViewModels
 			using (EditPeopleWindowViewModel aEditPeopleWindowViewModel = new EditPeopleWindowViewModel())
 			{
 				aEditPeopleWindowViewModel.Environment = Environment;
-				aEditPeopleWindowViewModel.Caption = oCaption;
+				aEditPeopleWindowViewModel.PersonKind = oCaption;
 				aEditPeopleWindowViewModel.InitialIds = YlCommon.SplitIds(oId);
 				Messenger.Raise(new TransitionMessage(aEditPeopleWindowViewModel, "OpenEditPeopleWindow"));
 
-				if (aEditPeopleWindowViewModel.OkSelectedPeople == null)
+				if (aEditPeopleWindowViewModel.OkSelectedMasters == null)
 				{
 					return;
 				}
 
-				GetPeopleProperties(aEditPeopleWindowViewModel.OkSelectedPeople, out oHas, out oId, out oName);
+				GetMastersProperties(aEditPeopleWindowViewModel.OkSelectedMasters, out oHas, out oId, out oName);
 			}
 		}
 
 		// --------------------------------------------------------------------
 		// 人物プロパティーの値を取得
 		// --------------------------------------------------------------------
-		private void GetPeopleProperties(List<TPerson> oPeople, out Boolean oHas, out String oId, out String oName)
+		private void GetMastersProperties(List<IRcMaster> oMasters, out Boolean oHas, out String oId, out String oName)
 		{
 			oId = null;
 			oName = null;
-			if (oPeople.Count == 0)
+			if (oMasters.Count == 0)
 			{
 				oHas = false;
 			}
 			else
 			{
 				oHas = true;
-				for (Int32 i = 0; i < oPeople.Count; i++)
+				for (Int32 i = 0; i < oMasters.Count; i++)
 				{
 					if (i == 0)
 					{
-						oId = oPeople[i].Id;
-						oName = oPeople[i].Name;
+						oId = oMasters[i].Id;
+						oName = oMasters[i].Name;
 					}
 					else
 					{
-						oId += "," + oPeople[i].Id;
-						oName += "," + oPeople[i].Name;
+						oId += "," + oMasters[i].Id;
+						oName += "," + oMasters[i].Name;
 					}
 				}
 			}

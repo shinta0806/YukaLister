@@ -67,6 +67,12 @@ namespace YukaLister.Models.OutputWriters
 		// 検索結果テーブル
 		public Table<TFound> TableFound { get; set; }
 
+		// タグテーブル
+		public Table<TTag> TableTag { get; set; }
+
+		// タグ紐付テーブル
+		public Table<TTagSequence> TableTagSequence { get; set; }
+
 		// 出力設定
 		public OutputSettings OutputSettings { get; set; }
 

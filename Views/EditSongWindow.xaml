@@ -42,8 +42,11 @@
         <l:InteractionMessageTrigger MessageKey="OpenEditTieUpWindow" Messenger="{Binding Messenger}">
             <l:TransitionInteractionMessageAction WindowType="{x:Type v:EditTieUpWindow}" Mode="Modal" IsOwned="True" />
         </l:InteractionMessageTrigger>
+        <l:InteractionMessageTrigger MessageKey="OpenEditTagsWindow" Messenger="{Binding Messenger}">
+            <l:TransitionInteractionMessageAction WindowType="{x:Type v:EditSequenceWindow}" Mode="Modal" IsOwned="True" />
+        </l:InteractionMessageTrigger>
         <l:InteractionMessageTrigger MessageKey="OpenEditPeopleWindow" Messenger="{Binding Messenger}">
-            <l:TransitionInteractionMessageAction WindowType="{x:Type v:EditPeopleWindow}" Mode="Modal" IsOwned="True" />
+            <l:TransitionInteractionMessageAction WindowType="{x:Type v:EditSequenceWindow}" Mode="Modal" IsOwned="True" />
         </l:InteractionMessageTrigger>
         <l:InteractionMessageTrigger MessageKey="OpenInputIdPrefixWindow" Messenger="{Binding Messenger}">
             <l:TransitionInteractionMessageAction WindowType="{x:Type v:InputIdPrefixWindow}" Mode="Modal" IsOwned="True" />
@@ -136,6 +139,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="30"/>
                 <RowDefinition Height="30"/>
+                <RowDefinition Height="30"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="120"/>
@@ -167,6 +171,11 @@
                 </Button.ContextMenu>
             </Button>
             <Label x:Name="LabelCategory" Content="{Binding CategoryName}" Margin="0" Grid.Row="1" Grid.Column="3"/>
+            <Label Content="タグあり (_T)：" Margin="0" Grid.Row="2" Grid.Column="0" HorizontalAlignment="Right"/>
+            <CheckBox x:Name="CheckBoxTag" IsChecked="{Binding HasTag}" Grid.Row="2" Grid.Column="1" />
+            <Button x:Name="ButtonSearchTag" Content="検索" Grid.Row="2" Grid.Column="2" Height="Auto" FontSize="12" Padding="2" Style="{StaticResource MaterialDesignRaisedLightButton}" Margin="5" Command="{Binding ButtonSearchTagClickedCommand}"/>
+            <Label x:Name="LabelTag" Content="{Binding TagName}" Margin="0" Grid.Row="2" Grid.Column="3"/>
+            <Button x:Name="ButtonEditTag" Content="タグ詳細編集" Grid.Row="2" Grid.Column="4" Height="Auto" FontSize="12" Padding="2" Style="{StaticResource MaterialDesignRaisedLightButton}" Margin="5,5,0,5" Command="{Binding ButtonEditTagClickedCommand}"/>
             <Label Content="リリース日 (_R)：" Margin="0" Grid.Row="0" Grid.Column="5" HorizontalAlignment="Right"/>
             <TextBox x:Name="TextBoxReleaseYear" Text="{Binding ReleaseYear}" Grid.Column="6" Margin="0" Grid.Row="0" VerticalAlignment="Center" HorizontalContentAlignment="Right"/>
             <Label Content="年" Margin="0" Grid.Row="0" Grid.Column="7"/>

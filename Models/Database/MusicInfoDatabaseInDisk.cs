@@ -33,12 +33,44 @@ namespace YukaLister.Models.Database
 		// --------------------------------------------------------------------
 		public MusicInfoDatabaseInDisk(EnvironmentModel oEnvironment) : base(oEnvironment, MusicInfoDbInDiskPath())
 		{
-			//Debug.WriteLine("MusicInfoDatabaseInDisk() constructor");
 		}
 
 		// ====================================================================
 		// public メンバー関数
 		// ====================================================================
+
+		// --------------------------------------------------------------------
+		// 旧バージョンのゆかりすたーを使用していてテーブルやレコードが不足している場合用
+		// --------------------------------------------------------------------
+		public void AddToOlderVersionIfNeeded()
+		{
+			// データベース作成
+			CreateDatabaseIfNeeded();
+
+			// カテゴリーマスターテーブルの既定レコードを挿入
+			using (DataContext aContext = new DataContext(Connection))
+			{
+				Table<TCategory> aTableCategory = aContext.GetTable<TCategory>();
+
+				if (YlCommon.SelectMastersByName<TCategory>(aContext, "一般").Count == 0)
+				{
+					aTableCategory.InsertOnSubmit(CreateCategoryRecord(103, "一般", "イッパン"));
+				}
+
+				aContext.SubmitChanges();
+			}
+
+			// タグ関係のテーブルを作成
+			List<String> aTables = LinqUtils.Tables(Connection);
+			if (!aTables.Contains(TTag.TABLE_NAME_TAG))
+			{
+				using (SQLiteCommand aCmd = new SQLiteCommand(Connection))
+				{
+					CreateTable(aCmd, typeof(TTag), TTag.FIELD_NAME_TAG_NAME);
+					CreateTable(aCmd, typeof(TTagSequence));
+				}
+			}
+		}
 
 		// --------------------------------------------------------------------
 		// 楽曲情報データベースのバックアップを作成する
@@ -188,76 +220,50 @@ namespace YukaLister.Models.Database
 				aIndices.Add(TSong.FIELD_NAME_SONG_NAME);
 				aIndices.Add(TSong.FIELD_NAME_SONG_CATEGORY_ID);
 				aIndices.Add(TSong.FIELD_NAME_SONG_OP_ED);
-				CreateMusicInfoTable(aCmd, typeof(TSong), aIndices);
+				CreateTable(aCmd, typeof(TSong), aIndices);
 
-				CreateMusicInfoTable(aCmd, typeof(TPerson), TPerson.FIELD_NAME_PERSON_NAME);
+				CreateTable(aCmd, typeof(TPerson), TPerson.FIELD_NAME_PERSON_NAME);
 
 				aIndices.Clear();
 				aIndices.Add(TTieUp.FIELD_NAME_TIE_UP_NAME);
 				aIndices.Add(TTieUp.FIELD_NAME_TIE_UP_CATEGORY_ID);
-				CreateMusicInfoTable(aCmd, typeof(TTieUp), aIndices);
+				CreateTable(aCmd, typeof(TTieUp), aIndices);
 
-				CreateMusicInfoTable(aCmd, typeof(TCategory), TCategory.FIELD_NAME_CATEGORY_NAME);
+				CreateTable(aCmd, typeof(TCategory), TCategory.FIELD_NAME_CATEGORY_NAME);
 				InsertCategoryDefaultRecords();
 
-				CreateMusicInfoTable(aCmd, typeof(TTieUpGroup), TTieUpGroup.FIELD_NAME_TIE_UP_GROUP_NAME);
+				CreateTable(aCmd, typeof(TTieUpGroup), TTieUpGroup.FIELD_NAME_TIE_UP_GROUP_NAME);
 
-				CreateMusicInfoTable(aCmd, typeof(TMaker), TMaker.FIELD_NAME_MAKER_NAME);
+				CreateTable(aCmd, typeof(TMaker), TMaker.FIELD_NAME_MAKER_NAME);
+
+				CreateTable(aCmd, typeof(TTag), TTag.FIELD_NAME_TAG_NAME);
 
 				// 別名テーブル
-				CreateMusicInfoTable(aCmd, typeof(TSongAlias), TSongAlias.FIELD_NAME_SONG_ALIAS_ALIAS);
+				CreateTable(aCmd, typeof(TSongAlias), TSongAlias.FIELD_NAME_SONG_ALIAS_ALIAS);
 
-				CreateMusicInfoTable(aCmd, typeof(TPersonAlias), TPersonAlias.FIELD_NAME_PERSON_ALIAS_ALIAS);
+				CreateTable(aCmd, typeof(TPersonAlias), TPersonAlias.FIELD_NAME_PERSON_ALIAS_ALIAS);
 
-				CreateMusicInfoTable(aCmd, typeof(TTieUpAlias), TTieUpAlias.FIELD_NAME_TIE_UP_ALIAS_ALIAS);
+				CreateTable(aCmd, typeof(TTieUpAlias), TTieUpAlias.FIELD_NAME_TIE_UP_ALIAS_ALIAS);
 
-				CreateMusicInfoTable(aCmd, typeof(TCategoryAlias), TCategoryAlias.FIELD_NAME_CATEGORY_ALIAS_ALIAS);
+				CreateTable(aCmd, typeof(TCategoryAlias), TCategoryAlias.FIELD_NAME_CATEGORY_ALIAS_ALIAS);
 
-				CreateMusicInfoTable(aCmd, typeof(TTieUpGroupAlias), TTieUpGroupAlias.FIELD_NAME_TIE_UP_GROUP_ALIAS_ALIAS);
+				CreateTable(aCmd, typeof(TTieUpGroupAlias), TTieUpGroupAlias.FIELD_NAME_TIE_UP_GROUP_ALIAS_ALIAS);
 
-				CreateMusicInfoTable(aCmd, typeof(TMakerAlias), TMakerAlias.FIELD_NAME_MAKER_ALIAS_ALIAS);
+				CreateTable(aCmd, typeof(TMakerAlias), TMakerAlias.FIELD_NAME_MAKER_ALIAS_ALIAS);
 
 				// 紐付テーブル
-				CreateMusicInfoTable(aCmd, typeof(TArtistSequence));
+				CreateTable(aCmd, typeof(TArtistSequence));
 
-				CreateMusicInfoTable(aCmd, typeof(TLyristSequence));
+				CreateTable(aCmd, typeof(TLyristSequence));
 
-				CreateMusicInfoTable(aCmd, typeof(TComposerSequence));
+				CreateTable(aCmd, typeof(TComposerSequence));
 
-				CreateMusicInfoTable(aCmd, typeof(TArrangerSequence));
+				CreateTable(aCmd, typeof(TArrangerSequence));
 
-				CreateMusicInfoTable(aCmd, typeof(TTieUpGroupSequence));
+				CreateTable(aCmd, typeof(TTieUpGroupSequence));
+
+				CreateTable(aCmd, typeof(TTagSequence));
 			}
-		}
-
-		// --------------------------------------------------------------------
-		// DB の中にテーブルを作成（汎用関数）
-		// --------------------------------------------------------------------
-		private void CreateMusicInfoTable(SQLiteCommand oCmd, Type oTypeOfTable, String oIndexColumn = null)
-		{
-			List<String> aIndices;
-			if (String.IsNullOrEmpty(oIndexColumn))
-			{
-				aIndices = null;
-			}
-			else
-			{
-				aIndices = new List<String>();
-				aIndices.Add(oIndexColumn);
-			}
-			CreateMusicInfoTable(oCmd, oTypeOfTable, aIndices);
-		}
-
-		// --------------------------------------------------------------------
-		// DB の中にテーブルを作成（汎用関数）
-		// --------------------------------------------------------------------
-		private void CreateMusicInfoTable(SQLiteCommand oCmd, Type oTypeOfTable, List<String> oIndices)
-		{
-			// テーブル作成
-			LinqUtils.CreateTable(oCmd, oTypeOfTable);
-
-			// インデックス作成（JOIN および検索の高速化）
-			LinqUtils.CreateIndex(oCmd, LinqUtils.TableName(oTypeOfTable), oIndices);
 		}
 
 		// --------------------------------------------------------------------

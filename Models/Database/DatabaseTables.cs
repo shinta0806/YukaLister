@@ -729,6 +729,100 @@ namespace YukaLister.Models.Database
 	}
 
 	// ====================================================================
+	// タグマスターテーブル
+	// ====================================================================
+
+	[Table(Name = TABLE_NAME_TAG)]
+	public class TTag : IRcMaster
+	{
+		// ====================================================================
+		// public 定数
+		// ====================================================================
+
+		public const String TABLE_NAME_TAG = "t_tag";
+		public const String FIELD_NAME_TAG_ID = "tag_id";
+		public const String FIELD_NAME_TAG_IMPORT = "tag_import";
+		public const String FIELD_NAME_TAG_INVALID = "tag_invalid";
+		public const String FIELD_NAME_TAG_UPDATE_TIME = "tag_update_time";
+		public const String FIELD_NAME_TAG_DIRTY = "tag_dirty";
+		public const String FIELD_NAME_TAG_NAME = "tag_name";
+		public const String FIELD_NAME_TAG_RUBY = "tag_ruby";
+		public const String FIELD_NAME_TAG_KEYWORD = "tag_keyword";
+
+		// ====================================================================
+		// フィールド
+		// ====================================================================
+
+		// --------------------------------------------------------------------
+		// IRcBase
+		// --------------------------------------------------------------------
+
+		// タグ ID
+		[Column(Name = FIELD_NAME_TAG_ID, DbType = LinqUtils.DB_TYPE_STRING, CanBeNull = false, IsPrimaryKey = true)]
+		public String Id { get; set; }
+
+		// インポートフラグ
+		[Column(Name = FIELD_NAME_TAG_IMPORT, DbType = LinqUtils.DB_TYPE_BOOLEAN, CanBeNull = false)]
+		public Boolean Import { get; set; }
+
+		// 無効フラグ
+		[Column(Name = FIELD_NAME_TAG_INVALID, DbType = LinqUtils.DB_TYPE_BOOLEAN, CanBeNull = false)]
+		public Boolean Invalid { get; set; }
+
+		// 更新日時 UTC（修正ユリウス日）
+		[Column(Name = FIELD_NAME_TAG_UPDATE_TIME, DbType = LinqUtils.DB_TYPE_DOUBLE, CanBeNull = false)]
+		public Double UpdateTime { get; set; }
+
+		// Dirty フラグ
+		[Column(Name = FIELD_NAME_TAG_DIRTY, DbType = LinqUtils.DB_TYPE_BOOLEAN, CanBeNull = false)]
+		public Boolean Dirty { get; set; }
+
+		// --------------------------------------------------------------------
+		// IRcMaster
+		// --------------------------------------------------------------------
+
+		// タグ名
+		[Column(Name = FIELD_NAME_TAG_NAME, DbType = LinqUtils.DB_TYPE_STRING)]
+		public String Name { get; set; }
+
+		// タグフリガナ
+		[Column(Name = FIELD_NAME_TAG_RUBY, DbType = LinqUtils.DB_TYPE_STRING)]
+		public String Ruby { get; set; }
+
+		// 検索ワード
+		[Column(Name = FIELD_NAME_TAG_KEYWORD, DbType = LinqUtils.DB_TYPE_STRING)]
+		public String Keyword { get; set; }
+
+		// データベースアクセス用
+		public EnvironmentModel Environment { get; set; }
+
+		// 同名の区別が付くように DisplayName を設定する
+		public Boolean AvoidSameName { get; set; }
+
+		// 表示名
+		private String mDisplayName;
+		public String DisplayName
+		{
+			get
+			{
+				if (String.IsNullOrEmpty(mDisplayName))
+				{
+					if (AvoidSameName)
+					{
+						mDisplayName = Name + "（" + (String.IsNullOrEmpty(Keyword) ? "キーワード無し" : Keyword) + "）";
+					}
+					else
+					{
+						mDisplayName = Name;
+					}
+				}
+				return mDisplayName;
+			}
+		}
+	}
+	// public class TTag ___END___
+
+	// ====================================================================
 	// 楽曲別名テーブル
 	// ====================================================================
 
@@ -1412,6 +1506,68 @@ namespace YukaLister.Models.Database
 	// public class TTieUpGroupSequence ___END___
 
 	// ====================================================================
+	// タグ紐付テーブル
+	// ====================================================================
+
+	[Table(Name = TABLE_NAME_TAG_SEQUENCE)]
+	public class TTagSequence : IRcSequence
+	{
+		// ====================================================================
+		// public 定数
+		// ====================================================================
+
+		public const String TABLE_NAME_TAG_SEQUENCE = "t_tag_sequence";
+		public const String FIELD_NAME_TAG_SEQUENCE_ID = "tag_sequence_id";
+		public const String FIELD_NAME_TAG_SEQUENCE_SEQUENCE = "tag_sequence_sequence";
+		public const String FIELD_NAME_TAG_SEQUENCE_LINK_ID = "tag_sequence_link_id";
+		public const String FIELD_NAME_TAG_SEQUENCE_IMPORT = "tag_sequence_import";
+		public const String FIELD_NAME_TAG_SEQUENCE_INVALID = "tag_sequence_invalid";
+		public const String FIELD_NAME_TAG_SEQUENCE_UPDATE_TIME = "tag_sequence_update_time";
+		public const String FIELD_NAME_TAG_SEQUENCE_DIRTY = "tag_sequence_dirty";
+
+		// ====================================================================
+		// フィールド
+		// ====================================================================
+
+		// --------------------------------------------------------------------
+		// IRcBase
+		// --------------------------------------------------------------------
+
+		// 楽曲 ID ＜参照項目＞
+		[Column(Name = FIELD_NAME_TAG_SEQUENCE_ID, DbType = LinqUtils.DB_TYPE_STRING, CanBeNull = false, IsPrimaryKey = true)]
+		public String Id { get; set; }
+
+		// インポートフラグ
+		[Column(Name = FIELD_NAME_TAG_SEQUENCE_IMPORT, DbType = LinqUtils.DB_TYPE_BOOLEAN, CanBeNull = false)]
+		public Boolean Import { get; set; }
+
+		// 無効フラグ
+		[Column(Name = FIELD_NAME_TAG_SEQUENCE_INVALID, DbType = LinqUtils.DB_TYPE_BOOLEAN, CanBeNull = false)]
+		public Boolean Invalid { get; set; }
+
+		// 更新日時 UTC（修正ユリウス日）
+		[Column(Name = FIELD_NAME_TAG_SEQUENCE_UPDATE_TIME, DbType = LinqUtils.DB_TYPE_DOUBLE, CanBeNull = false)]
+		public Double UpdateTime { get; set; }
+
+		// Dirty フラグ
+		[Column(Name = FIELD_NAME_TAG_SEQUENCE_DIRTY, DbType = LinqUtils.DB_TYPE_BOOLEAN, CanBeNull = false)]
+		public Boolean Dirty { get; set; }
+
+		// --------------------------------------------------------------------
+		// IRcSequence
+		// --------------------------------------------------------------------
+
+		// 連番
+		[Column(Name = FIELD_NAME_TAG_SEQUENCE_SEQUENCE, DbType = LinqUtils.DB_TYPE_INT32, CanBeNull = false, IsPrimaryKey = true)]
+		public Int32 Sequence { get; set; }
+
+		// タグ ID ＜参照項目＞
+		[Column(Name = FIELD_NAME_TAG_SEQUENCE_LINK_ID, DbType = LinqUtils.DB_TYPE_STRING, CanBeNull = false)]
+		public String LinkId { get; set; }
+	}
+	// public class TTagSequence ___END___
+
+	// ====================================================================
 	// データベースプロパティーテーブル
 	// ====================================================================
 
@@ -1530,6 +1686,10 @@ namespace YukaLister.Models.Database
 		// --------------------------------------------------------------------
 		// TSong
 		// --------------------------------------------------------------------
+
+		// 楽曲 ID
+		[Column(Name = TSong.FIELD_NAME_SONG_ID, DbType = LinqUtils.DB_TYPE_STRING)]
+		public String SongId { get; set; }
 
 		// 楽曲名
 		[Column(Name = TSong.FIELD_NAME_SONG_NAME, DbType = LinqUtils.DB_TYPE_STRING)]

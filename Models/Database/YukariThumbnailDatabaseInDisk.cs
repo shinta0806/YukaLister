@@ -60,7 +60,7 @@ namespace YukaLister.Models.Database
 		{
 			using (SQLiteCommand aCmd = new SQLiteCommand(Connection))
 			{
-				// テーブル作成
+				// テーブル作成（複数カラムでユニークなので CreateTable() は使えない）
 				List<String> aUniques = new List<String>();
 				aUniques.Add(TCacheThumb.FIELD_NAME_CACHE_THUMB_UID);
 				aUniques.Add(TCacheThumb.FIELD_NAME_CACHE_THUMB_FILE_NAME + "," + TCacheThumb.FIELD_NAME_CACHE_THUMB_WIDTH);

@@ -96,6 +96,7 @@ namespace YukaLister.Models.SharedMisc
 
 	// --------------------------------------------------------------------
 	// 楽曲情報データベースのテーブル
+	// 値を増やした場合は、EnvironmentModel() でチェックしている定数も併せて増やす
 	// --------------------------------------------------------------------
 	public enum MusicInfoDbTables
 	{
@@ -105,6 +106,7 @@ namespace YukaLister.Models.SharedMisc
 		TCategory,
 		TTieUpGroup,
 		TMaker,
+		TTag,
 		TSongAlias,
 		TPersonAlias,
 		TTieUpAlias,
@@ -116,6 +118,7 @@ namespace YukaLister.Models.SharedMisc
 		TComposerSequence,
 		TArrangerSequence,
 		TTieUpGroupSequence,
+		TTagSequence,
 		__End__,
 	}
 
@@ -318,7 +321,7 @@ namespace YukaLister.Models.SharedMisc
 		public const String APP_ID = "YukaLister";
 		public const String APP_GENERATION = "METEOR";
 		public const String APP_NAME_J = "ゆかりすたー " + APP_GENERATION + " ";
-		public const String APP_VER = "Ver 2.46 β";
+		public const String APP_VER = "Ver 2.60 β";
 		public const String COPYRIGHT_J = "Copyright (C) 2019 by SHINTA";
 
 		// --------------------------------------------------------------------
@@ -359,60 +362,60 @@ namespace YukaLister.Models.SharedMisc
 		public static readonly String[] MUSIC_INFO_DB_TABLE_NAMES =
 		{
 			TSong.TABLE_NAME_SONG, TPerson.TABLE_NAME_PERSON, TTieUp.TABLE_NAME_TIE_UP,
-			TCategory.TABLE_NAME_CATEGORY, TTieUpGroup.TABLE_NAME_TIE_UP_GROUP, TMaker.TABLE_NAME_MAKER,
+			TCategory.TABLE_NAME_CATEGORY, TTieUpGroup.TABLE_NAME_TIE_UP_GROUP, TMaker.TABLE_NAME_MAKER, TTag.TABLE_NAME_TAG,
 			TSongAlias.TABLE_NAME_SONG_ALIAS, TPersonAlias.TABLE_NAME_PERSON_ALIAS, TTieUpAlias.TABLE_NAME_TIE_UP_ALIAS,
 			TCategoryAlias.TABLE_NAME_CATEGORY_ALIAS, TTieUpGroupAlias.TABLE_NAME_TIE_UP_GROUP_ALIAS, TMakerAlias.TABLE_NAME_MAKER_ALIAS,
 			TArtistSequence.TABLE_NAME_ARTIST_SEQUENCE, TLyristSequence.TABLE_NAME_LYRIST_SEQUENCE, TComposerSequence.TABLE_NAME_COMPOSER_SEQUENCE,
-			TArrangerSequence.TABLE_NAME_ARRANGER_SEQUENCE, TTieUpGroupSequence.TABLE_NAME_TIE_UP_GROUP_SEQUENCE,
+			TArrangerSequence.TABLE_NAME_ARRANGER_SEQUENCE, TTieUpGroupSequence.TABLE_NAME_TIE_UP_GROUP_SEQUENCE, TTagSequence.TABLE_NAME_TAG_SEQUENCE,
 		};
 
 		// 楽曲情報データベースの ID 列名
 		public static readonly String[] MUSIC_INFO_DB_ID_COLUMN_NAMES =
 		{
 			TSong.FIELD_NAME_SONG_ID, TPerson.FIELD_NAME_PERSON_ID, TTieUp.FIELD_NAME_TIE_UP_ID,
-			TCategory.FIELD_NAME_CATEGORY_ID, TTieUpGroup.FIELD_NAME_TIE_UP_GROUP_ID, TMaker.FIELD_NAME_MAKER_ID,
+			TCategory.FIELD_NAME_CATEGORY_ID, TTieUpGroup.FIELD_NAME_TIE_UP_GROUP_ID, TMaker.FIELD_NAME_MAKER_ID, TTag.FIELD_NAME_TAG_ID, 
 			TSongAlias.FIELD_NAME_SONG_ALIAS_ID, TPersonAlias.FIELD_NAME_PERSON_ALIAS_ID, TTieUpAlias.FIELD_NAME_TIE_UP_ALIAS_ID,
 			TCategoryAlias.FIELD_NAME_CATEGORY_ALIAS_ID, TTieUpGroupAlias.FIELD_NAME_TIE_UP_GROUP_ALIAS_ID, TMakerAlias.FIELD_NAME_MAKER_ALIAS_ID,
 			TArtistSequence.FIELD_NAME_ARTIST_SEQUENCE_ID, TLyristSequence.FIELD_NAME_LYRIST_SEQUENCE_ID, TComposerSequence.FIELD_NAME_COMPOSER_SEQUENCE_ID,
-			TArrangerSequence.FIELD_NAME_ARRANGER_SEQUENCE_ID, TTieUpGroupSequence.FIELD_NAME_TIE_UP_GROUP_SEQUENCE_ID,
+			TArrangerSequence.FIELD_NAME_ARRANGER_SEQUENCE_ID, TTieUpGroupSequence.FIELD_NAME_TIE_UP_GROUP_SEQUENCE_ID, TTagSequence.FIELD_NAME_TAG_SEQUENCE_ID,
 		};
 
 		// 楽曲情報データベースの名前列名
 		public static readonly String[] MUSIC_INFO_DB_NAME_COLUMN_NAMES =
 		{
 			TSong.FIELD_NAME_SONG_NAME, TPerson.FIELD_NAME_PERSON_NAME, TTieUp.FIELD_NAME_TIE_UP_NAME,
-			TCategory.FIELD_NAME_CATEGORY_NAME, TTieUpGroup.FIELD_NAME_TIE_UP_GROUP_NAME, TMaker.FIELD_NAME_MAKER_NAME,
+			TCategory.FIELD_NAME_CATEGORY_NAME, TTieUpGroup.FIELD_NAME_TIE_UP_GROUP_NAME, TMaker.FIELD_NAME_MAKER_NAME, TTag.FIELD_NAME_TAG_NAME,
 			null, null, null, null, null, null,
-			null, null, null, null, null,
+			null, null, null, null, null, null,
 		};
 
 		// 楽曲情報データベースのフリガナ列名
 		public static readonly String[] MUSIC_INFO_DB_RUBY_COLUMN_NAMES =
 		{
 			TSong.FIELD_NAME_SONG_RUBY, TPerson.FIELD_NAME_PERSON_RUBY, TTieUp.FIELD_NAME_TIE_UP_RUBY,
-			TCategory.FIELD_NAME_CATEGORY_RUBY, TTieUpGroup.FIELD_NAME_TIE_UP_GROUP_RUBY, TMaker.FIELD_NAME_MAKER_RUBY,
+			TCategory.FIELD_NAME_CATEGORY_RUBY, TTieUpGroup.FIELD_NAME_TIE_UP_GROUP_RUBY, TMaker.FIELD_NAME_MAKER_RUBY, TTag.FIELD_NAME_TAG_RUBY,
 			null, null, null, null, null, null,
-			null, null, null, null, null,
+			null, null, null, null, null, null,
 		};
 
 		// 楽曲情報データベースの検索ワード列名
 		public static readonly String[] MUSIC_INFO_DB_KEYWORD_COLUMN_NAMES =
 		{
 			TSong.FIELD_NAME_SONG_KEYWORD, TPerson.FIELD_NAME_PERSON_KEYWORD, TTieUp.FIELD_NAME_TIE_UP_KEYWORD,
-			TCategory.FIELD_NAME_CATEGORY_KEYWORD, TTieUpGroup.FIELD_NAME_TIE_UP_GROUP_KEYWORD, TMaker.FIELD_NAME_MAKER_KEYWORD,
+			TCategory.FIELD_NAME_CATEGORY_KEYWORD, TTieUpGroup.FIELD_NAME_TIE_UP_GROUP_KEYWORD, TMaker.FIELD_NAME_MAKER_KEYWORD, TTag.FIELD_NAME_TAG_KEYWORD,
 			null, null, null, null, null, null,
-			null, null, null, null, null,
+			null, null, null, null, null, null,
 		};
 
 		// 楽曲情報データベースの無効列名
 		public static readonly String[] MUSIC_INFO_DB_INVALID_COLUMN_NAMES =
 		{
 			TSong.FIELD_NAME_SONG_INVALID, TPerson.FIELD_NAME_PERSON_INVALID, TTieUp.FIELD_NAME_TIE_UP_INVALID,
-			TCategory.FIELD_NAME_CATEGORY_INVALID, TTieUpGroup.FIELD_NAME_TIE_UP_GROUP_INVALID, TMaker.FIELD_NAME_MAKER_INVALID,
+			TCategory.FIELD_NAME_CATEGORY_INVALID, TTieUpGroup.FIELD_NAME_TIE_UP_GROUP_INVALID, TMaker.FIELD_NAME_MAKER_INVALID, TTag.FIELD_NAME_TAG_INVALID,
 			TSongAlias.FIELD_NAME_SONG_ALIAS_INVALID, TPersonAlias.FIELD_NAME_PERSON_ALIAS_INVALID, TTieUpAlias.FIELD_NAME_TIE_UP_ALIAS_INVALID,
 			TCategoryAlias.FIELD_NAME_CATEGORY_ALIAS_INVALID, TTieUpGroupAlias.FIELD_NAME_TIE_UP_GROUP_ALIAS_INVALID, TMakerAlias.FIELD_NAME_MAKER_ALIAS_INVALID,
 			TArtistSequence.FIELD_NAME_ARTIST_SEQUENCE_INVALID, TLyristSequence.FIELD_NAME_LYRIST_SEQUENCE_INVALID, TComposerSequence.FIELD_NAME_COMPOSER_SEQUENCE_INVALID,
-			TArrangerSequence.FIELD_NAME_ARRANGER_SEQUENCE_INVALID, TTieUpGroupSequence.FIELD_NAME_TIE_UP_GROUP_SEQUENCE_INVALID,
+			TArrangerSequence.FIELD_NAME_ARRANGER_SEQUENCE_INVALID, TTieUpGroupSequence.FIELD_NAME_TIE_UP_GROUP_SEQUENCE_INVALID, TTagSequence.FIELD_NAME_TAG_SEQUENCE_INVALID,
 		};
 
 		// 楽曲情報データベースのシステム ID 接頭辞（ユーザーは指定できない文字 '_' を含める）
@@ -422,9 +425,9 @@ namespace YukaLister.Models.SharedMisc
 		// この他、報告データベースで "R" を使用する
 		public static readonly String[] MUSIC_INFO_ID_SECOND_PREFIXES =
 		{
-			"_S_", "_P_", "_T_","_C_", "_G_", "_M_",
+			"_S_", "_P_", "_T_","_C_", "_G_", "_M_", "_Z_", 
 			"_SA_", "_PA_", "_TA_","_CA_", "_GA_", "_MA_",
-			null, null, null, null, null,
+			null, null, null, null, null, null,
 		};
 
 		// --------------------------------------------------------------------

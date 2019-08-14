@@ -74,14 +74,10 @@ namespace YukaLister.Models.Database
 		{
 			using (SQLiteCommand aCmd = new SQLiteCommand(Connection))
 			{
-				// テーブル作成
-				LinqUtils.CreateTable(aCmd, typeof(TReport));
-
-				// インデックス作成
 				List<String> aIndices = new List<String>();
 				aIndices.Add(TReport.FIELD_NAME_REPORT_REGIST_TIME);
 				aIndices.Add(TReport.FIELD_NAME_REPORT_STATUS);
-				LinqUtils.CreateIndex(aCmd, LinqUtils.TableName(typeof(TReport)), aIndices);
+				CreateTable(aCmd, typeof(TReport), aIndices);
 			}
 		}
 

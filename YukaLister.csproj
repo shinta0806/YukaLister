@@ -167,9 +167,12 @@
     <Compile Include="ViewModels\EditMakerWindowViewModel.cs" />
     <Compile Include="ViewModels\EditMusicInfoWindowViewModel.cs" />
     <Compile Include="ViewModels\EditPeopleWindowViewModel.cs" />
+    <Compile Include="ViewModels\EditSequenceWindowViewModel.cs" />
     <Compile Include="ViewModels\EditPersonWindowViewModel.cs" />
     <Compile Include="ViewModels\EditReportWindowViewModel.cs" />
     <Compile Include="ViewModels\EditSongWindowViewModel.cs" />
+    <Compile Include="ViewModels\EditTagsWindowViewModel.cs" />
+    <Compile Include="ViewModels\EditTagWindowViewModel.cs" />
     <Compile Include="ViewModels\EditTieUpGroupWindowViewModel.cs" />
     <Compile Include="ViewModels\EditTieUpWindowViewModel.cs" />
     <Compile Include="ViewModels\EditMasterWindowViewModel.cs" />
@@ -203,8 +206,8 @@
     <Compile Include="Views\EditMusicInfoWindow.xaml.cs">
       <DependentUpon>EditMusicInfoWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\EditPeopleWindow.xaml.cs">
-      <DependentUpon>EditPeopleWindow.xaml</DependentUpon>
+    <Compile Include="Views\EditSequenceWindow.xaml.cs">
+      <DependentUpon>EditSequenceWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\EditReportWindow.xaml.cs">
       <DependentUpon>EditReportWindow.xaml</DependentUpon>
@@ -253,7 +256,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\EditPeopleWindow.xaml">
+    <Page Include="Views\EditSequenceWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

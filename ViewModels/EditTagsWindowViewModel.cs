@@ -1,6 +1,6 @@
 ﻿// ============================================================================
 // 
-// 複数人物編集ウィンドウの ViewModel
+// 複数タグ編集ウィンドウの ViewModel
 // 
 // ============================================================================
 
@@ -32,7 +32,7 @@ using YukaLister.Models.SharedMisc;
 
 namespace YukaLister.ViewModels
 {
-	public class EditPeopleWindowViewModel : EditSequenceWindowViewModel
+	public class EditTagsWindowViewModel : EditSequenceWindowViewModel
 	{
 		// Some useful code snippets for ViewModel are defined as l*(llcom, llcomn, lvcomm, lsprop, etc...).
 
@@ -49,9 +49,6 @@ namespace YukaLister.ViewModels
 		// --------------------------------------------------------------------
 		// 一般のプロパティー
 		// --------------------------------------------------------------------
-
-		// 人物区分
-		public String PersonKind { get; set; }
 
 		// --------------------------------------------------------------------
 		// コマンド
@@ -74,41 +71,41 @@ namespace YukaLister.ViewModels
 				base.Initialize();
 
 				// タイトルバー
-				Title = PersonKind + "たちの編集";
+				Title = "タグ群の編集";
 #if DEBUG
 				Title = "［デバッグ］" + Title;
 #endif
 
 				// 説明
-				Description = "「検索して追加」ボタンで" + PersonKind + "を追加して下さい。複数名の指定も可能です。";
-				HelpCommandParameter = "KasyuSakushisyaSakkyokusyaHenkyokusyanoSentaku";
+				Description = "「検索して追加」ボタンでタグを追加して下さい。複数タグの指定も可能です。";
+				HelpCommandParameter = "";
 
-				// 人物群
-				DataGridHeader = "人物";
+				// タグ群
+				DataGridHeader = "タグ";
 				using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
 				using (DataContext aContext = new DataContext(aMusicInfoDbInDisk.Connection))
 				{
 					for (Int32 i = 0; i < InitialIds.Count; i++)
 					{
-						TPerson aPerson = YlCommon.SelectBaseById<TPerson>(aContext, InitialIds[i]);
-						if (aPerson != null)
+						TTag aTag = YlCommon.SelectBaseById<TTag>(aContext, InitialIds[i]);
+						if (aTag != null)
 						{
-							List<TPerson> aSameNamePeople = YlCommon.SelectMastersByName<TPerson>(aContext, aPerson.Name);
-							aPerson.Environment = Environment;
-							aPerson.AvoidSameName = aSameNamePeople.Count > 1;
-							Masters.Add(aPerson);
+							List<TTag> aSameNameTags = YlCommon.SelectMastersByName<TTag>(aContext, aTag.Name);
+							Debug.Assert(aSameNameTags.Count <= 1, "Same name tag exists");
+							aTag.Environment = Environment;
+							aTag.AvoidSameName = false;
+							Masters.Add(aTag);
 						}
 					}
 				}
 
 				// ボタン
-				ButtonEditContent = "人物詳細編集 (_E)";
-				ButtonNewContent = "新規人物作成 (_N)";
-
+				ButtonEditContent = "タグ詳細編集 (_E)";
+				ButtonNewContent = "新規タグ作成 (_N)";
 			}
 			catch (Exception oExcep)
 			{
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "複数人物編集ウィンドウビューモデル初期化時エラー：\n" + oExcep.Message);
+				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "複数タグ編集ウィンドウビューモデル初期化時エラー：\n" + oExcep.Message);
 				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
@@ -125,8 +122,8 @@ namespace YukaLister.ViewModels
 			using (SearchMusicInfoWindowViewModel aSearchMusicInfoWindowViewModel = new SearchMusicInfoWindowViewModel())
 			{
 				aSearchMusicInfoWindowViewModel.Environment = Environment;
-				aSearchMusicInfoWindowViewModel.ItemName = PersonKind;
-				aSearchMusicInfoWindowViewModel.TableIndex = MusicInfoDbTables.TPerson;
+				aSearchMusicInfoWindowViewModel.ItemName = "タグ";
+				aSearchMusicInfoWindowViewModel.TableIndex = MusicInfoDbTables.TTag;
 				aSearchMusicInfoWindowViewModel.SelectedKeyword = null;
 				Messenger.Raise(new TransitionMessage(aSearchMusicInfoWindowViewModel, "OpenSearchMusicInfoWindow"));
 				mIsMasterSearched = true;
@@ -137,7 +134,7 @@ namespace YukaLister.ViewModels
 
 				using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
 				{
-					List<TPerson> aMasters = YlCommon.SelectMastersByName<TPerson>(aMusicInfoDbInDisk.Connection, aSearchMusicInfoWindowViewModel.DecidedName);
+					List<TTag> aMasters = YlCommon.SelectMastersByName<TTag>(aMusicInfoDbInDisk.Connection, aSearchMusicInfoWindowViewModel.DecidedName);
 					if (aMasters.Count == 0)
 					{
 						throw new Exception(aSearchMusicInfoWindowViewModel.DecidedName + "がデータベースに登録されていません。");
@@ -164,15 +161,16 @@ namespace YukaLister.ViewModels
 				return;
 			}
 
-			// 既存レコード（同名の人物すべて）を用意
-			List<TPerson> aMasters;
+			// 既存レコードを用意
+			List<TTag> aMasters;
 			using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
 			{
-				aMasters = YlCommon.SelectMastersByName<TPerson>(aMusicInfoDbInDisk.Connection, SelectedMaster.Name);
+				aMasters = YlCommon.SelectMastersByName<TTag>(aMusicInfoDbInDisk.Connection, SelectedMaster.Name);
+				Debug.Assert(aMasters.Count <= 1, "Edit() same name exists");
 			}
 
 			// 新規作成用を追加
-			TPerson aNewRecord = new TPerson
+			TTag aNewRecord = new TTag
 			{
 				// IRcBase
 				Id = null,
@@ -188,7 +186,7 @@ namespace YukaLister.ViewModels
 			};
 			aMasters.Insert(0, aNewRecord);
 
-			TPerson aMaster = OpenEditPersonWindow(aMasters, SelectedMaster.Id);
+			TTag aMaster = OpenEditTagWindow(aMasters, SelectedMaster.Id);
 			if (aMaster != null)
 			{
 				Masters[Masters.IndexOf(SelectedMaster)] = aMaster;
@@ -203,18 +201,18 @@ namespace YukaLister.ViewModels
 		{
 			if (!mIsMasterSearched)
 			{
-				throw new Exception("新規人物作成の前に一度、目的の人物が未登録かどうか検索して下さい。");
+				throw new Exception("新規タグ作成の前に一度、目的のタグが未登録かどうか検索して下さい。");
 			}
 
-			if (MessageBox.Show("目的の人物が未登録の場合（検索してもヒットしない場合）に限り、新規人物作成を行って下さい。\n"
-					+ "新規人物作成を行いますか？", "確認", MessageBoxButton.YesNo, MessageBoxImage.Exclamation) == MessageBoxResult.No)
+			if (MessageBox.Show("目的のタグが未登録の場合（検索してもヒットしない場合）に限り、新規タグ作成を行って下さい。\n"
+					+ "新規タグ作成を行いますか？", "確認", MessageBoxButton.YesNo, MessageBoxImage.Exclamation) == MessageBoxResult.No)
 			{
 				return;
 			}
 
-			// 新規人物
-			List<TPerson> aMasters = new List<TPerson>();
-			TPerson aNewRecord = new TPerson
+			// 新規タグ
+			List<TTag> aMasters = new List<TTag>();
+			TTag aNewRecord = new TTag
 			{
 				// IRcBase
 				Id = null,
@@ -230,7 +228,7 @@ namespace YukaLister.ViewModels
 			};
 			aMasters.Insert(0, aNewRecord);
 
-			TPerson aMaster = OpenEditPersonWindow(aMasters, null);
+			TTag aMaster = OpenEditTagWindow(aMasters, null);
 			if (aMaster != null)
 			{
 				Masters.Add(aMaster);
@@ -244,18 +242,18 @@ namespace YukaLister.ViewModels
 
 		// --------------------------------------------------------------------
 		// 編集ウィンドウを開く
-		// ＜返値＞ 編集された TPerson（キャンセルの場合は null）
+		// ＜返値＞ 編集された TTag（キャンセルの場合は null）
 		// --------------------------------------------------------------------
-		private TPerson OpenEditPersonWindow(List<TPerson> oMasters, String oDefaultId)
+		private TTag OpenEditTagWindow(List<TTag> oMasters, String oDefaultId)
 		{
-			using (EditPersonWindowViewModel aEditPersonWindowViewModel = new EditPersonWindowViewModel())
+			using (EditTagWindowViewModel aEditTagWindowViewModel = new EditTagWindowViewModel())
 			{
-				aEditPersonWindowViewModel.Environment = Environment;
-				aEditPersonWindowViewModel.SetMasters(oMasters);
-				aEditPersonWindowViewModel.DefaultId = oDefaultId;
-				Messenger.Raise(new TransitionMessage(aEditPersonWindowViewModel, "OpenEditPersonWindow"));
+				aEditTagWindowViewModel.Environment = Environment;
+				aEditTagWindowViewModel.SetMasters(oMasters);
+				aEditTagWindowViewModel.DefaultId = oDefaultId;
+				Messenger.Raise(new TransitionMessage(aEditTagWindowViewModel, "OpenEditTagWindow"));
 
-				if (String.IsNullOrEmpty(aEditPersonWindowViewModel.OkSelectedId))
+				if (String.IsNullOrEmpty(aEditTagWindowViewModel.OkSelectedId))
 				{
 					return null;
 				}
@@ -263,19 +261,21 @@ namespace YukaLister.ViewModels
 				using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
 				using (DataContext aContext = new DataContext(aMusicInfoDbInDisk.Connection))
 				{
-					TPerson aMaster = YlCommon.SelectBaseById<TPerson>(aContext, aEditPersonWindowViewModel.OkSelectedId);
+					TTag aMaster = YlCommon.SelectBaseById<TTag>(aContext, aEditTagWindowViewModel.OkSelectedId);
 					if (aMaster != null)
 					{
-						List<TPerson> aSameNamePeople = YlCommon.SelectMastersByName<TPerson>(aContext, aMaster.Name);
+						List<TTag> aSameNameTags = YlCommon.SelectMastersByName<TTag>(aContext, aMaster.Name);
+						Debug.Assert(aSameNameTags.Count <= 1, "OpenEditTagWindow() same name exists");
 						aMaster.Environment = Environment;
-						aMaster.AvoidSameName = aSameNamePeople.Count > 1;
+						aMaster.AvoidSameName = false;
 					}
 					return aMaster;
 				}
 			}
 		}
 
+
 	}
-	// public class EditPeopleWindowViewModel ___END___
+	// public class EditTagsWindowViewModel ___END___
 }
 // namespace YukaLister.ViewModels ___END___

@@ -387,6 +387,7 @@ namespace YukaLister.Models.Database
 			}
 
 			List<TSong> aSongs;
+
 			// 楽曲名で検索
 			aSongs = YlCommon.SelectMastersByName<TSong>(mMusicInfoDbContext, oDicByFile[YlConstants.RULE_VAR_TITLE]);
 
@@ -526,6 +527,7 @@ namespace YukaLister.Models.Database
 			oRecord.ArrangerRuby = aRuby;
 
 			// TSong 由来項目の設定
+			oRecord.SongId = aSelectedSong.Id;
 			oRecord.SongName = aSelectedSong.Name;
 			oRecord.SongRuby = aSelectedSong.Ruby;
 			oRecord.SongOpEd = aSelectedSong.OpEd;

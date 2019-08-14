@@ -25,9 +25,9 @@ namespace YukaLister.Views
     /// <summary>
     /// EditPeopleWindow.xaml の相互作用ロジック
     /// </summary>
-    public partial class EditPeopleWindow : Window
+    public partial class EditSequenceWindow : Window
     {
-        public EditPeopleWindow()
+        public EditSequenceWindow()
         {
             InitializeComponent();
         }

@@ -965,8 +965,9 @@ namespace YukaLister.Models.SharedMisc
 			oOutputWriter.OutputSettings.Load();
 			using (DataContext aYukariDbContext = new DataContext(oYukariListDbInMemory.Connection))
 			{
-				Table<TFound> aTableFound = aYukariDbContext.GetTable<TFound>();
-				oOutputWriter.TableFound = aTableFound;
+				oOutputWriter.TableFound = aYukariDbContext.GetTable<TFound>();
+				oOutputWriter.TableTag = aYukariDbContext.GetTable<TTag>();
+				oOutputWriter.TableTagSequence = aYukariDbContext.GetTable<TTagSequence>();
 				oOutputWriter.Output();
 			}
 		}
@@ -1183,6 +1184,27 @@ namespace YukaLister.Models.SharedMisc
 			}
 
 			return aSequences;
+		}
+
+		// --------------------------------------------------------------------
+		// 楽曲情報データベースから楽曲に紐付くタグを検索
+		// oIncludesInvalid が true の場合、無効 ID に null を紐付ける
+		// --------------------------------------------------------------------
+		public static List<TTag> SelectSequenceTagsBySongId(DataContext oContext, String oSongId, Boolean oIncludesInvalid = false)
+		{
+			List<TTagSequence> aSequences = SelectSequencesById<TTagSequence>(oContext, oSongId, oIncludesInvalid);
+			List<TTag> aTags = new List<TTag>();
+
+			foreach (TTagSequence aSequence in aSequences)
+			{
+				TTag aTag = SelectBaseById<TTag>(oContext, aSequence.LinkId);
+				if (aTag != null || oIncludesInvalid)
+				{
+					aTags.Add(aTag);
+				}
+			}
+
+			return aTags;
 		}
 
 		// --------------------------------------------------------------------

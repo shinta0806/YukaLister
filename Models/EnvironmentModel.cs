@@ -46,6 +46,23 @@ namespace YukaLister.Models
 			// 環境の変化に対応
 			DoVerChangedIfNeeded();
 			LaunchUpdaterIfNeeded();
+
+#if DEBUG
+			// 定数チェック
+			Debug.Assert(YlConstants.FOLDER_SETTINGS_STATUS_TEXTS.Length == (Int32)FolderSettingsStatus.__End__, "EnvironmentModel() bad YlConstants.FOLDER_SETTINGS_STATUS_TEXTS.Length");
+			Debug.Assert(YlConstants.MUSIC_INFO_DB_TABLE_NAMES.Length == (Int32)MusicInfoDbTables.__End__, "EnvironmentModel() bad YlConstants.MUSIC_INFO_DB_TABLE_NAMES.Length");
+			Debug.Assert(YlConstants.MUSIC_INFO_DB_ID_COLUMN_NAMES.Length == (Int32)MusicInfoDbTables.__End__, "EnvironmentModel() bad YlConstants.MUSIC_INFO_DB_ID_COLUMN_NAMES.Length");
+			Debug.Assert(YlConstants.MUSIC_INFO_DB_NAME_COLUMN_NAMES.Length == (Int32)MusicInfoDbTables.__End__, "EnvironmentModel() bad YlConstants.MUSIC_INFO_DB_NAME_COLUMN_NAMES.Length");
+			Debug.Assert(YlConstants.MUSIC_INFO_DB_RUBY_COLUMN_NAMES.Length == (Int32)MusicInfoDbTables.__End__, "EnvironmentModel() bad YlConstants.MUSIC_INFO_DB_RUBY_COLUMN_NAMES.Length");
+			Debug.Assert(YlConstants.MUSIC_INFO_DB_KEYWORD_COLUMN_NAMES.Length == (Int32)MusicInfoDbTables.__End__, "EnvironmentModel() bad YlConstants.MUSIC_INFO_DB_KEYWORD_COLUMN_NAMES.Length");
+			Debug.Assert(YlConstants.MUSIC_INFO_ID_SECOND_PREFIXES.Length == (Int32)MusicInfoDbTables.__End__, "EnvironmentModel() bad YlConstants.MUSIC_INFO_ID_SECOND_PREFIXES.Length");
+			Debug.Assert(YlConstants.YUKA_LISTER_STATUS_RUNNING_MESSAGES.Length == (Int32)YukaListerStatusRunningMessage.__End__, "EnvironmentModel() bad YlCommon.YUKA_LISTER_STATUS_RUNNING_MESSAGES.Length");
+			Debug.Assert(YlConstants.OUTPUT_ITEM_NAMES.Length == (Int32)OutputItems.__End__, "EnvironmentModel() bad YlCommon.OUTPUT_ITEM_NAMES.Length");
+			for (MusicInfoDbTables i = 0; i < MusicInfoDbTables.__End__; i++)
+			{
+				Debug.Assert(String.Compare(i.ToString(), YlConstants.MUSIC_INFO_DB_TABLE_NAMES[(Int32)i].Replace("_", ""), true) == 0, "Init() bad YlCommon.MUSIC_INFO_DB_TABLE_NAMES: " + i.ToString());
+			}
+#endif
 		}
 
 		// ====================================================================
@@ -185,30 +202,6 @@ namespace YukaLister.Models
 		// ====================================================================
 
 		// --------------------------------------------------------------------
-		// カテゴリーマスターテーブルの既定レコードを挿入
-		// 旧バージョンのゆかりすたーを使用していてレコードが不足している場合用
-		// --------------------------------------------------------------------
-		private void AddMusicInfoDbCategoryDefaultRecordsIfNeeded()
-		{
-			using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(this))
-			{
-				aMusicInfoDbInDisk.CreateDatabaseIfNeeded();
-
-				using (DataContext aContext = new DataContext(aMusicInfoDbInDisk.Connection))
-				{
-					Table<TCategory> aTableCategory = aContext.GetTable<TCategory>();
-
-					if (YlCommon.SelectMastersByName<TCategory>(aMusicInfoDbInDisk.Connection, "一般").Count == 0)
-					{
-						aTableCategory.InsertOnSubmit(aMusicInfoDbInDisk.CreateCategoryRecord(103, "一般", "イッパン"));
-					}
-
-					aContext.SubmitChanges();
-				}
-			}
-		}
-
-		// --------------------------------------------------------------------
 		// バージョン更新時の処理
 		// --------------------------------------------------------------------
 		private void DoVerChangedIfNeeded()
@@ -242,7 +235,10 @@ namespace YukaLister.Models
 			if (aVerChanged)
 			{
 				NewVersionLaunched();
-				AddMusicInfoDbCategoryDefaultRecordsIfNeeded();
+				using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(this))
+				{
+					aMusicInfoDbInDisk.AddToOlderVersionIfNeeded();
+				}
 			}
 
 		}

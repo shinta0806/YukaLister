@@ -345,18 +345,8 @@ namespace YukaLister.ViewModels
 
 			// 同名の既存レコード数をカウント
 			List<IRcMaster> aDup;
-			using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
-			{
-				aDup = SelectMastersByName(aMusicInfoDbInDisk.Connection, aNormalizedName);
-			}
-			Int32 aNumDup = 0;
-			foreach (IRcMaster aMaster in aDup)
-			{
-				if (aMaster.Id != SelectedId)
-				{
-					aNumDup++;
-				}
-			}
+			Int32 aNumDup;
+			GetSameNameRecords(aNormalizedName, out aDup, out aNumDup);
 
 			// 同名が既に登録されている場合
 			if (aNumDup > 0)
@@ -364,9 +354,7 @@ namespace YukaLister.ViewModels
 				if (String.IsNullOrEmpty(aNormalizedKeyword))
 				{
 					// キーワードがなければ同名の登録は禁止
-					Environment.LogWriter.ShowLogMessage(TraceEventType.Error, mCaption + "「" + aNormalizedName + "」は既に登録されています。\n"
-							+ "検索ワードを入力して識別できるようにしてください。");
-					throw new OperationCanceledException();
+					throw new Exception(mCaption + "「" + aNormalizedName + "」は既に登録されています。\n検索ワードを入力して識別できるようにしてください。");
 				}
 				else
 				{
@@ -390,6 +378,28 @@ namespace YukaLister.ViewModels
 			using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
 			{
 				aMusicInfoDbInDisk.Backup();
+			}
+		}
+
+		// --------------------------------------------------------------------
+		// 同名の既存レコード数をカウント
+		// --------------------------------------------------------------------
+		protected void GetSameNameRecords(String oNormalizedName, out List<IRcMaster> oDup, out Int32 oNumDup)
+		{
+			// レコード一覧
+			using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
+			{
+				oDup = SelectMastersByName(aMusicInfoDbInDisk.Connection, oNormalizedName);
+			}
+
+			// カウント
+			oNumDup = 0;
+			foreach (IRcMaster aMaster in oDup)
+			{
+				if (aMaster.Id != SelectedId)
+				{
+					oNumDup++;
+				}
 			}
 		}
 

@@ -11,6 +11,7 @@
 using Shinta;
 
 using System;
+using System.Collections.Generic;
 using System.Data.Linq;
 using System.Data.SQLite;
 using System.Diagnostics;
@@ -114,6 +115,36 @@ namespace YukaLister.Models.Database
 
 			// 更新
 			UpdateProperty();
+		}
+
+		// --------------------------------------------------------------------
+		// データベースの中にテーブルを作成し、インデックスを作成
+		// --------------------------------------------------------------------
+		protected void CreateTable(SQLiteCommand oCmd, Type oTypeOfTable, String oIndexColumn = null)
+		{
+			List<String> aIndices;
+			if (String.IsNullOrEmpty(oIndexColumn))
+			{
+				aIndices = null;
+			}
+			else
+			{
+				aIndices = new List<String>();
+				aIndices.Add(oIndexColumn);
+			}
+			CreateTable(oCmd, oTypeOfTable, aIndices);
+		}
+
+		// --------------------------------------------------------------------
+		// データベースの中にテーブルを作成し、インデックスを作成
+		// --------------------------------------------------------------------
+		protected void CreateTable(SQLiteCommand oCmd, Type oTypeOfTable, List<String> oIndices)
+		{
+			// テーブル作成
+			LinqUtils.CreateTable(oCmd, oTypeOfTable);
+
+			// インデックス作成（JOIN および検索の高速化）
+			LinqUtils.CreateIndex(oCmd, LinqUtils.TableName(oTypeOfTable), oIndices);
 		}
 
 		// --------------------------------------------------------------------

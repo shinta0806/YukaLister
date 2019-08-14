@@ -72,6 +72,7 @@ namespace YukaLister.Models.OutputWriters
 			GenerateYearsAndSeasons();
 			GenerateArtistAndHeads();
 			GenerateComposerAndHeads();
+			GenerateTagHeadAndTags();
 
 			// 内容の調整
 			AdjustList(mTopPage);
@@ -327,6 +328,7 @@ namespace YukaLister.Models.OutputWriters
 		private const String KIND_FILE_NAME_NEW = "New";
 		private const String KIND_FILE_NAME_PERIOD = "Period";
 		private const String KIND_FILE_NAME_SEASON = "Season";
+		private const String KIND_FILE_NAME_TAG = "Tag";
 		private const String KIND_FILE_NAME_TIE_UP_GROUP = "Series";
 
 		// HTML テンプレートに記載されている変数
@@ -514,6 +516,7 @@ namespace YukaLister.Models.OutputWriters
 			DeleteOldListContentsCore(KIND_FILE_NAME_SEASON);
 			DeleteOldListContentsCore(KIND_FILE_NAME_ARTIST);
 			DeleteOldListContentsCore(KIND_FILE_NAME_COMPOSER);
+			DeleteOldListContentsCore(KIND_FILE_NAME_TAG);
 			DeleteMisc();
 		}
 
@@ -1129,6 +1132,80 @@ namespace YukaLister.Models.OutputWriters
 		}
 
 		// --------------------------------------------------------------------
+		// グループ＝タグ名の頭文字、ページ＝タグ名、章＝番組名、でページ内容生成
+		// --------------------------------------------------------------------
+		private void GenerateTagHeadAndTags()
+		{
+			ZonePage(false).AddChild(GenerateTagHeadAndTagsCore(false));
+			ZonePage(true).AddChild(GenerateTagHeadAndTagsCore(true));
+		}
+
+		// --------------------------------------------------------------------
+		// グループ＝タグ名の頭文字、ページ＝タグ名、章＝番組名、でページ内容生成
+		// --------------------------------------------------------------------
+		private PageInfoTree GenerateTagHeadAndTagsCore(Boolean oIsAdult)
+		{
+			PageInfoTree aPageInfoTree = new PageInfoTree();
+			aPageInfoTree.Name = "タグ別";
+			aPageInfoTree.FileName = IndexFileName(oIsAdult, KIND_FILE_NAME_TAG);
+
+			// 番組名とそれに紐付く楽曲群
+			Dictionary<String, List<TFound>> aTieUpNamesAndTFounds = new Dictionary<String, List<TFound>>();
+
+			var aQueryResult =
+					from Found in TableFound
+					join x in TableTagSequence on Found.SongId equals x.Id into gj
+					from TagSequence in gj.DefaultIfEmpty()
+					join y in TableTag on TagSequence.LinkId equals y.Id into gj2
+					from Tag in gj2.DefaultIfEmpty()
+					where Found.TieUpName != null && Found.SongId != null && Tag != null && (oIsAdult ? Found.TieUpAgeLimit >= YlConstants.AGE_LIMIT_CERO_Z : Found.TieUpAgeLimit < YlConstants.AGE_LIMIT_CERO_Z)
+					orderby Tag.Ruby, Tag.Name, Found.Head, Found.TieUpRuby, Found.TieUpName, Found.SongRuby, Found.SongName
+					select new { Found, TagSequence, Tag };
+			var aPrevRecord = new { Found = new TFound(), TagSequence = new TTagSequence(), Tag = new TTag() };
+			aPrevRecord = null;
+			String aPrevTagHead = null;
+
+			foreach (var aRecord in aQueryResult)
+			{
+				String aTagHead = TagHead(aRecord.Tag);
+
+				if (aPrevRecord != null
+						&& (aTagHead != aPrevTagHead || aRecord.Tag.Ruby != aPrevRecord.Tag.Ruby || aRecord.Tag.Name != aPrevRecord.Tag.Name))
+				{
+					// 頭文字またはページが新しくなったので 1 ページ分出力
+					GenerateOneList(aPageInfoTree, aTieUpNamesAndTFounds, oIsAdult,
+							KIND_FILE_NAME_TAG, aPrevTagHead, aPrevRecord.Tag.Name, OutputItems.TieUpName);
+					aPrevRecord = null;
+				}
+
+				if (aPrevRecord == null
+						|| aPrevRecord != null && aRecord.Found.TieUpName != aPrevRecord.Found.TieUpName)
+				{
+					// 番組名が新しくなった
+					aTieUpNamesAndTFounds[aRecord.Found.TieUpName] = new List<TFound>();
+				}
+
+				// 曲情報追加
+				aTieUpNamesAndTFounds[aRecord.Found.TieUpName].Add(aRecord.Found);
+
+				// ループ処理
+				aPrevRecord = aRecord;
+				aPrevTagHead = aTagHead;
+			}
+
+			if (aPrevRecord != null)
+			{
+				GenerateOneList(aPageInfoTree, aTieUpNamesAndTFounds, oIsAdult,
+						KIND_FILE_NAME_TAG, aPrevTagHead, aPrevRecord.Tag.Name, OutputItems.TieUpName);
+			}
+
+			// インデックス
+			GenerateFreestyleIndexPageContent(aPageInfoTree, oIsAdult, KIND_FILE_NAME_TAG, "五十音");
+
+			return aPageInfoTree;
+		}
+
+		// --------------------------------------------------------------------
 		// グループ＝タイアップグループ名の頭文字、ページ＝タイアップグループ名、章＝番組名、でページ内容生成
 		// --------------------------------------------------------------------
 		private void GenerateTieUpGroupHeadAndTieUpGroups()
@@ -1308,6 +1385,7 @@ namespace YukaLister.Models.OutputWriters
 			oSB.Append("<td class=\"exist\"><a href=\"" + IndexFileName(oIsAdult, KIND_FILE_NAME_SEASON) + mListLinkArg + "\">　期別　</a></td>");
 			oSB.Append("<td class=\"exist\"><a href=\"" + IndexFileName(oIsAdult, KIND_FILE_NAME_ARTIST) + mListLinkArg + "\">　歌手別　</a></td>");
 			oSB.Append("<td class=\"exist\"><a href=\"" + IndexFileName(oIsAdult, KIND_FILE_NAME_COMPOSER) + mListLinkArg + "\">　作曲者別　</a></td>");
+			oSB.Append("<td class=\"exist\"><a href=\"" + IndexFileName(oIsAdult, KIND_FILE_NAME_TAG) + mListLinkArg + "\">　タグ別　</a></td>");
 			oSB.Append("</tr>\n");
 		}
 
@@ -1358,6 +1436,10 @@ namespace YukaLister.Models.OutputWriters
 			MoveListContentsCore(KIND_FILE_NAME_COMPOSER);
 			MoveListIndexCore(false, KIND_FILE_NAME_COMPOSER);
 			MoveListIndexCore(true, KIND_FILE_NAME_COMPOSER);
+
+			MoveListContentsCore(KIND_FILE_NAME_TAG);
+			MoveListIndexCore(false, KIND_FILE_NAME_TAG);
+			MoveListIndexCore(true, KIND_FILE_NAME_TAG);
 		}
 
 		// --------------------------------------------------------------------
@@ -1497,6 +1579,14 @@ namespace YukaLister.Models.OutputWriters
 		{
 			Byte[] aByteData = Encoding.UTF8.GetBytes(oString);
 			return BitConverter.ToString(aByteData).Replace("-", String.Empty).ToLower();
+		}
+
+		// --------------------------------------------------------------------
+		// タグの頭文字
+		// --------------------------------------------------------------------
+		private String TagHead(TTag oTag)
+		{
+			return !String.IsNullOrEmpty(oTag.Ruby) ? YlCommon.Head(oTag.Ruby) : YlCommon.Head(oTag.Name);
 		}
 
 		// --------------------------------------------------------------------
