@@ -38,6 +38,7 @@ namespace YukaLister.Models
 
 			// その他の設定
 			SetYukaListerSettings();
+			SetTagSettings();
 			SetExLenEnabled();
 
 			// カレントフォルダー正規化（ゆかりから起動された場合はゆかりのフォルダーになっているため）
@@ -78,6 +79,9 @@ namespace YukaLister.Models
 
 		// ユーザー設定
 		public YukaListerSettings YukaListerSettings { get; private set; }
+
+		// タグ設定
+		public TagSettings TagSettings { get; private set; }
 
 		// extended-length なパス表記を使用するかどうか
 		public Boolean IsExLenEnabled { get; private set; }
@@ -150,6 +154,12 @@ namespace YukaLister.Models
 		public void Quit()
 		{
 			SavePrevLaunchInfo();
+#if DEBUGz
+			TagSettings.TagsSave = new List<SerializableKeyValuePair<String, String>>();
+			SerializableKeyValuePair<String, String> aSaveKVP = new SerializableKeyValuePair<String, String>("key", "value");
+			TagSettings.TagsSave.Add(aSaveKVP);
+			TagSettings.Save();
+#endif
 
 			// テンポラリーフォルダー削除
 			try
@@ -344,6 +354,19 @@ namespace YukaLister.Models
 		}
 
 		// --------------------------------------------------------------------
+		// TagSettings の設定
+		// --------------------------------------------------------------------
+		private void SetTagSettings()
+		{
+			TagSettings = new TagSettings();
+			TagSettings.Reload();
+			if (TagSettings.FolderTags == null)
+			{
+				TagSettings.FolderTags = new Dictionary<String, String>();
+			}
+		}
+
+		// --------------------------------------------------------------------
 		// YukaListerSettings の設定
 		// --------------------------------------------------------------------
 		private void SetYukaListerSettings()
@@ -377,7 +400,6 @@ namespace YukaLister.Models
 				}
 			}
 			YukaListerSettings.AnalyzeYukariEasyAuthConfig(this);
-
 		}
 
 		// --------------------------------------------------------------------

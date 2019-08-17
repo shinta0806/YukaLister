@@ -464,6 +464,7 @@ namespace YukaLister.Models.SharedMisc
 		//public const String RULE_VAR_CAST_SEQ = "castseq";
 		public const String RULE_VAR_TITLE = "title";
 		public const String RULE_VAR_ARTIST = "artist";
+		public const String RULE_VAR_TAG = "tag";
 
 		// ファイル名からのみ取得可能なもの
 		public const String RULE_VAR_TITLE_RUBY = "titleruby";

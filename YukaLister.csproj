@@ -157,6 +157,8 @@
     <Compile Include="Models\Http\SyncClient.cs" />
     <Compile Include="Models\Http\WebServer.cs" />
     <Compile Include="Models\ReportModel.cs" />
+    <Compile Include="Models\SharedMisc\TagSettings.cs" />
+    <Compile Include="Models\SharedMisc\TagSettingsProvider.cs" />
     <Compile Include="Models\SharedMisc\TargetFolderInfo.cs" />
     <Compile Include="Models\SharedMisc\YlClasses.cs" />
     <Compile Include="Models\SharedMisc\YlConstants.cs" />

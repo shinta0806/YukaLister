@@ -1792,6 +1792,18 @@ namespace YukaLister.Models.Database
 		public String MakerRuby { get; set; }
 
 		// --------------------------------------------------------------------
+		// TTag
+		// --------------------------------------------------------------------
+
+		// タグ名
+		[Column(Name = TTag.FIELD_NAME_TAG_NAME, DbType = LinqUtils.DB_TYPE_STRING)]
+		public String TagName { get; set; }
+
+		// タグフリガナ
+		[Column(Name = TTag.FIELD_NAME_TAG_RUBY, DbType = LinqUtils.DB_TYPE_STRING)]
+		public String TagRuby { get; set; }
+
+		// --------------------------------------------------------------------
 		// ViewTFoundsWindow 表示用
 		// --------------------------------------------------------------------
 

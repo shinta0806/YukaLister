@@ -218,6 +218,9 @@ namespace YukaLister.Models.SharedMisc
 			//aVarMap[NklCommon.RULE_VAR_LYRIST] = "作詞者";
 			aVarMap[YlConstants.RULE_VAR_COMMENT] = "コメント";
 
+			// 楽曲マスターにも同様の項目があるもの
+			//aVarMap[YlConstants.RULE_VAR_TAG] = "タグ";
+
 			// その他
 			aVarMap[YlConstants.RULE_VAR_ANY] = "無視する部分";
 

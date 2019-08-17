@@ -153,7 +153,7 @@ namespace YukaLister.Models.Database
 						}
 						String aArtistName2;
 						String aArtistRuby2;
-						ConcatPersonNameAndRuby(aArtists, out aArtistName2, out aArtistRuby2);
+						ConcatMasterNameAndRuby(aArtists.ToList<IRcMaster>(), out aArtistName2, out aArtistRuby2);
 						oRecord.ArtistName = aArtistName2;
 						oRecord.ArtistRuby = aArtistRuby2;
 					}
@@ -334,28 +334,28 @@ namespace YukaLister.Models.Database
 		}
 
 		// --------------------------------------------------------------------
-		// 複数の人物をフリガナ順に並べてカンマで結合
+		// 複数の IRcMaster をフリガナ順に並べてカンマで結合
 		// --------------------------------------------------------------------
-		private void ConcatPersonNameAndRuby(List<TPerson> oPeople, out String oName, out String oRuby)
+		private void ConcatMasterNameAndRuby(List<IRcMaster> oMasters, out String oName, out String oRuby)
 		{
-			if (oPeople.Count == 0)
+			if (oMasters.Count == 0)
 			{
 				oName = null;
 				oRuby = null;
 				return;
 			}
 
-			oPeople.Sort(ConcatPersonNameAndRubyCompare);
+			oMasters.Sort(ConcatPersonNameAndRubyCompare);
 
 			StringBuilder aSbName = new StringBuilder();
 			StringBuilder aSbRuby = new StringBuilder();
-			aSbName.Append(oPeople[0].Name);
-			aSbRuby.Append(oPeople[0].Ruby);
+			aSbName.Append(oMasters[0].Name);
+			aSbRuby.Append(oMasters[0].Ruby);
 
-			for (Int32 i = 1; i < oPeople.Count; i++)
+			for (Int32 i = 1; i < oMasters.Count; i++)
 			{
-				aSbName.Append("," + oPeople[i].Name);
-				aSbRuby.Append("," + oPeople[i].Ruby);
+				aSbName.Append("," + oMasters[i].Name);
+				aSbRuby.Append("," + oMasters[i].Ruby);
 			}
 
 			oName = aSbName.ToString();
@@ -365,7 +365,7 @@ namespace YukaLister.Models.Database
 		// --------------------------------------------------------------------
 		// 比較関数
 		// --------------------------------------------------------------------
-		private Int32 ConcatPersonNameAndRubyCompare(TPerson oLhs, TPerson oRhs)
+		private Int32 ConcatPersonNameAndRubyCompare(IRcMaster oLhs, IRcMaster oRhs)
 		{
 			if (oLhs.Ruby == oRhs.Ruby)
 			{
@@ -435,7 +435,7 @@ namespace YukaLister.Models.Database
 				{
 					String aArtistName;
 					String aArtistRuby;
-					ConcatPersonNameAndRuby(YlCommon.SelectSequencePeopleBySongId<TArtistSequence>(mMusicInfoDbContext, aSong.Id), out aArtistName, out aArtistRuby);
+					ConcatMasterNameAndRuby(YlCommon.SelectSequencePeopleBySongId<TArtistSequence>(mMusicInfoDbContext, aSong.Id).ToList<IRcMaster>(), out aArtistName, out aArtistRuby);
 					if (!String.IsNullOrEmpty(aArtistName) && aArtistName == oDicByFile[YlConstants.RULE_VAR_ARTIST])
 					{
 						aSongsWithArtist.Add(aSong);
@@ -513,16 +513,16 @@ namespace YukaLister.Models.Database
 			// 人物系
 			String aName;
 			String aRuby;
-			ConcatPersonNameAndRuby(YlCommon.SelectSequencePeopleBySongId<TArtistSequence>(mMusicInfoDbContext, aSelectedSong.Id), out aName, out aRuby);
+			ConcatMasterNameAndRuby(YlCommon.SelectSequencePeopleBySongId<TArtistSequence>(mMusicInfoDbContext, aSelectedSong.Id).ToList<IRcMaster>(), out aName, out aRuby);
 			oRecord.ArtistName = aName;
 			oRecord.ArtistRuby = aRuby;
-			ConcatPersonNameAndRuby(YlCommon.SelectSequencePeopleBySongId<TLyristSequence>(mMusicInfoDbContext, aSelectedSong.Id), out aName, out aRuby);
+			ConcatMasterNameAndRuby(YlCommon.SelectSequencePeopleBySongId<TLyristSequence>(mMusicInfoDbContext, aSelectedSong.Id).ToList<IRcMaster>(), out aName, out aRuby);
 			oRecord.LyristName = aName;
 			oRecord.LyristRuby = aRuby;
-			ConcatPersonNameAndRuby(YlCommon.SelectSequencePeopleBySongId<TComposerSequence>(mMusicInfoDbContext, aSelectedSong.Id), out aName, out aRuby);
+			ConcatMasterNameAndRuby(YlCommon.SelectSequencePeopleBySongId<TComposerSequence>(mMusicInfoDbContext, aSelectedSong.Id).ToList<IRcMaster>(), out aName, out aRuby);
 			oRecord.ComposerName = aName;
 			oRecord.ComposerRuby = aRuby;
-			ConcatPersonNameAndRuby(YlCommon.SelectSequencePeopleBySongId<TArrangerSequence>(mMusicInfoDbContext, aSelectedSong.Id), out aName, out aRuby);
+			ConcatMasterNameAndRuby(YlCommon.SelectSequencePeopleBySongId<TArrangerSequence>(mMusicInfoDbContext, aSelectedSong.Id).ToList<IRcMaster>(), out aName, out aRuby);
 			oRecord.ArrangerName = aName;
 			oRecord.ArrangerRuby = aRuby;
 
@@ -543,6 +543,12 @@ namespace YukaLister.Models.Database
 					oRecord.Category = aCategoryOfSong.Name;
 				}
 			}
+
+			// タグ
+			ConcatMasterNameAndRuby(YlCommon.SelectSequenceTagsBySongId(mMusicInfoDbContext, aSelectedSong.Id).ToList<IRcMaster>(), out aName, out aRuby);
+			oRecord.TagName = aName;
+			oRecord.TagRuby = aRuby;
+
 		}
 
 

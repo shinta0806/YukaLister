@@ -1036,9 +1036,10 @@ namespace YukaLister.ViewModels
 				List<String> aLabels = CreateRuleVarLabels();
 				foreach (String aLabel in aLabels)
 				{
-					// オンボーカル・オフボーカルは除外
+					// オンボーカル・オフボーカル・タグは除外
 					if (aLabel.IndexOf(YlConstants.RULE_VAR_ON_VOCAL, StringComparison.OrdinalIgnoreCase) < 0
-							&& aLabel.IndexOf(YlConstants.RULE_VAR_OFF_VOCAL, StringComparison.OrdinalIgnoreCase) < 0)
+							&& aLabel.IndexOf(YlConstants.RULE_VAR_OFF_VOCAL, StringComparison.OrdinalIgnoreCase) < 0
+							&& aLabel.IndexOf(YlConstants.RULE_VAR_TAG, StringComparison.OrdinalIgnoreCase) < 0)
 					{
 						AddContextMenuItemToButtonVar(aLabel);
 					}
@@ -1332,6 +1333,31 @@ namespace YukaLister.ViewModels
 		}
 
 		// --------------------------------------------------------------------
+		// <Name>=Value 形式の文字列から Value を返す
+		// --------------------------------------------------------------------
+		private String FindRuleValue(String oString)
+		{
+			Int32 aEqualPos = oString.IndexOf('=');
+			return oString.Substring(aEqualPos + 1);
+		}
+
+		// --------------------------------------------------------------------
+		// フォルダー固定値一覧の中からタグの行を探す
+		// --------------------------------------------------------------------
+		private Int32 FindTagRule(List<String> oFolderNameRules)
+		{
+			for (Int32 i = 0; i < oFolderNameRules.Count; i++)
+			{
+				if (FindRuleVarName(oFolderNameRules[i]) == YlConstants.RULE_VAR_TAG)
+				{
+					return i;
+				}
+			}
+
+			return -1;
+		}
+
+		// --------------------------------------------------------------------
 		// 選択または入力された固定値（名前＋値）
 		// --------------------------------------------------------------------
 		private String FolderNameRuleFromProperty()
@@ -1469,6 +1495,7 @@ namespace YukaLister.ViewModels
 
 		// --------------------------------------------------------------------
 		// プロパティーの値を設定に格納
+		// ただしタグは除く
 		// --------------------------------------------------------------------
 		private FolderSettingsInDisk PropertiesToSettings()
 		{
@@ -1479,6 +1506,13 @@ namespace YukaLister.ViewModels
 
 			aFolderSettings.FileNameRules = FileNameRules.ToList();
 			aFolderSettings.FolderNameRules = FolderNameRules.ToList();
+
+			// タグ除外
+			Int32 aTagIndex = FindTagRule(aFolderSettings.FolderNameRules);
+			if (aTagIndex >= 0)
+			{
+				aFolderSettings.FolderNameRules.RemoveAt(aTagIndex);
+			}
 
 			return aFolderSettings;
 		}
@@ -1528,7 +1562,7 @@ namespace YukaLister.ViewModels
 
 			FolderSettingsInDisk aFolderSettings = PropertiesToSettings();
 
-			// 保存
+			// 保存（タグ以外）
 			String aYukaListerConfigPath = PathExLen + "\\" + YlConstants.FILE_NAME_YUKA_LISTER_CONFIG;
 			FileAttributes aPrevAttr = new FileAttributes();
 			Boolean aHasPrevAttr = false;
@@ -1545,6 +1579,25 @@ namespace YukaLister.ViewModels
 			{
 				File.SetAttributes(aYukaListerConfigPath, aPrevAttr);
 			}
+
+			// 保存（タグを環境設定に）
+			List<String> aFolderNameRulesList = FolderNameRules.ToList();
+			Int32 aTagIndex = FindTagRule(aFolderNameRulesList);
+			String aTagKey = PathShLen.Substring(2);
+			if (aTagIndex >= 0)
+			{
+				// 追加
+				Environment.TagSettings.FolderTags[aTagKey] = FindRuleValue(aFolderNameRulesList[aTagIndex]);
+			}
+			else
+			{
+				// 削除
+				if (Environment.TagSettings.FolderTags.ContainsKey(aTagKey))
+				{
+					Environment.TagSettings.FolderTags.Remove(aTagKey);
+				}
+			}
+			Environment.TagSettings.Save();
 
 			// ニコカラりすたーの設定ファイルがある場合は削除
 			if (File.Exists(PathExLen + "\\" + YlConstants.FILE_NAME_NICO_KARA_LISTER_CONFIG))
@@ -1628,8 +1681,7 @@ namespace YukaLister.ViewModels
 				}
 
 				// 値設定
-				Int32 aEqualPos = SelectedFolderNameRule.IndexOf('=');
-				String aValue = SelectedFolderNameRule.Substring(aEqualPos + 1);
+				String aValue = FindRuleValue(SelectedFolderNameRule);
 				if (SelectedFolderNameRuleValueVisibility == Visibility.Visible)
 				{
 					SelectedFolderNameRuleValue = aValue;
@@ -1669,6 +1721,13 @@ namespace YukaLister.ViewModels
 				foreach (String aFolderNameRule in aSettings.FolderNameRules)
 				{
 					FolderNameRules.Add(aFolderNameRule);
+				}
+
+				// タグ設定
+				String aTagKey = PathShLen.Substring(2);
+				if (Environment.TagSettings.FolderTags.ContainsKey(aTagKey))
+				{
+					FolderNameRules.Add(WrapVarName(YlConstants.RULE_VAR_TAG) + "=" + Environment.TagSettings.FolderTags[aTagKey]);
 				}
 
 				// 除外設定

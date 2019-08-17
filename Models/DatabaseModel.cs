@@ -1244,8 +1244,8 @@ namespace YukaLister.Models
 				// ViewModel 経由でフォルダー設定ウィンドウを開く
 				using (FolderSettingsWindowViewModel aFolderSettingsWindowViewModel = new FolderSettingsWindowViewModel())
 				{
-					aFolderSettingsWindowViewModel.PathExLen = aTargetFolderInfo.Path;
 					aFolderSettingsWindowViewModel.Environment = mEnvironment;
+					aFolderSettingsWindowViewModel.PathExLen = aTargetFolderInfo.Path;
 					mMainWindowViewModel.Messenger.Raise(new TransitionMessage(aFolderSettingsWindowViewModel, "OpenFolderSettingsWindow"));
 				}
 
