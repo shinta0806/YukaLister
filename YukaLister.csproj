@@ -178,6 +178,7 @@
     <Compile Include="ViewModels\EditTieUpGroupWindowViewModel.cs" />
     <Compile Include="ViewModels\EditTieUpWindowViewModel.cs" />
     <Compile Include="ViewModels\EditMasterWindowViewModel.cs" />
+    <Compile Include="ViewModels\ExportWindowViewModel.cs" />
     <Compile Include="ViewModels\FindKeywordWindowViewModel.cs" />
     <Compile Include="ViewModels\FolderSettingsWindowViewModel.cs" />
     <Compile Include="Models\DatabaseModel.cs" />
@@ -196,6 +197,7 @@
     <Compile Include="Models\SharedMisc\YlCommon.cs" />
     <Compile Include="Models\SharedMisc\YukaListerSettings.cs" />
     <Compile Include="Models\YukaListerModel.cs" />
+    <Compile Include="ViewModels\ImportExportWindowViewModel.cs" />
     <Compile Include="ViewModels\ImportWindowViewModel.cs" />
     <Compile Include="ViewModels\InputIdPrefixWindowViewModel.cs" />
     <Compile Include="ViewModels\MainWindowViewModel.cs" />
@@ -226,8 +228,8 @@
     <Compile Include="Views\FindKeywordWindow.xaml.cs">
       <DependentUpon>FindKeywordWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\ImportWindow.xaml.cs">
-      <DependentUpon>ImportWindow.xaml</DependentUpon>
+    <Compile Include="Views\ImportExportWindow.xaml.cs">
+      <DependentUpon>ImportExportWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\InputIdPrefixWindow.xaml.cs">
       <DependentUpon>InputIdPrefixWindow.xaml</DependentUpon>
@@ -286,7 +288,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\ImportWindow.xaml">
+    <Page Include="Views\ImportExportWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

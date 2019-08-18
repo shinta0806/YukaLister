@@ -42,8 +42,8 @@
         <l:InteractionMessageTrigger MessageKey="OpenOutputSettingsWindow" Messenger="{Binding Messenger}">
             <l:TransitionInteractionMessageAction WindowType="{x:Type v:OutputSettingsWindow}" Mode="Modal" IsOwned="True" />
         </l:InteractionMessageTrigger>
-        <l:InteractionMessageTrigger MessageKey="OpenImportWindow" Messenger="{Binding Messenger}">
-            <l:TransitionInteractionMessageAction WindowType="{x:Type v:ImportWindow}" Mode="Modal" IsOwned="True" />
+        <l:InteractionMessageTrigger MessageKey="OpenImportExportWindow" Messenger="{Binding Messenger}">
+            <l:TransitionInteractionMessageAction WindowType="{x:Type v:ImportExportWindow}" Mode="Modal" IsOwned="True" />
         </l:InteractionMessageTrigger>
         <l:InteractionMessageTrigger MessageKey="OpenOpenFileDialog" Messenger="{Binding Messenger}">
             <l:OpenFileDialogInteractionMessageAction/>
@@ -234,7 +234,23 @@
                     </StackPanel>
                 </StackPanel>
             </TabItem>
-            <TabItem x:Name="TabItemExport" Header="エクスポート"/>
+            <TabItem x:Name="TabItemExport" Header="エクスポート">
+                <StackPanel>
+                    <StackPanel Margin="20,15,20,0">
+                        <Label Content="エクスポート先" />
+                    </StackPanel>
+                    <DockPanel Margin="40,10,20,0">
+                        <Button x:Name="ButtonBrowseExportYukaLister" Height="Auto" Content="参照 (_B)" Style="{StaticResource MaterialDesignRaisedLightButton}" Margin="0" DockPanel.Dock="Right" Width="100" Command="{Binding ButtonBrowseExportYukaListerClickedCommand}"/>
+                        <TextBox x:Name="TextBoxExportYukaLister" Text="{Binding ExportYukaListerPath}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    </DockPanel>
+                    <DockPanel Margin="0,20,0,0">
+                        <Border BorderBrush="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}" BorderThickness="1" Height="3" VerticalAlignment="Center" Margin="0"/>
+                    </DockPanel>
+                    <StackPanel Margin="0,20,20,0">
+                        <Button x:Name="ButtonExport" Height="Auto" Content="エクスポート (_E)" Style="{StaticResource MaterialDesignRaisedLightButton}" Margin="0" Width="210" HorizontalAlignment="Right" Command="{Binding ButtonExportClickedCommand}"/>
+                    </StackPanel>
+                </StackPanel>
+            </TabItem>
         </TabControl>
         <DockPanel Margin="20">
             <Button x:Name="ButtonCancel" Content="キャンセル" Margin="0" Height="Auto" Style="{StaticResource MaterialDesignRaisedLightButton}" IsCancel="True" Width="100" DockPanel.Dock="Right" Padding="4"/>

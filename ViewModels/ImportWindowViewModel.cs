@@ -10,75 +10,27 @@
 // するのを避けるため）
 // ----------------------------------------------------------------------------
 
-using Livet;
-using Livet.Commands;
 using Livet.Messaging.Windows;
 
 using Shinta;
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Data.Linq;
 using System.Data.SQLite;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows;
 
-using YukaLister.Models;
 using YukaLister.Models.Database;
 using YukaLister.Models.SharedMisc;
 
 namespace YukaLister.ViewModels
 {
-	public class ImportWindowViewModel : ViewModel
+	public class ImportWindowViewModel : ImportExportWindowViewModel
 	{
-		/* コマンド、プロパティの定義にはそれぞれ 
-         * 
-         *  lvcom   : ViewModelCommand
-         *  lvcomn  : ViewModelCommand(CanExecute無)
-         *  llcom   : ListenerCommand(パラメータ有のコマンド)
-         *  llcomn  : ListenerCommand(パラメータ有のコマンド・CanExecute無)
-         *  lprop   : 変更通知プロパティ(.NET4.5ではlpropn)
-         *  
-         * を使用してください。
-         * 
-         * Modelが十分にリッチであるならコマンドにこだわる必要はありません。
-         * View側のコードビハインドを使用しないMVVMパターンの実装を行う場合でも、ViewModelにメソッドを定義し、
-         * LivetCallMethodActionなどから直接メソッドを呼び出してください。
-         * 
-         * ViewModelのコマンドを呼び出せるLivetのすべてのビヘイビア・トリガー・アクションは
-         * 同様に直接ViewModelのメソッドを呼び出し可能です。
-         */
-
-		/* ViewModelからViewを操作したい場合は、View側のコードビハインド無で処理を行いたい場合は
-         * Messengerプロパティからメッセージ(各種InteractionMessage)を発信する事を検討してください。
-         */
-
-		/* Modelからの変更通知などの各種イベントを受け取る場合は、PropertyChangedEventListenerや
-         * CollectionChangedEventListenerを使うと便利です。各種ListenerはViewModelに定義されている
-         * CompositeDisposableプロパティ(LivetCompositeDisposable型)に格納しておく事でイベント解放を容易に行えます。
-         * 
-         * ReactiveExtensionsなどを併用する場合は、ReactiveExtensionsのCompositeDisposableを
-         * ViewModelのCompositeDisposableプロパティに格納しておくのを推奨します。
-         * 
-         * LivetのWindowテンプレートではViewのウィンドウが閉じる際にDataContextDisposeActionが動作するようになっており、
-         * ViewModelのDisposeが呼ばれCompositeDisposableプロパティに格納されたすべてのIDisposable型のインスタンスが解放されます。
-         * 
-         * ViewModelを使いまわしたい時などは、ViewからDataContextDisposeActionを取り除くか、発動のタイミングをずらす事で対応可能です。
-         */
-
-		/* UIDispatcherを操作する場合は、DispatcherHelperのメソッドを操作してください。
-         * UIDispatcher自体はApp.xaml.csでインスタンスを確保してあります。
-         * 
-         * LivetのViewModelではプロパティ変更通知(RaisePropertyChanged)やDispatcherCollectionを使ったコレクション変更通知は
-         * 自動的にUIDispatcher上での通知に変換されます。変更通知に際してUIDispatcherを操作する必要はありません。
-         */
+		// Some useful code snippets for ViewModel are defined as l*(llcom, llcomn, lvcomm, lsprop, etc...).
 
 		// ====================================================================
 		// public プロパティー
@@ -88,51 +40,9 @@ namespace YukaLister.ViewModels
 		// View 通信用のプロパティー
 		// --------------------------------------------------------------------
 
-		// ウィンドウタイトル（デフォルトが null だと実行時にエラーが発生するので Empty にしておく）
-		private String mTitle = String.Empty;
-		public String Title
-		{
-			get => mTitle;
-			set => RaisePropertyChangedIfSet(ref mTitle, value);
-		}
-
-		// 説明
-		private String mDescription;
-		public String Description
-		{
-			get => mDescription;
-			set
-			{
-				if (RaisePropertyChangedIfSet(ref mDescription, value))
-				{
-					Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, mDescription);
-				}
-			}
-		}
-
-		// 進捗
-		private String mProgress;
-		public String Progress
-		{
-			get => mProgress;
-			set
-			{
-				if (RaisePropertyChangedIfSet(ref mProgress, value))
-				{
-					Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, mProgress);
-				}
-			}
-		}
-
-		// ログ
-		public ObservableCollection<String> Logs { get; set; } = new ObservableCollection<String>();
-
 		// --------------------------------------------------------------------
 		// 一般のプロパティー
 		// --------------------------------------------------------------------
-
-		// 環境設定類
-		public EnvironmentModel Environment { get; set; }
 
 		// ゆかりすたーでエクスポートしたファイルをインポート
 		public Boolean ImportYukaListerMode { get; set; }
@@ -153,88 +63,15 @@ namespace YukaLister.ViewModels
 		// コマンド
 		// --------------------------------------------------------------------
 
-		#region ウィンドウを閉じられるかの制御
-		private ListenerCommand<CancelEventArgs> mWindowClosingCommand;
-
-		public ListenerCommand<CancelEventArgs> WindowClosingCommand
-		{
-			get
-			{
-				if (mWindowClosingCommand == null)
-				{
-					mWindowClosingCommand = new ListenerCommand<CancelEventArgs>(WindowClosing);
-				}
-				return mWindowClosingCommand;
-			}
-		}
-
-		public void WindowClosing(CancelEventArgs oCancelEventArgs)
-		{
-			try
-			{
-				if (!CancelImportIfNeeded())
-				{
-					// インポートをキャンセルしなかった場合はクローズをキャンセル
-					oCancelEventArgs.Cancel = true;
-				}
-			}
-			catch (Exception oExcep)
-			{
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "クローズ処理時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
-			}
-		}
-		#endregion
-
-		#region 中止ボタンの制御
-		private ViewModelCommand mButtonAbortClickedCommand;
-
-		public ViewModelCommand ButtonAbortClickedCommand
-		{
-			get
-			{
-				if (mButtonAbortClickedCommand == null)
-				{
-					mButtonAbortClickedCommand = new ViewModelCommand(ButtonAbortClicked);
-				}
-				return mButtonAbortClickedCommand;
-			}
-		}
-
-		public void ButtonAbortClicked()
-		{
-			try
-			{
-				if (CancelImportIfNeeded())
-				{
-					Messenger.Raise(new WindowActionMessage("Close"));
-				}
-			}
-			catch (Exception oExcep)
-			{
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "中止ボタンクリック時エラー：\n" + oExcep.Message);
-				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
-			}
-		}
-		#endregion
-
 		// ====================================================================
 		// public メンバー関数
 		// ====================================================================
 
 		// --------------------------------------------------------------------
-		// ログ文字列に追加
-		// --------------------------------------------------------------------
-		public void AppendDisplayText(String oText)
-		{
-			Logs.Add(oText);
-		}
-
-		// --------------------------------------------------------------------
 		// 初期化
 		// 本関数を呼ぶ前に Environment を設定しておく必要がある
 		// --------------------------------------------------------------------
-		public async void Initialize()
+		public override void Initialize()
 		{
 			Debug.Assert(Environment != null, "Environment is null");
 			try
@@ -260,43 +97,48 @@ namespace YukaLister.ViewModels
 				Title = "［デバッグ］" + Title;
 #endif
 
-				mCategoryUnityMap = YlCommon.CreateCategoryUnityMap();
-				Environment.LogWriter.AppendDisplayText = AppendDisplayText;
+				Kind = "インポート";
 
-				// 楽曲情報データベースバックアップ
-				using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
-				{
-					aMusicInfoDbInDisk.Backup();
-				}
-
-				YlCommon.InputIdPrefixIfNeededWithInvoke(this, Environment);
-
-				// インポートタスクを実行（async の終了を待つ）
-				if (ImportYukaListerMode)
-				{
-					// 未実装
-				}
-				else if (ImportAnisonInfoMode)
-				{
-					await ImportAnisonInfoAsync();
-				}
-				else if (ImportNicoKaraListerMode)
-				{
-					await ImportNicoKaraListerAsync();
-				}
+				base.Initialize();
 			}
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "インポートウィンドウビューモデル初期化時エラー：\n" + oExcep.Message);
 				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
-			finally
-			{
-				// 終了確認を出さないようにする
-				mAbortCancellationTokenSource.Cancel();
+		}
 
-				Environment.LogWriter.AppendDisplayText = null;
-				Messenger.Raise(new WindowActionMessage("Close"));
+		// ====================================================================
+		// protected メンバー関数
+		// ====================================================================
+
+		// --------------------------------------------------------------------
+		// インポート処理
+		// --------------------------------------------------------------------
+		protected override void ImportExport()
+		{
+			mCategoryUnityMap = YlCommon.CreateCategoryUnityMap();
+
+			// 楽曲情報データベースバックアップ
+			using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
+			{
+				aMusicInfoDbInDisk.Backup();
+			}
+
+			YlCommon.InputIdPrefixIfNeededWithInvoke(this, Environment);
+
+			// インポートタスクを実行
+			if (ImportYukaListerMode)
+			{
+				// 未実装
+			}
+			else if (ImportAnisonInfoMode)
+			{
+				ImportAnisonInfo();
+			}
+			else if (ImportNicoKaraListerMode)
+			{
+				ImportNicoKaraLister();
 			}
 		}
 
@@ -323,36 +165,9 @@ namespace YukaLister.ViewModels
 		// 番組分類統合用マップ
 		private Dictionary<String, String> mCategoryUnityMap;
 
-		// タスク中止用
-		private CancellationTokenSource mAbortCancellationTokenSource = new CancellationTokenSource();
-
 		// ====================================================================
 		// private メンバー関数
 		// ====================================================================
-
-		// --------------------------------------------------------------------
-		// インポートをキャンセル
-		// ＜返値＞ true: キャンセルした（または既にされている）, false: キャンセルしなかった
-		// --------------------------------------------------------------------
-		private Boolean CancelImportIfNeeded()
-		{
-			if (mAbortCancellationTokenSource.IsCancellationRequested)
-			{
-				// 既にキャンセル処理中
-				return true;
-			}
-
-			if (MessageBox.Show("インポートを中止してよろしいですか？", "確認", MessageBoxButton.YesNo, MessageBoxImage.Exclamation) != MessageBoxResult.No)
-			{
-				// 新たにキャンセル
-				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "インポートを中止しています...");
-				mAbortCancellationTokenSource.Cancel();
-				return true;
-			}
-
-			// キャンセルしない
-			return false;
-		}
 
 		// --------------------------------------------------------------------
 		// anison.info CSV インポート用の設定確認
@@ -635,136 +450,120 @@ namespace YukaLister.ViewModels
 		// --------------------------------------------------------------------
 		// anison.info CSV をインポート
 		// --------------------------------------------------------------------
-		private Task ImportAnisonInfoAsync()
+		private void ImportAnisonInfo()
 		{
-			return Task.Run(() =>
+			try
 			{
-				try
+				CheckImportAnisonInfo();
+
+				using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
+				using (DataContext aContext = new DataContext(aMusicInfoDbInDisk.Connection))
 				{
-					// 終了時に強制終了されないように設定
-					Thread.CurrentThread.IsBackground = false;
-
-					CheckImportAnisonInfo();
-
-					using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
-					using (DataContext aContext = new DataContext(aMusicInfoDbInDisk.Connection))
+					// タイアップ情報
+					if (!String.IsNullOrEmpty(ImportProgramCsvPath))
 					{
-						// タイアップ情報
-						if (!String.IsNullOrEmpty(ImportProgramCsvPath))
-						{
-							ImportProgramCsv(ImportProgramCsvPath, aContext);
-						}
-
-						// 楽曲情報
-						if (!String.IsNullOrEmpty(ImportAnisonCsvPath))
-						{
-							ImportSongCsv(ImportAnisonCsvPath, aContext);
-						}
-						if (!String.IsNullOrEmpty(ImportSfCsvPath))
-						{
-							ImportSongCsv(ImportSfCsvPath, aContext);
-						}
-						if (!String.IsNullOrEmpty(ImportGameCsvPath))
-						{
-							ImportSongCsv(ImportGameCsvPath, aContext);
-						}
+						ImportProgramCsv(ImportProgramCsvPath, aContext);
 					}
 
-					Environment.LogWriter.ShowLogMessage(TraceEventType.Information, "完了");
+					// 楽曲情報
+					if (!String.IsNullOrEmpty(ImportAnisonCsvPath))
+					{
+						ImportSongCsv(ImportAnisonCsvPath, aContext);
+					}
+					if (!String.IsNullOrEmpty(ImportSfCsvPath))
+					{
+						ImportSongCsv(ImportSfCsvPath, aContext);
+					}
+					if (!String.IsNullOrEmpty(ImportGameCsvPath))
+					{
+						ImportSongCsv(ImportGameCsvPath, aContext);
+					}
 				}
-				catch (OperationCanceledException)
-				{
-					Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "anison.info CSV インポートを中止しました。");
-				}
-				catch (Exception oExcep)
-				{
-					Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "anison.info CSV インポート時エラー：\n" + oExcep.Message);
-					Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
-				}
-			});
+			}
+			catch (OperationCanceledException)
+			{
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "anison.info CSV インポートを中止しました。");
+			}
+			catch (Exception oExcep)
+			{
+				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "anison.info CSV インポート時エラー：\n" + oExcep.Message);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
+			}
 		}
 
 		// --------------------------------------------------------------------
 		// ニコカラりすたーでエクスポートしたファイルをインポート
 		// --------------------------------------------------------------------
-		private Task ImportNicoKaraListerAsync()
+		private void ImportNicoKaraLister()
 		{
-			return Task.Run(() =>
+			try
 			{
-				try
+				CheckImportNicoKaraLister();
+
+				// 解凍
+				String aTempFolder = YlCommon.TempFilePath() + "\\";
+				Directory.CreateDirectory(aTempFolder);
+				ZipFile.ExtractToDirectory(ImportNicoKaraListerPath, aTempFolder);
+				String aExtractedFolderPath = aTempFolder + YlConstants.FILE_PREFIX_INFO + "\\";
+
+				using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
+				using (SQLiteCommand aCmd = new SQLiteCommand(aMusicInfoDbInDisk.Connection))
+				using (DataContext aContext = new DataContext(aMusicInfoDbInDisk.Connection))
 				{
-					// 終了時に強制終了されないように設定
-					Thread.CurrentThread.IsBackground = false;
-
-					CheckImportNicoKaraLister();
-
-					// 解凍
-					String aTempFolder = YlCommon.TempFilePath() + "\\";
-					Directory.CreateDirectory(aTempFolder);
-					ZipFile.ExtractToDirectory(ImportNicoKaraListerPath, aTempFolder);
-					String aExtractedFolderPath = aTempFolder + YlConstants.FILE_PREFIX_INFO + "\\";
-
-					using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
-					using (SQLiteCommand aCmd = new SQLiteCommand(aMusicInfoDbInDisk.Connection))
-					using (DataContext aContext = new DataContext(aMusicInfoDbInDisk.Connection))
+					// タイアップ情報
+					String aProgramCsvPath = aExtractedFolderPath + YlConstants.FILE_BODY_ANISON_INFO_CSV_PROGRAM + Common.FILE_EXT_CSV;
+					if (File.Exists(aProgramCsvPath))
 					{
-						// タイアップ情報
-						String aProgramCsvPath = aExtractedFolderPath + YlConstants.FILE_BODY_ANISON_INFO_CSV_PROGRAM + Common.FILE_EXT_CSV;
-						if (File.Exists(aProgramCsvPath))
-						{
-							ImportProgramCsv(aProgramCsvPath, aContext);
-						}
+						ImportProgramCsv(aProgramCsvPath, aContext);
+					}
 
-						// 楽曲情報
-						List<String> aSongCsvs = new List<String>();
-						aSongCsvs.Add(YlConstants.FILE_BODY_ANISON_INFO_CSV_ANISON + Common.FILE_EXT_CSV);
-						aSongCsvs.Add(YlConstants.FILE_BODY_ANISON_INFO_CSV_SF + Common.FILE_EXT_CSV);
-						aSongCsvs.Add(YlConstants.FILE_BODY_ANISON_INFO_CSV_GAME + Common.FILE_EXT_CSV);
-						aSongCsvs.Add(YlConstants.FILE_BODY_ANISON_INFO_CSV_MISC + Common.FILE_EXT_CSV);
-						foreach (String aSongCsv in aSongCsvs)
+					// 楽曲情報
+					List<String> aSongCsvs = new List<String>();
+					aSongCsvs.Add(YlConstants.FILE_BODY_ANISON_INFO_CSV_ANISON + Common.FILE_EXT_CSV);
+					aSongCsvs.Add(YlConstants.FILE_BODY_ANISON_INFO_CSV_SF + Common.FILE_EXT_CSV);
+					aSongCsvs.Add(YlConstants.FILE_BODY_ANISON_INFO_CSV_GAME + Common.FILE_EXT_CSV);
+					aSongCsvs.Add(YlConstants.FILE_BODY_ANISON_INFO_CSV_MISC + Common.FILE_EXT_CSV);
+					foreach (String aSongCsv in aSongCsvs)
+					{
+						String aSongCsvPath = aExtractedFolderPath + aSongCsv;
+						if (File.Exists(aSongCsvPath))
 						{
-							String aSongCsvPath = aExtractedFolderPath + aSongCsv;
-							if (File.Exists(aSongCsvPath))
-							{
-								ImportSongCsv(aSongCsvPath, aContext);
-							}
-						}
-
-						// タイアップエイリアス情報
-						String aProgramAliasCsvPath = aExtractedFolderPath + YlConstants.FILE_BODY_ANISON_INFO_CSV_PROGRAM_ALIAS + Common.FILE_EXT_CSV;
-						if (File.Exists(aProgramAliasCsvPath))
-						{
-							ImportProgramAliasCsv(aProgramAliasCsvPath, aContext);
-						}
-
-						// 楽曲エイリアス情報
-						List<String> aSongAliasCsvs = new List<String>();
-						aSongAliasCsvs.Add(YlConstants.FILE_BODY_ANISON_INFO_CSV_ANISON_ALIAS + Common.FILE_EXT_CSV);
-						aSongAliasCsvs.Add(YlConstants.FILE_BODY_ANISON_INFO_CSV_SF_ALIAS + Common.FILE_EXT_CSV);
-						aSongAliasCsvs.Add(YlConstants.FILE_BODY_ANISON_INFO_CSV_GAME_ALIAS + Common.FILE_EXT_CSV);
-						aSongAliasCsvs.Add(YlConstants.FILE_BODY_ANISON_INFO_CSV_MISC_ALIAS + Common.FILE_EXT_CSV);
-						foreach (String aSongAliasCsv in aSongAliasCsvs)
-						{
-							String aSongAliasCsvPath = aExtractedFolderPath + aSongAliasCsv;
-							if (File.Exists(aSongAliasCsvPath))
-							{
-								ImportSongAliasCsv(aSongAliasCsvPath, aContext);
-							}
+							ImportSongCsv(aSongCsvPath, aContext);
 						}
 					}
 
-					Environment.LogWriter.ShowLogMessage(TraceEventType.Information, "完了");
+					// タイアップエイリアス情報
+					String aProgramAliasCsvPath = aExtractedFolderPath + YlConstants.FILE_BODY_ANISON_INFO_CSV_PROGRAM_ALIAS + Common.FILE_EXT_CSV;
+					if (File.Exists(aProgramAliasCsvPath))
+					{
+						ImportProgramAliasCsv(aProgramAliasCsvPath, aContext);
+					}
+
+					// 楽曲エイリアス情報
+					List<String> aSongAliasCsvs = new List<String>();
+					aSongAliasCsvs.Add(YlConstants.FILE_BODY_ANISON_INFO_CSV_ANISON_ALIAS + Common.FILE_EXT_CSV);
+					aSongAliasCsvs.Add(YlConstants.FILE_BODY_ANISON_INFO_CSV_SF_ALIAS + Common.FILE_EXT_CSV);
+					aSongAliasCsvs.Add(YlConstants.FILE_BODY_ANISON_INFO_CSV_GAME_ALIAS + Common.FILE_EXT_CSV);
+					aSongAliasCsvs.Add(YlConstants.FILE_BODY_ANISON_INFO_CSV_MISC_ALIAS + Common.FILE_EXT_CSV);
+					foreach (String aSongAliasCsv in aSongAliasCsvs)
+					{
+						String aSongAliasCsvPath = aExtractedFolderPath + aSongAliasCsv;
+						if (File.Exists(aSongAliasCsvPath))
+						{
+							ImportSongAliasCsv(aSongAliasCsvPath, aContext);
+						}
+					}
 				}
-				catch (OperationCanceledException)
-				{
-					Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "ニコカラりすたーインポートを中止しました。");
-				}
-				catch (Exception oExcep)
-				{
-					Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "ニコカラりすたーインポート時エラー：\n" + oExcep.Message);
-					Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
-				}
-			});
+			}
+			catch (OperationCanceledException)
+			{
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "ニコカラりすたーインポートを中止しました。");
+			}
+			catch (Exception oExcep)
+			{
+				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "ニコカラりすたーインポート時エラー：\n" + oExcep.Message);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
+			}
 		}
 
 		// --------------------------------------------------------------------

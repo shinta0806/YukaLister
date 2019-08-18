@@ -25,9 +25,9 @@ namespace YukaLister.Views
     /// <summary>
     /// ImportWindow.xaml の相互作用ロジック
     /// </summary>
-    public partial class ImportWindow : Window
+    public partial class ImportExportWindow : Window
     {
-        public ImportWindow()
+        public ImportExportWindow()
         {
             InitializeComponent();
         }

@@ -76,6 +76,21 @@ namespace YukaLister.Models.Database
 		// ====================================================================
 
 		// --------------------------------------------------------------------
+		// データベースの中にプロパティーテーブルを作成
+		// --------------------------------------------------------------------
+		public void CreatePropertyTable()
+		{
+			using (SQLiteCommand aCmd = new SQLiteCommand(Connection))
+			{
+				// テーブル作成
+				LinqUtils.CreateTable(aCmd, typeof(TProperty));
+			}
+
+			// 更新
+			UpdateProperty();
+		}
+
+		// --------------------------------------------------------------------
 		// IDisposable.Dispose()
 		// --------------------------------------------------------------------
 		public void Dispose()
@@ -101,21 +116,6 @@ namespace YukaLister.Models.Database
 		// ====================================================================
 		// protected メンバー関数
 		// ====================================================================
-
-		// --------------------------------------------------------------------
-		// データベースの中にプロパティーテーブルを作成
-		// --------------------------------------------------------------------
-		protected void CreatePropertyTable()
-		{
-			using (SQLiteCommand aCmd = new SQLiteCommand(Connection))
-			{
-				// テーブル作成
-				LinqUtils.CreateTable(aCmd, typeof(TProperty));
-			}
-
-			// 更新
-			UpdateProperty();
-		}
 
 		// --------------------------------------------------------------------
 		// データベースの中にテーブルを作成し、インデックスを作成
@@ -260,7 +260,7 @@ namespace YukaLister.Models.Database
 		// --------------------------------------------------------------------
 		// コンストラクター
 		// --------------------------------------------------------------------
-		protected DatabaseInDisk(EnvironmentModel oEnvironment, String oPath) : base(oEnvironment, oPath)
+		public DatabaseInDisk(EnvironmentModel oEnvironment, String oPath) : base(oEnvironment, oPath)
 		{
 		}
 

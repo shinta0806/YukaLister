@@ -462,6 +462,18 @@ namespace YukaLister.ViewModels
 
 		#endregion
 
+		#region エクスポートタブのプロパティー
+
+		// ゆかりすたー情報ファイルのパス
+		private String mExportYukaListerPath;
+		public String ExportYukaListerPath
+		{
+			get => mExportYukaListerPath;
+			set => RaisePropertyChangedIfSet(ref mExportYukaListerPath, value);
+		}
+
+		#endregion
+
 		// --------------------------------------------------------------------
 		// 一般のプロパティー
 		// --------------------------------------------------------------------
@@ -622,7 +634,6 @@ namespace YukaLister.ViewModels
 			}
 		}
 		#endregion
-
 
 		#endregion
 
@@ -951,12 +962,8 @@ namespace YukaLister.ViewModels
 		{
 			try
 			{
-				SavingFileSelectionMessage aMessage = new SavingFileSelectionMessage("OpenSaveFileDialog");
-				aMessage.Title = "ログ保存";
-				aMessage.Filter = "ログファイル|*" + Common.FILE_EXT_LGA;
-				aMessage.FileName = "YukaListerLog_" + DateTime.Now.ToString("yyyy_MM_dd-HH_mm_ss");
-				Messenger.Raise(aMessage);
-				if (aMessage.Response == null)
+				String aPath = PathBySavingDialog("ログ保存", "ログファイル|*" + Common.FILE_EXT_LGA, "YukaListerLog_" + DateTime.Now.ToString("yyyy_MM_dd-HH_mm_ss"));
+				if (aPath == null)
 				{
 					return;
 				}
@@ -964,8 +971,8 @@ namespace YukaLister.ViewModels
 				// 環境情報保存
 				YlCommon.LogEnvironmentInfo(Environment.LogWriter);
 
-				ZipFile.CreateFromDirectory(YlCommon.SettingsPath(), aMessage.Response[0], CompressionLevel.Optimal, true);
-				Environment.LogWriter.ShowLogMessage(TraceEventType.Information, "ログ保存完了：\n" + aMessage.Response[0]);
+				ZipFile.CreateFromDirectory(YlCommon.SettingsPath(), aPath, CompressionLevel.Optimal, true);
+				Environment.LogWriter.ShowLogMessage(TraceEventType.Information, "ログ保存完了：\n" + aPath);
 			}
 			catch (Exception oExcep)
 			{
@@ -1298,7 +1305,7 @@ namespace YukaLister.ViewModels
 					aImportWindowViewModel.ImportNicoKaraListerMode = ImportNicoKaraListerMode;
 					aImportWindowViewModel.ImportNicoKaraListerPath = ImportNicoKaraListerPath;
 
-					Messenger.Raise(new TransitionMessage(aImportWindowViewModel, "OpenImportWindow"));
+					Messenger.Raise(new TransitionMessage(aImportWindowViewModel, "OpenImportExportWindow"));
 
 					// IdPrefix の更新を反映
 					IdPrefix = Environment.YukaListerSettings.IdPrefix;
@@ -1307,6 +1314,79 @@ namespace YukaLister.ViewModels
 			catch (Exception oExcep)
 			{
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "インポートボタンクリック時エラー：\n" + oExcep.Message);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
+			}
+		}
+		#endregion
+
+		#endregion
+
+		#region エクスポートタブのコマンド
+
+		#region 参照ボタンの制御
+		private ViewModelCommand mButtonBrowseExportYukaListerClickedCommand;
+
+		public ViewModelCommand ButtonBrowseExportYukaListerClickedCommand
+		{
+			get
+			{
+				if (mButtonBrowseExportYukaListerClickedCommand == null)
+				{
+					mButtonBrowseExportYukaListerClickedCommand = new ViewModelCommand(ButtonBrowseExportYukaListerClicked);
+				}
+				return mButtonBrowseExportYukaListerClickedCommand;
+			}
+		}
+
+		public void ButtonBrowseExportYukaListerClicked()
+		{
+			try
+			{
+				String aPath = PathBySavingDialog("エクスポート", "ゆかりすたー情報ファイル|*" + YlConstants.FILE_EXT_YLINFO, "YukaListerInfo_" + DateTime.Now.ToString("yyyy_MM_dd-HH_mm_ss"));
+				if (aPath != null)
+				{
+					ExportYukaListerPath = aPath;
+				}
+			}
+			catch (Exception oExcep)
+			{
+				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "ログ保存時エラー：\n" + oExcep.Message);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
+			}
+
+		}
+		#endregion
+
+		#region エクスポートボタンの制御
+		private ViewModelCommand mButtonExportClickedCommand;
+
+		public ViewModelCommand ButtonExportClickedCommand
+		{
+			get
+			{
+				if (mButtonExportClickedCommand == null)
+				{
+					mButtonExportClickedCommand = new ViewModelCommand(ButtonExportClicked);
+				}
+				return mButtonExportClickedCommand;
+			}
+		}
+
+		public void ButtonExportClicked()
+		{
+			try
+			{
+				using (ExportWindowViewModel aExportWindowViewModel = new ExportWindowViewModel())
+				{
+					aExportWindowViewModel.Environment = Environment;
+					aExportWindowViewModel.ExportYukaListerPath = ExportYukaListerPath;
+
+					Messenger.Raise(new TransitionMessage(aExportWindowViewModel, "OpenImportExportWindow"));
+				}
+			}
+			catch (Exception oExcep)
+			{
+				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "エクスポートボタンクリック時エラー：\n" + oExcep.Message);
 				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
@@ -1560,6 +1640,24 @@ namespace YukaLister.ViewModels
 		private String PathByOpeningDialog(String oTitle, String oFilter, String oFileName = null)
 		{
 			OpeningFileSelectionMessage aMessage = new OpeningFileSelectionMessage("OpenOpenFileDialog");
+			aMessage.Title = oTitle;
+			aMessage.Filter = oFilter;
+			aMessage.FileName = oFileName;
+			Messenger.Raise(aMessage);
+			if (aMessage.Response == null)
+			{
+				return null;
+			}
+
+			return aMessage.Response[0];
+		}
+
+		// --------------------------------------------------------------------
+		// 保存ダイアログを表示し、ファイルパスを取得
+		// --------------------------------------------------------------------
+		private String PathBySavingDialog(String oTitle, String oFilter, String oFileName = null)
+		{
+			SavingFileSelectionMessage aMessage = new SavingFileSelectionMessage("OpenSaveFileDialog");
 			aMessage.Title = oTitle;
 			aMessage.Filter = oFilter;
 			aMessage.FileName = oFileName;

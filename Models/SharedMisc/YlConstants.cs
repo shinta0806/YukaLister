@@ -353,6 +353,7 @@ namespace YukaLister.Models.SharedMisc
 		// 拡張子
 		// --------------------------------------------------------------------
 		public const String FILE_EXT_NKLINFO = ".nklinfo";
+		public const String FILE_EXT_YLINFO = ".ylinfo";
 
 		// --------------------------------------------------------------------
 		// 楽曲情報データベース

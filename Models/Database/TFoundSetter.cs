@@ -345,6 +345,7 @@ namespace YukaLister.Models.Database
 				return;
 			}
 
+			// ToDo: 人物別リストを一人ずつ作れるようになったらソートは不要になる
 			oMasters.Sort(ConcatPersonNameAndRubyCompare);
 
 			StringBuilder aSbName = new StringBuilder();
