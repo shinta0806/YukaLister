@@ -130,7 +130,7 @@ namespace YukaLister.ViewModels
 			// インポートタスクを実行
 			if (ImportYukaListerMode)
 			{
-				// 未実装
+				ImportYukaLister();
 			}
 			else if (ImportAnisonInfoMode)
 			{
@@ -260,6 +260,23 @@ namespace YukaLister.ViewModels
 			if (Path.GetExtension(ImportNicoKaraListerPath).ToLower() != YlConstants.FILE_EXT_NKLINFO)
 			{
 				throw new Exception("ニコカラりすたーでエクスポートしたファイルではないファイルが指定されています。");
+			}
+		}
+
+		// --------------------------------------------------------------------
+		// ゆかりすたーインポート用の設定確認
+		// ＜例外＞ Exception
+		// --------------------------------------------------------------------
+		private void CheckImportYukaLister()
+		{
+			if (String.IsNullOrEmpty(ImportYukaListerPath))
+			{
+				throw new Exception("ゆかりすたー情報ファイルを指定して下さい。");
+			}
+
+			if (Path.GetExtension(ImportYukaListerPath).ToLower() != YlConstants.FILE_EXT_YLINFO)
+			{
+				throw new Exception("ゆかりすたー情報ファイルではないファイルが指定されています。");
 			}
 		}
 
@@ -448,6 +465,70 @@ namespace YukaLister.ViewModels
 		}
 
 		// --------------------------------------------------------------------
+		// LINQ の FirstOrDefault() の代わり
+		// IQueryable<IRcBase>.FirstOrDefault() が実行時エラーになるため
+		// --------------------------------------------------------------------
+		private T FirstOrDefault<T>(IQueryable<T> oQueryResult) where T : class
+		{
+			foreach (T aRecord in oQueryResult)
+			{
+				return aRecord;
+			}
+			return null;
+		}
+
+		// --------------------------------------------------------------------
+		// 別名テーブルをインポート
+		// --------------------------------------------------------------------
+		private void ImportAliasTable<T>(String oName, DataContext oMusicInfoDbContext, DataContext oExportDbContext) where T : class, IRcAlias
+		{
+			Description = oName + "情報をインポート中...";
+
+			Table<T> aExportDbTable = oExportDbContext.GetTable<T>();
+			IQueryable<T> aExportDbResult =
+					from x in aExportDbTable
+					where !x.Invalid
+					select x;
+
+			Table<T> aMusicInfoDbTable = oMusicInfoDbContext.GetTable<T>();
+			foreach (T aExportDbRecord in aExportDbResult)
+			{
+				// 同じ別名があるか
+				IQueryable<T> aSameAliasResult =
+						from x in aMusicInfoDbTable
+						where x.Alias.Equals(aExportDbRecord.Alias)
+						select x;
+				T aSameAliasRecord = FirstOrDefault(aSameAliasResult);
+				if (aSameAliasRecord != null)
+				{
+					// 同じ別名がある場合はインポートしない
+					continue;
+				}
+
+				// 同じ Id があるか
+				// where で == を使うと FirstOrDefault() でエラーが発生するため Equals() を使う
+				IQueryable<T> aSameIdResult =
+						from x in aMusicInfoDbTable
+						where x.Id.Equals(aExportDbRecord.Id)
+						select x;
+				T aSameIdRecord = FirstOrDefault(aSameIdResult);
+				if (aSameIdRecord != null)
+				{
+					// 同じ Id がある場合は上書き
+					Common.ShallowCopy(aExportDbRecord, aSameIdRecord);
+					continue;
+				}
+
+				// 新規挿入
+				aMusicInfoDbTable.InsertOnSubmit(aExportDbRecord);
+			}
+
+			mAbortCancellationTokenSource.Token.ThrowIfCancellationRequested();
+
+			oMusicInfoDbContext.SubmitChanges();
+		}
+
+		// --------------------------------------------------------------------
 		// anison.info CSV をインポート
 		// --------------------------------------------------------------------
 		private void ImportAnisonInfo()
@@ -489,6 +570,58 @@ namespace YukaLister.ViewModels
 				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "anison.info CSV インポート時エラー：\n" + oExcep.Message);
 				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
+		}
+
+		// --------------------------------------------------------------------
+		// マスターテーブルをインポート
+		// --------------------------------------------------------------------
+		private void ImportMasterTable<T>(String oName, DataContext oMusicInfoDbContext, DataContext oExportDbContext) where T : class, IRcMaster
+		{
+			Description = oName + "情報をインポート中...";
+
+			Table<T> aExportDbTable = oExportDbContext.GetTable<T>();
+			IQueryable<T> aExportDbResult =
+					from x in aExportDbTable
+					where !x.Invalid
+					select x;
+
+			Table<T> aMusicInfoDbTable = oMusicInfoDbContext.GetTable<T>();
+			foreach (T aExportDbRecord in aExportDbResult)
+			{
+				// 同じ Id があるか
+				// where で == を使うと FirstOrDefault() でエラーが発生するため Equals() を使う
+				IQueryable<T> aSameIdResult =
+						from x in aMusicInfoDbTable
+						where x.Id.Equals(aExportDbRecord.Id)
+						select x;
+				T aSameIdRecord = FirstOrDefault(aSameIdResult);
+				if (aSameIdRecord != null)
+				{
+					// 同じ Id がある場合は上書き
+					Common.ShallowCopy(aExportDbRecord, aSameIdRecord);
+					continue;
+				}
+
+				// 同じ名前かつ同じキーワードがあるか
+				IQueryable<T> aSameNameResult =
+						from x in aMusicInfoDbTable
+						where x.Name.Equals(aExportDbRecord.Name) && (x.Keyword == null && aExportDbRecord.Keyword == null || x.Keyword != null && x.Keyword.Equals(aExportDbRecord.Keyword))
+						select x;
+				T aSameNameRecord = FirstOrDefault(aSameNameResult);
+				if (aSameNameRecord != null)
+				{
+					// 同じ名前かつ同じキーワードがある場合は上書き
+					Common.ShallowCopy(aExportDbRecord, aSameNameRecord);
+					continue;
+				}
+
+				// 新規挿入
+				aMusicInfoDbTable.InsertOnSubmit(aExportDbRecord);
+			}
+
+			mAbortCancellationTokenSource.Token.ThrowIfCancellationRequested();
+
+			oMusicInfoDbContext.SubmitChanges();
 		}
 
 		// --------------------------------------------------------------------
@@ -766,6 +899,45 @@ namespace YukaLister.ViewModels
 		}
 
 		// --------------------------------------------------------------------
+		// 紐付テーブルをインポート
+		// --------------------------------------------------------------------
+		private void ImportSequenceTable<T>(String oName, DataContext oMusicInfoDbContext, DataContext oExportDbContext) where T : class, IRcSequence
+		{
+			Description = oName + "情報をインポート中...";
+
+			Table<T> aExportDbTable = oExportDbContext.GetTable<T>();
+			IQueryable<T> aExportDbResult =
+					from x in aExportDbTable
+					where !x.Invalid
+					select x;
+
+			Table<T> aMusicInfoDbTable = oMusicInfoDbContext.GetTable<T>();
+			foreach (T aExportDbRecord in aExportDbResult)
+			{
+				// 同じ Id かつ同じ連番があるか
+				// where で == を使うと FirstOrDefault() でエラーが発生するため Equals() を使う
+				IQueryable<T> aSameIdResult =
+						from x in aMusicInfoDbTable
+						where x.Id.Equals(aExportDbRecord.Id) && x.Sequence == aExportDbRecord.Sequence
+						select x;
+				T aSameIdRecord = FirstOrDefault(aSameIdResult);
+				if (aSameIdRecord != null)
+				{
+					// 同じ Id かつ同じ連番がある場合は上書き
+					Common.ShallowCopy(aExportDbRecord, aSameIdRecord);
+					continue;
+				}
+
+				// 新規挿入
+				aMusicInfoDbTable.InsertOnSubmit(aExportDbRecord);
+			}
+
+			mAbortCancellationTokenSource.Token.ThrowIfCancellationRequested();
+
+			oMusicInfoDbContext.SubmitChanges();
+		}
+
+		// --------------------------------------------------------------------
 		// 楽曲情報別名 CSV から楽曲別名テーブルへインポート
 		// --------------------------------------------------------------------
 		private void ImportSongAliasCsv(String oSongAliasCsvPath, DataContext oContext)
@@ -966,6 +1138,62 @@ namespace YukaLister.ViewModels
 			Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, aCsvContents.Count.ToString("#,0") + " 個のデータのうち、重複を除く "
 					+ aNumImports.ToString("#,0") + " 個をインポートしました。");
 			mAbortCancellationTokenSource.Token.ThrowIfCancellationRequested();
+		}
+
+		// --------------------------------------------------------------------
+		// ゆかりすたー情報ファイルをインポート
+		// --------------------------------------------------------------------
+		private void ImportYukaLister()
+		{
+			try
+			{
+				CheckImportYukaLister();
+
+				// 解凍
+				String aTempFolder = YlCommon.TempFilePath() + "\\";
+				Directory.CreateDirectory(aTempFolder);
+				ZipFile.ExtractToDirectory(ImportYukaListerPath, aTempFolder);
+				String[] aFiles = Directory.GetFiles(aTempFolder, "*", SearchOption.AllDirectories);
+				if (aFiles.Length == 0)
+				{
+					throw new Exception("ゆかりすたー情報ファイルにインポートできるデータが存在しません。");
+				}
+
+				using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
+				using (DataContext aMusicInfoDbContext = new DataContext(aMusicInfoDbInDisk.Connection))
+				using (DatabaseInDisk aExportDbInDisk = new DatabaseInDisk(Environment, aFiles[0]))
+				using (DataContext aExportDbContext = new DataContext(aExportDbInDisk.Connection))
+				{
+					// 有効なマスターテーブルをインポート（カテゴリー以外）
+					ImportMasterTable<TSong>("楽曲", aMusicInfoDbContext, aExportDbContext);
+					ImportMasterTable<TPerson>("人物", aMusicInfoDbContext, aExportDbContext);
+					ImportMasterTable<TTieUp>("タイアップ", aMusicInfoDbContext, aExportDbContext);
+					ImportMasterTable<TTieUpGroup>("シリーズ", aMusicInfoDbContext, aExportDbContext);
+					ImportMasterTable<TMaker>("制作会社", aMusicInfoDbContext, aExportDbContext);
+					ImportMasterTable<TTag>("タグ", aMusicInfoDbContext, aExportDbContext);
+
+					// 有効な別名テーブルをインポート
+					ImportAliasTable<TSongAlias>("楽曲別名", aMusicInfoDbContext, aExportDbContext);
+					ImportAliasTable<TTieUpAlias>("タイアップ別名", aMusicInfoDbContext, aExportDbContext);
+
+					// 有効な紐付テーブルをインポート
+					ImportSequenceTable<TArtistSequence>("歌手紐付", aMusicInfoDbContext, aExportDbContext);
+					ImportSequenceTable<TLyristSequence>("作詞者紐付", aMusicInfoDbContext, aExportDbContext);
+					ImportSequenceTable<TComposerSequence>("作曲者紐付", aMusicInfoDbContext, aExportDbContext);
+					ImportSequenceTable<TArrangerSequence>("編曲者紐付", aMusicInfoDbContext, aExportDbContext);
+					ImportSequenceTable<TTieUpGroupSequence>("シリーズ紐付", aMusicInfoDbContext, aExportDbContext);
+					ImportSequenceTable<TTagSequence>("タグ紐付", aMusicInfoDbContext, aExportDbContext);
+				}
+			}
+			catch (OperationCanceledException)
+			{
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "ゆかりすたー情報ファイルインポートを中止しました。");
+			}
+			catch (Exception oExcep)
+			{
+				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "ゆかりすたー情報ファイルインポート時エラー：\n" + oExcep.Message);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
+			}
 		}
 
 		// --------------------------------------------------------------------

@@ -1051,12 +1051,24 @@ namespace YukaLister.ViewModels
 
 		public Boolean CanButtonBrowseImportYukaListerClicked()
 		{
-			return false;
+			return ImportYukaListerMode;
 		}
 
 		public void ButtonBrowseImportYukaListerClicked()
 		{
-
+			try
+			{
+				String aPath = PathByOpeningDialog("ゆかりすたー情報ファイル", "ゆかりすたー情報ファイル|*" + YlConstants.FILE_EXT_YLINFO);
+				if (aPath != null)
+				{
+					ImportYukaListerPath = aPath;
+				}
+			}
+			catch (Exception oExcep)
+			{
+				Environment.LogWriter.ShowLogMessage(TraceEventType.Error, "ゆかりすたー情報ファイル参照ボタンクリック時エラー：\n" + oExcep.Message);
+				Environment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
+			}
 		}
 		#endregion
 
@@ -1748,7 +1760,7 @@ namespace YukaLister.ViewModels
 			SyncPassword = YlCommon.Decrypt(Environment.YukaListerSettings.SyncPassword);
 
 			// インポートタブ
-			ImportAnisonInfoMode = true;
+			ImportYukaListerMode = true;
 		}
 
 		// --------------------------------------------------------------------

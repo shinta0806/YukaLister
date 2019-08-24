@@ -83,10 +83,10 @@ namespace YukaLister.Models.Database
 
 	public interface IRcAlias : IRcBase
 	{
-		// 楽曲別名
+		// 別名
 		String Alias { get; set; }
 
-		// 元の楽曲 ID ＜参照項目＞
+		// 元の ID ＜参照項目＞
 		String OriginalId { get; set; }
 	}
 

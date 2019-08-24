@@ -189,11 +189,11 @@
             <TabItem x:Name="TabItemImport" Header="インポート">
                 <StackPanel>
                     <StackPanel Margin="20,20,0,0">
-                        <RadioButton x:Name="RadioButtonImportYukaLister" Content="ゆかりすたーでエクスポートしたファイルをインポート (_Y)" IsChecked="{Binding ImportYukaListerMode}" IsEnabled="False" GroupName="Import" />
+                        <RadioButton x:Name="RadioButtonImportYukaLister" Content="ゆかりすたー情報ファイル（ゆかりすたーでエクスポートしたファイル）をインポート (_Y)" IsChecked="{Binding ImportYukaListerMode}" GroupName="Import" />
                     </StackPanel>
                     <DockPanel Margin="40,10,20,0">
                         <Button x:Name="ButtonBrowseImportYukaLister" Height="Auto" Content="参照 (_1)" Style="{StaticResource MaterialDesignRaisedLightButton}" Margin="0" DockPanel.Dock="Right" Width="100" Command="{Binding ButtonBrowseImportYukaListerClickedCommand}"/>
-                        <TextBox x:Name="TextBoxImportYukaLister" Text="{Binding ImportYukaListerPath}" IsEnabled="False" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <TextBox x:Name="TextBoxImportYukaLister" Text="{Binding ImportYukaListerPath}" IsEnabled="{Binding ImportYukaListerMode}" VerticalAlignment="Center" Margin="0,0,10,0"/>
                     </DockPanel>
                     <StackPanel Margin="20,20,0,0">
                         <RadioButton x:Name="RadioButtonImportAnisonInfoCsv" Content="anison.info CSV をインポート (_A)" IsChecked="{Binding ImportAnisonInfoMode}" GroupName="Import" />
