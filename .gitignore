@@ -266,6 +266,7 @@ desktop.ini
 *.dll
 *.exe
 *.old
+*.tfm
 *.xlsx
 MaterialDesignThemes.Wpf.xml
 YukaLister.exe.CodeAnalysisLog.xml

@@ -80,6 +80,7 @@ namespace YukaLister.Models.Database
 			}
 
 			// 楽曲情報データベースからコピー
+			// 楽曲情報データベースにタグ情報が無い場合は例外が発生する
 			try
 			{
 				using (DataContext aYukariListDbContext = new DataContext(Connection))
@@ -108,11 +109,10 @@ namespace YukaLister.Models.Database
 
 					aYukariListDbContext.SubmitChanges();
 				}
-
 			}
 			catch (Exception oExcep)
 			{
-				mEnvironment.LogWriter.ShowLogMessage(TraceEventType.Error, "タグ情報コピー時エラー：\n" + oExcep.Message);
+				mEnvironment.LogWriter.ShowLogMessage(TraceEventType.Error, "タグ情報コピー時エラー：\n" + oExcep.Message, true);
 				mEnvironment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
 			}
 		}
