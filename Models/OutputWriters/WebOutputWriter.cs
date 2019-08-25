@@ -65,6 +65,7 @@ namespace YukaLister.Models.OutputWriters
 			PrepareOutput();
 
 			// 内容の生成
+			// 生成の順番は GroupNaviCore() と合わせる
 			GenerateNew();
 			GenerateCategoryAndHeads();
 			GenerateTieUpGroupHeadAndTieUpGroups();
@@ -1370,21 +1371,32 @@ namespace YukaLister.Models.OutputWriters
 
 		// --------------------------------------------------------------------
 		// グループナビ文字列を生成
+		// ナビの順番は Output() と合わせる
 		// --------------------------------------------------------------------
 		private void GroupNaviCore(StringBuilder oSB, Boolean oIsAdult, Boolean oIsNewExists)
 		{
 			oSB.Append("<tr>");
 			oSB.Append("<td>　" + ZoneName(oIsAdult) + "　</td>");
+
+			// 新着を最優先
 			if (oIsNewExists)
 			{
 				oSB.Append("<td class=\"exist\"><a href=\"" + IndexFileName(oIsAdult, KIND_FILE_NAME_NEW) + mListLinkArg + "\">　新着　</a></td>");
 			}
+
+			// 全曲を網羅するカテゴリーと、関連するシリーズは新着に次ぐ優先
 			oSB.Append("<td class=\"exist\"><a href=\"" + IndexFileName(oIsAdult, KIND_FILE_NAME_CATEGORY) + mListLinkArg + "\">　カテゴリー別　</a></td>");
 			oSB.Append("<td class=\"exist\"><a href=\"" + IndexFileName(oIsAdult, KIND_FILE_NAME_TIE_UP_GROUP) + mListLinkArg + "\">　シリーズ別　</a></td>");
+
+			// 利用頻度が高い期別と、関連する年代別
 			oSB.Append("<td class=\"exist\"><a href=\"" + IndexFileName(oIsAdult, KIND_FILE_NAME_SEASON) + mListLinkArg + "\">　期別　</a></td>");
 			oSB.Append("<td class=\"exist\"><a href=\"" + IndexFileName(oIsAdult, KIND_FILE_NAME_PERIOD) + mListLinkArg + "\">　年代別　</a></td>");
+
+			// 人別はさほど優先度が高くない
 			oSB.Append("<td class=\"exist\"><a href=\"" + IndexFileName(oIsAdult, KIND_FILE_NAME_ARTIST) + mListLinkArg + "\">　歌手別　</a></td>");
 			oSB.Append("<td class=\"exist\"><a href=\"" + IndexFileName(oIsAdult, KIND_FILE_NAME_COMPOSER) + mListLinkArg + "\">　作曲者別　</a></td>");
+
+			// PC ごとに異なるタグ別は優先度低
 			oSB.Append("<td class=\"exist\"><a href=\"" + IndexFileName(oIsAdult, KIND_FILE_NAME_TAG) + mListLinkArg + "\">　タグ別　</a></td>");
 			oSB.Append("</tr>\n");
 		}

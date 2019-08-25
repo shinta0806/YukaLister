@@ -1012,7 +1012,8 @@ namespace YukaLister.ViewModels
 				}
 
 				if (MessageBox.Show("ローカルの楽曲情報データベースを全て削除してから、内容をサーバーに合わせます。\n"
-						+ "サーバーにアップロードしていないデータは全て失われます。\nよろしいですか？", "確認",
+						+ "タグ情報および、サーバーにアップロードしていないデータは全て失われます。\n" 
+						+ "事前にエクスポートすることをお薦めします。\n内容をサーバーに合わせてよろしいですか？", "確認",
 						MessageBoxButton.YesNo, MessageBoxImage.Exclamation) == MessageBoxResult.No)
 				{
 					return;
