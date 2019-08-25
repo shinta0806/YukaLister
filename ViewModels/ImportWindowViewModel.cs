@@ -492,6 +492,9 @@ namespace YukaLister.ViewModels
 					continue;
 				}
 
+				// インポート後に Dirty になるようにフラグをセットしておく
+				aExportDbRecord.Dirty = true;
+
 				// 同じ Id があるか
 				// where で == を使うと FirstOrDefault() でエラーが発生するため Equals() を使う
 				IQueryable<T> aSameIdResult =
@@ -575,6 +578,9 @@ namespace YukaLister.ViewModels
 			Table<T> aMusicInfoDbTable = oMusicInfoDbContext.GetTable<T>();
 			foreach (T aExportDbRecord in aExportDbResult)
 			{
+				// インポート後に Dirty になるようにフラグをセットしておく
+				aExportDbRecord.Dirty = true;
+
 				// 同じ Id があるか
 				// where で == を使うと FirstOrDefault() でエラーが発生するため Equals() を使う
 				IQueryable<T> aSameIdResult =
@@ -895,6 +901,9 @@ namespace YukaLister.ViewModels
 			Table<T> aMusicInfoDbTable = oMusicInfoDbContext.GetTable<T>();
 			foreach (T aExportDbRecord in aExportDbResult)
 			{
+				// インポート後に Dirty になるようにフラグをセットしておく
+				aExportDbRecord.Dirty = true;
+
 				// 同じ Id かつ同じ連番があるか
 				// where で == を使うと FirstOrDefault() でエラーが発生するため Equals() を使う
 				IQueryable<T> aSameIdResult =
