@@ -68,8 +68,8 @@ namespace YukaLister.Models.OutputWriters
 			GenerateNew();
 			GenerateCategoryAndHeads();
 			GenerateTieUpGroupHeadAndTieUpGroups();
-			GeneratePeriodAndHeads();
 			GenerateYearsAndSeasons();
+			GeneratePeriodAndHeads();
 			GenerateArtistAndHeads();
 			GenerateComposerAndHeads();
 			GenerateTagHeadAndTags();
@@ -1381,8 +1381,8 @@ namespace YukaLister.Models.OutputWriters
 			}
 			oSB.Append("<td class=\"exist\"><a href=\"" + IndexFileName(oIsAdult, KIND_FILE_NAME_CATEGORY) + mListLinkArg + "\">　カテゴリー別　</a></td>");
 			oSB.Append("<td class=\"exist\"><a href=\"" + IndexFileName(oIsAdult, KIND_FILE_NAME_TIE_UP_GROUP) + mListLinkArg + "\">　シリーズ別　</a></td>");
-			oSB.Append("<td class=\"exist\"><a href=\"" + IndexFileName(oIsAdult, KIND_FILE_NAME_PERIOD) + mListLinkArg + "\">　年代別　</a></td>");
 			oSB.Append("<td class=\"exist\"><a href=\"" + IndexFileName(oIsAdult, KIND_FILE_NAME_SEASON) + mListLinkArg + "\">　期別　</a></td>");
+			oSB.Append("<td class=\"exist\"><a href=\"" + IndexFileName(oIsAdult, KIND_FILE_NAME_PERIOD) + mListLinkArg + "\">　年代別　</a></td>");
 			oSB.Append("<td class=\"exist\"><a href=\"" + IndexFileName(oIsAdult, KIND_FILE_NAME_ARTIST) + mListLinkArg + "\">　歌手別　</a></td>");
 			oSB.Append("<td class=\"exist\"><a href=\"" + IndexFileName(oIsAdult, KIND_FILE_NAME_COMPOSER) + mListLinkArg + "\">　作曲者別　</a></td>");
 			oSB.Append("<td class=\"exist\"><a href=\"" + IndexFileName(oIsAdult, KIND_FILE_NAME_TAG) + mListLinkArg + "\">　タグ別　</a></td>");
