@@ -427,7 +427,6 @@ namespace YukaLister.Models
 
 		// --------------------------------------------------------------------
 		// フォルダー設定で指定されているタグを付与する
-		// ToDo: mEnvironment.TagSettings.FolderTags をフォルダー設定ウィンドウとロック排他する
 		// --------------------------------------------------------------------
 		private void AddFolderTagsInfo(String oFolderPathShLen, DataContext oYukariDbContext, IQueryable<TFound> oFounds)
 		{
@@ -439,31 +438,40 @@ namespace YukaLister.Models
 					return;
 				}
 
-				// TTag にフォルダー設定のタグ情報が無ければ保存
+				// TTag にフォルダー設定のタグ情報と同名のタグがあるか？
 				// where で == を使うと FirstOrDefault() でエラーが発生するため Equals() を使う
 				Table<TTag> aTableTag = oYukariDbContext.GetTable<TTag>();
 				IQueryable<TTag> aTagResult =
 						from x in aTableTag
-						where x.Id.Equals(aTagKey)
+						where x.Name.Equals(mEnvironment.TagSettings.FolderTags[aTagKey])
 						select x;
 				TTag aTagRecord = YlCommon.FirstOrDefault(aTagResult);
 				if (aTagRecord == null)
 				{
-					aTagRecord = new TTag
+					// 同名のタグが無いので、aTagKey を Id とするタグがまだ存在しなければ作成
+					IQueryable<TTag> aTagResult2 =
+							from x in aTableTag
+							where x.Id.Equals(aTagKey)
+							select x;
+					aTagRecord = YlCommon.FirstOrDefault(aTagResult2);
+					if (aTagRecord == null)
 					{
-						// IRcBase
-						Id = aTagKey,
-						Import = false,
-						Invalid = false,
-						UpdateTime = YlConstants.INVALID_MJD,
-						Dirty = true,
+						aTagRecord = new TTag
+						{
+							// IRcBase
+							Id = aTagKey,
+							Import = false,
+							Invalid = false,
+							UpdateTime = YlConstants.INVALID_MJD,
+							Dirty = true,
 
-						// IRcMaster
-						Name = mEnvironment.TagSettings.FolderTags[aTagKey],
-						Ruby = null,
-						Keyword = null,
-					};
-					aTableTag.InsertOnSubmit(aTagRecord);
+							// IRcMaster
+							Name = mEnvironment.TagSettings.FolderTags[aTagKey],
+							Ruby = null,
+							Keyword = null,
+						};
+						aTableTag.InsertOnSubmit(aTagRecord);
+					}
 				}
 
 				Dictionary<String, Boolean> aAddedIds = new Dictionary<String, Boolean>();
@@ -480,7 +488,7 @@ namespace YukaLister.Models
 					Table<TTagSequence> aTableTagSequence = oYukariDbContext.GetTable<TTagSequence>();
 					IQueryable<TTagSequence> aTagSequenceResult =
 							from x in aTableTagSequence
-							where x.Id.Equals(aFoundRecord.SongId) && x.LinkId.Equals(aTagKey)
+							where x.Id.Equals(aFoundRecord.SongId) && x.LinkId.Equals(aTagRecord.Id)
 							select x;
 					TTagSequence aTagSequenceRecord = YlCommon.FirstOrDefault(aTagSequenceResult);
 					if (aTagSequenceRecord == null)
@@ -505,7 +513,7 @@ namespace YukaLister.Models
 
 							// IDbSequence
 							Sequence = aSeqMax + 1,
-							LinkId = aTagKey,
+							LinkId = aTagRecord.Id,
 						};
 						aTableTagSequence.InsertOnSubmit(aTagSequenceRecord);
 						aAddedIds[aFoundRecord.SongId] = true;
