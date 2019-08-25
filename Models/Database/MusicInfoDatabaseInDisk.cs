@@ -42,20 +42,24 @@ namespace YukaLister.Models.Database
 		// --------------------------------------------------------------------
 		// 旧バージョンのゆかりすたーを使用していてテーブルやレコードが不足している場合用
 		// --------------------------------------------------------------------
-		public void AddToOlderVersionIfNeeded()
+		public void AddRemoveToOlderVersionIfNeeded()
 		{
 			// データベース作成
 			CreateDatabaseIfNeeded();
 
-			// カテゴリーマスターテーブルの既定レコードを挿入
+			// カテゴリーマスターテーブルの調整
 			using (DataContext aContext = new DataContext(Connection))
 			{
 				Table<TCategory> aTableCategory = aContext.GetTable<TCategory>();
 
+				// 後発の "一般" レコードを挿入
 				if (YlCommon.SelectMastersByName<TCategory>(aContext, "一般").Count == 0)
 				{
 					aTableCategory.InsertOnSubmit(CreateCategoryRecord(103, "一般", "イッパン"));
 				}
+
+				// 廃止となった "歌ってみた" レコードを削除
+				aTableCategory.DeleteAllOnSubmit(YlCommon.SelectMastersByName<TCategory>(aContext, "歌ってみた"));
 
 				aContext.SubmitChanges();
 			}
@@ -287,7 +291,7 @@ namespace YukaLister.Models.Database
 
 				// 主にタイアップの無い楽曲用
 				aTableCategory.InsertOnSubmit(CreateCategoryRecord(101, "VOCALOID", "ボーカロイド"));
-				aTableCategory.InsertOnSubmit(CreateCategoryRecord(102, "歌ってみた", "ウタッテミタ"));
+				// 102 は欠番（旧：歌ってみた）
 				aTableCategory.InsertOnSubmit(CreateCategoryRecord(103, "一般", "イッパン"));
 
 				aContext.SubmitChanges();

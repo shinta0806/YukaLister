@@ -321,7 +321,7 @@ namespace YukaLister.Models.SharedMisc
 		public const String APP_ID = "YukaLister";
 		public const String APP_GENERATION = "METEOR";
 		public const String APP_NAME_J = "ゆかりすたー " + APP_GENERATION + " ";
-		public const String APP_VER = "Ver 2.81 β";
+		public const String APP_VER = "Ver 2.96 β";
 		public const String COPYRIGHT_J = "Copyright (C) 2019 by SHINTA";
 
 		// --------------------------------------------------------------------

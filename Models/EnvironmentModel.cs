@@ -242,7 +242,7 @@ namespace YukaLister.Models
 				NewVersionLaunched();
 				using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(this))
 				{
-					aMusicInfoDbInDisk.AddToOlderVersionIfNeeded();
+					aMusicInfoDbInDisk.AddRemoveToOlderVersionIfNeeded();
 				}
 			}
 
