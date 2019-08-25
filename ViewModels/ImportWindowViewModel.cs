@@ -465,19 +465,6 @@ namespace YukaLister.ViewModels
 		}
 
 		// --------------------------------------------------------------------
-		// LINQ の FirstOrDefault() の代わり
-		// IQueryable<IRcBase>.FirstOrDefault() が実行時エラーになるため
-		// --------------------------------------------------------------------
-		private T FirstOrDefault<T>(IQueryable<T> oQueryResult) where T : class
-		{
-			foreach (T aRecord in oQueryResult)
-			{
-				return aRecord;
-			}
-			return null;
-		}
-
-		// --------------------------------------------------------------------
 		// 別名テーブルをインポート
 		// --------------------------------------------------------------------
 		private void ImportAliasTable<T>(String oName, DataContext oMusicInfoDbContext, DataContext oExportDbContext) where T : class, IRcAlias
@@ -498,7 +485,7 @@ namespace YukaLister.ViewModels
 						from x in aMusicInfoDbTable
 						where x.Alias.Equals(aExportDbRecord.Alias)
 						select x;
-				T aSameAliasRecord = FirstOrDefault(aSameAliasResult);
+				T aSameAliasRecord = YlCommon.FirstOrDefault(aSameAliasResult);
 				if (aSameAliasRecord != null)
 				{
 					// 同じ別名がある場合はインポートしない
@@ -511,7 +498,7 @@ namespace YukaLister.ViewModels
 						from x in aMusicInfoDbTable
 						where x.Id.Equals(aExportDbRecord.Id)
 						select x;
-				T aSameIdRecord = FirstOrDefault(aSameIdResult);
+				T aSameIdRecord = YlCommon.FirstOrDefault(aSameIdResult);
 				if (aSameIdRecord != null)
 				{
 					// 同じ Id がある場合は上書き
@@ -594,7 +581,7 @@ namespace YukaLister.ViewModels
 						from x in aMusicInfoDbTable
 						where x.Id.Equals(aExportDbRecord.Id)
 						select x;
-				T aSameIdRecord = FirstOrDefault(aSameIdResult);
+				T aSameIdRecord = YlCommon.FirstOrDefault(aSameIdResult);
 				if (aSameIdRecord != null)
 				{
 					// 同じ Id がある場合は上書き
@@ -607,7 +594,7 @@ namespace YukaLister.ViewModels
 						from x in aMusicInfoDbTable
 						where x.Name.Equals(aExportDbRecord.Name) && (x.Keyword == null && aExportDbRecord.Keyword == null || x.Keyword != null && x.Keyword.Equals(aExportDbRecord.Keyword))
 						select x;
-				T aSameNameRecord = FirstOrDefault(aSameNameResult);
+				T aSameNameRecord = YlCommon.FirstOrDefault(aSameNameResult);
 				if (aSameNameRecord != null)
 				{
 					// 同じ名前かつ同じキーワードがある場合は上書き
@@ -920,7 +907,7 @@ namespace YukaLister.ViewModels
 						from x in aMusicInfoDbTable
 						where x.Id.Equals(aExportDbRecord.Id) && x.Sequence == aExportDbRecord.Sequence
 						select x;
-				T aSameIdRecord = FirstOrDefault(aSameIdResult);
+				T aSameIdRecord = YlCommon.FirstOrDefault(aSameIdResult);
 				if (aSameIdRecord != null)
 				{
 					// 同じ Id かつ同じ連番がある場合は上書き

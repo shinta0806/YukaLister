@@ -203,6 +203,12 @@ namespace YukaLister.Models.Database
 			{
 				oRecord.TieUpName = oRecord.Head;
 			}
+
+			// SongId が無い場合は楽曲名を採用（フォルダー設定のタグを紐付できるように）
+			if (String.IsNullOrEmpty(oRecord.SongId))
+			{
+				oRecord.SongId = oRecord.SongName;
+			}
 		}
 
 		// --------------------------------------------------------------------

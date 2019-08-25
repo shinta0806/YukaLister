@@ -219,7 +219,7 @@ namespace YukaLister.Models.SharedMisc
 			aVarMap[YlConstants.RULE_VAR_COMMENT] = "コメント";
 
 			// 楽曲マスターにも同様の項目があるもの
-			//aVarMap[YlConstants.RULE_VAR_TAG] = "タグ";
+			aVarMap[YlConstants.RULE_VAR_TAG] = "タグ";
 
 			// その他
 			aVarMap[YlConstants.RULE_VAR_ANY] = "無視する部分";
@@ -697,6 +697,19 @@ namespace YukaLister.Models.SharedMisc
 				oEnvironment.LogWriter.ShowLogMessage(TraceEventType.Warning, "CSV ファイルを読み込めませんでした。\n" + oExcep.Message + "\n" + oPath, true);
 			}
 			return aCsv;
+		}
+
+		// --------------------------------------------------------------------
+		// LINQ の FirstOrDefault() の代わり
+		// IQueryable<IRcBase>.FirstOrDefault() が実行時エラーになるため
+		// --------------------------------------------------------------------
+		public static T FirstOrDefault<T>(IQueryable<T> oQueryResult) where T : class
+		{
+			foreach (T aRecord in oQueryResult)
+			{
+				return aRecord;
+			}
+			return null;
 		}
 
 		// --------------------------------------------------------------------

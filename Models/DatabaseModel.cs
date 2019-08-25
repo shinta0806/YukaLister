@@ -468,6 +468,100 @@ namespace YukaLister.Models
 		// ====================================================================
 
 		// --------------------------------------------------------------------
+		// フォルダー設定で指定されているタグを付与する
+		// ToDo: mEnvironment.TagSettings.FolderTags をフォルダー設定ウィンドウとロック排他する
+		// --------------------------------------------------------------------
+		private void AddFolderTagsInfo(String oFolderPathShLen, DataContext oYukariDbContext, IQueryable<TFound> oFounds)
+		{
+			try
+			{
+				String aTagKey = oFolderPathShLen.Substring(2);
+				if (!mEnvironment.TagSettings.FolderTags.ContainsKey(aTagKey))
+				{
+					return;
+				}
+
+				// TTag にフォルダー設定のタグ情報が無ければ保存
+				// where で == を使うと FirstOrDefault() でエラーが発生するため Equals() を使う
+				Table<TTag> aTableTag = oYukariDbContext.GetTable<TTag>();
+				IQueryable<TTag> aTagResult =
+						from x in aTableTag
+						where x.Id.Equals(aTagKey)
+						select x;
+				TTag aTagRecord = YlCommon.FirstOrDefault(aTagResult);
+				if (aTagRecord == null)
+				{
+					aTagRecord = new TTag
+					{
+						// IRcBase
+						Id = aTagKey,
+						Import = false,
+						Invalid = false,
+						UpdateTime = YlConstants.INVALID_MJD,
+						Dirty = true,
+
+						// IRcMaster
+						Name = mEnvironment.TagSettings.FolderTags[aTagKey],
+						Ruby = null,
+						Keyword = null,
+					};
+					aTableTag.InsertOnSubmit(aTagRecord);
+				}
+
+				Dictionary<String, Boolean> aAddedIds = new Dictionary<String, Boolean>();
+				foreach (TFound aFoundRecord in oFounds)
+				{
+					// 1 つのフォルダー内に同じ曲が複数個存在する場合があるので、既に作業済みの曲はスキップ
+					if (aAddedIds.ContainsKey(aFoundRecord.SongId))
+					{
+						continue;
+					}
+
+					// TTagSequence にフォルダー設定のタグ情報が無ければ保存
+					// where で == を使うと FirstOrDefault() でエラーが発生するため Equals() を使う
+					Table<TTagSequence> aTableTagSequence = oYukariDbContext.GetTable<TTagSequence>();
+					IQueryable<TTagSequence> aTagSequenceResult =
+							from x in aTableTagSequence
+							where x.Id.Equals(aFoundRecord.SongId) && x.LinkId.Equals(aTagKey)
+							select x;
+					TTagSequence aTagSequenceRecord = YlCommon.FirstOrDefault(aTagSequenceResult);
+					if (aTagSequenceRecord == null)
+					{
+						IQueryable<Int32> aSequenceResult =
+								from x in aTableTagSequence
+								where x.Id.Equals(aFoundRecord.SongId)
+								select x.Sequence;
+						Int32 aSeqMax = -1;
+						foreach (Int32 aSequence in aSequenceResult)
+						{
+							aSeqMax = Math.Max(aSeqMax, aSequence);
+						}
+						aTagSequenceRecord = new TTagSequence
+						{
+							// IDbBase
+							Id = aFoundRecord.SongId,
+							Import = false,
+							Invalid = false,
+							UpdateTime = YlConstants.INVALID_MJD,
+							Dirty = true,
+
+							// IDbSequence
+							Sequence = aSeqMax + 1,
+							LinkId = aTagKey,
+						};
+						aTableTagSequence.InsertOnSubmit(aTagSequenceRecord);
+						aAddedIds[aFoundRecord.SongId] = true;
+					}
+				}
+			}
+			catch (Exception oExcep)
+			{
+				mEnvironment.LogWriter.ShowLogMessage(TraceEventType.Error, "フォルダー設定タグ付与時エラー：\n" + oExcep.Message, true);
+				mEnvironment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
+			}
+		}
+
+		// --------------------------------------------------------------------
 		// ファイルの情報を検索してゆかり用データベースに追加
 		// FindNicoKaraFiles() で追加されない情報をすべて付与する
 		// ファイルは再帰検索しない
@@ -477,7 +571,8 @@ namespace YukaLister.Models
 			// フォルダー設定を読み込む
 			FolderSettingsInDisk aFolderSettingsInDisk = YlCommon.LoadFolderSettings2Ex(oFolderPathExLen);
 			FolderSettingsInMemory aFolderSettingsInMemory = YlCommon.CreateFolderSettingsInMemory(aFolderSettingsInDisk);
-			String aFolderPathLower = mEnvironment.ShortenPath(oFolderPathExLen).ToLower();
+			String aFolderPathShLen = mEnvironment.ShortenPath(oFolderPathExLen);
+			String aFolderPathLower = aFolderPathShLen.ToLower();
 
 			using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(mEnvironment))
 			using (TFoundSetter aTFoundSetter = new TFoundSetter(aMusicInfoDbInDisk))
@@ -497,6 +592,7 @@ namespace YukaLister.Models
 					aRecord.FileSize = aFileInfo.Length;
 					aTFoundSetter.SetTFoundValue(aRecord, aFolderSettingsInMemory);
 				}
+				AddFolderTagsInfo(aFolderPathShLen, aYukariDbContext, aQueryResult);
 
 				// コミット
 				aYukariDbContext.SubmitChanges();
