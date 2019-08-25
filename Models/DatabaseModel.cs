@@ -213,48 +213,6 @@ namespace YukaLister.Models
 
 			// 同期
 			RunSyncClientIfNeeded();
-
-#if DEBUG
-			using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(mEnvironment))
-			using (DataContext aContext = new DataContext(aMusicInfoDbInDisk.Connection))
-			{
-				Table<TSong> aTableSong = aContext.GetTable<TSong>();
-				Table<TTagSequence> aTableTagSequences = aContext.GetTable<TTagSequence>();
-				Table<TTag> aTableTag = aContext.GetTable<TTag>();
-
-				var aQueryResult =
-						from Song in aTableSong
-						join x in aTableTagSequences on Song.Id equals x.Id into gj
-						from TagSequence in gj.DefaultIfEmpty()
-						join y in aTableTag on TagSequence.LinkId equals y.Id into gj2
-						from Tag in gj2.DefaultIfEmpty()
-						where Song.Name.Contains("テスト") && Tag != null
-						orderby Song.Name
-						select new { Song, TagSequence, Tag };
-
-				Debug.WriteLine("DatabaseModel.Initialize() result");
-				foreach (var r in aQueryResult)
-				{
-					Debug.WriteLine("DatabaseModel.Initialize() query: " + r.Song?.Id + ", " + r.Song?.Name + ", " + r.TagSequence?.LinkId + ", " + r.Tag?.Name);
-				}
-
-
-#if false
-				IQueryable<TSong> aQueryResult =
-						from x in aTableSong
-						where x.Name.Contains("テスト") 
-						orderby x.Name
-						select x;
-
-				foreach (TSong aSong in aQueryResult)
-				{
-					Debug.WriteLine("DatabaseModel.Initialize() query: " + aSong.Id + ", " + aSong.Name);
-				}
-#endif
-
-			}
-
-#endif
 		}
 
 		// --------------------------------------------------------------------
@@ -721,12 +679,6 @@ namespace YukaLister.Models
 
 						// その他
 						mTargetFolderInfos.Sort(TargetFolderInfo.Compare);
-#if DEBUGz
-						if (mTargetFolderInfos.Count > 0)
-						{
-							mTargetFolderInfos[0].IsOpen = true;
-						}
-#endif
 						UpdateTargetFolderInfosVisible();
 					}
 				}));

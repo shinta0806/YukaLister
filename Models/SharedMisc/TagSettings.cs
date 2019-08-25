@@ -11,6 +11,7 @@
 using Shinta;
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SQLite;
@@ -38,11 +39,11 @@ namespace YukaLister.Models.SharedMisc
 		private const String KEY_NAME_FOLDER_TAGS = "FolderTags";
 		[UserScopedSetting]
 		[DefaultSettingValue("")]
-		public Dictionary<String, String> FolderTags
+		public ConcurrentDictionary<String, String> FolderTags
 		{
 			get
 			{
-				return (Dictionary<String, String>)this[KEY_NAME_FOLDER_TAGS];
+				return (ConcurrentDictionary<String, String>)this[KEY_NAME_FOLDER_TAGS];
 			}
 			set
 			{

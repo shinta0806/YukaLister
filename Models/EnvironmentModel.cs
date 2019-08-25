@@ -10,6 +10,7 @@ using Livet.Commands;
 using Shinta;
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.Linq;
 using System.Diagnostics;
@@ -154,12 +155,6 @@ namespace YukaLister.Models
 		public void Quit()
 		{
 			SavePrevLaunchInfo();
-#if DEBUGz
-			TagSettings.TagsSave = new List<SerializableKeyValuePair<String, String>>();
-			SerializableKeyValuePair<String, String> aSaveKVP = new SerializableKeyValuePair<String, String>("key", "value");
-			TagSettings.TagsSave.Add(aSaveKVP);
-			TagSettings.Save();
-#endif
 
 			// テンポラリーフォルダー削除
 			try
@@ -362,7 +357,7 @@ namespace YukaLister.Models
 			TagSettings.Reload();
 			if (TagSettings.FolderTags == null)
 			{
-				TagSettings.FolderTags = new Dictionary<String, String>();
+				TagSettings.FolderTags = new ConcurrentDictionary<String, String>();
 			}
 		}
 

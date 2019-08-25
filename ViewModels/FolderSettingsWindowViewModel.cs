@@ -1592,10 +1592,7 @@ namespace YukaLister.ViewModels
 			else
 			{
 				// 削除
-				if (Environment.TagSettings.FolderTags.ContainsKey(aTagKey))
-				{
-					Environment.TagSettings.FolderTags.Remove(aTagKey);
-				}
+				Environment.TagSettings.FolderTags.TryRemove(aTagKey, out String aRemovedValue);
 			}
 			Environment.TagSettings.Save();
 

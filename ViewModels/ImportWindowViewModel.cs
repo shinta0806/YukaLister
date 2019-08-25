@@ -757,12 +757,6 @@ namespace YukaLister.ViewModels
 				else if (YlCommon.IsRcAliasUpdated(aDbExistRecord, aDbNewRecord))
 				{
 					// 既存登録あるが更新が必要
-#if DEBUGz
-					if (aDbExistRecord.Id != aDbNewRecord.Id)
-					{
-						Debug.WriteLine("ImportProgramAliasCsv() id change: " + aDbExistRecord.Id + " → " + aDbNewRecord.Id);
-					}
-#endif
 					aDbNewRecord.Id = aDbExistRecord.Id;
 					aDbNewRecord.UpdateTime = aDbExistRecord.UpdateTime;
 					Common.ShallowCopy(aDbNewRecord, aDbExistRecord);
