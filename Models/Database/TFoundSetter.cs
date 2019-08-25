@@ -555,10 +555,7 @@ namespace YukaLister.Models.Database
 			ConcatMasterNameAndRuby(YlCommon.SelectSequenceTagsBySongId(mMusicInfoDbContext, aSelectedSong.Id).ToList<IRcMaster>(), out aName, out aRuby);
 			oRecord.TagName = aName;
 			oRecord.TagRuby = aRuby;
-
 		}
-
-
 
 	}
 	// public class TFoundSetter ___END___

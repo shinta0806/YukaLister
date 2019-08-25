@@ -477,6 +477,15 @@ namespace YukaLister.Models
 				Dictionary<String, Boolean> aAddedIds = new Dictionary<String, Boolean>();
 				foreach (TFound aFoundRecord in oFounds)
 				{
+					// TFound にタグ情報を追加
+					// 楽曲情報データベースで付与されたものと同じ場合は重複連結となるが、ゆかりが検索するためのものなので問題ない
+					aFoundRecord.TagName += "," + aTagRecord.Name;
+					if (!String.IsNullOrEmpty(aTagRecord.Ruby))
+					{
+						aFoundRecord.TagRuby += "," + aTagRecord.Ruby;
+					}
+
+					// ゆかり用リストデータベースの TTag, TTagSequence にタグ情報を追加
 					// 1 つのフォルダー内に同じ曲が複数個存在する場合があるので、既に作業済みの曲はスキップ
 					if (aAddedIds.ContainsKey(aFoundRecord.SongId))
 					{
