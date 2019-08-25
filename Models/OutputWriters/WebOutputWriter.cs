@@ -471,7 +471,7 @@ namespace YukaLister.Models.OutputWriters
 				// 章の区切りがタイアップ名の場合、シリーズがあるなら記載する
 				oSB.Append("　<a class=\"series\" href=\"");
 				oSB.Append(OutputFileName(oTFounds[0].TieUpAgeLimit >= YlConstants.AGE_LIMIT_CERO_Z, KIND_FILE_NAME_TIE_UP_GROUP,
-						TieUpGroupHead(oTFounds[0]), oTFounds[0].TieUpGroupName + YlConstants.TIE_UP_GROUP_SUFFIX));
+						TieUpGroupHead(oTFounds[0]), oTFounds[0].TieUpGroupName + YlConstants.TIE_UP_GROUP_SUFFIX) + mListLinkArg);
 				oSB.Append("\">" + oTFounds[0].TieUpGroupName + YlConstants.TIE_UP_GROUP_SUFFIX + "</a>");
 			}
 			oSB.Append("</label>\n");
