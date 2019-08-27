@@ -593,7 +593,6 @@ namespace YukaLister.Models.OutputWriters
 			foreach (var aRecord in aQueryResult)
 			{
 				String aPersonHead = PersonHead(aRecord.Person);
-				Debug.WriteLine("GenerateArtistAndHeadsCore() " + aPersonHead + ", " + aRecord.Person.Ruby + ", " + aRecord.Person.Name + ", " + aRecord.Found.Head);
 
 				if (aPrevRecord != null
 						&& (aPersonHead != aPrevPersonHead || aRecord.Person.Ruby != aPrevRecord.Person.Ruby || aRecord.Person.Name != aPrevRecord.Person.Name))
@@ -724,53 +723,58 @@ namespace YukaLister.Models.OutputWriters
 			aPageInfoTree.Name = "作曲者別";
 			aPageInfoTree.FileName = IndexFileName(oIsAdult, KIND_FILE_NAME_COMPOSER);
 
-			// 作曲者名とそれに紐付く楽曲群
-			Dictionary<String, List<TFound>> aComposerNamesAndTFounds = new Dictionary<String, List<TFound>>();
+			// タイアップ名とそれに紐付く楽曲群
+			Dictionary<String, List<TFound>> aTieUpNamesAndTFounds = new Dictionary<String, List<TFound>>();
 
-			IQueryable<TFound> aQueryResult =
-					from x in TableFound
-					where x.ComposerName != null && (oIsAdult ? x.TieUpAgeLimit >= YlConstants.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlConstants.AGE_LIMIT_CERO_Z)
-					orderby x.ComposerRuby, x.ComposerName, x.TieUpRuby, x.TieUpName, x.SongRuby, x.SongName
-					select x;
-			TFound aPrevTFound = null;
-			String aPrevComposerHead = null;
-			String aComposerHead = null;
+			var aQueryResult =
+					from Found in TableFound
+					join x in TableComposerSequence on Found.SongId equals x.Id into gj
+					from ComposerSequence in gj.DefaultIfEmpty()
+					join y in TablePerson on ComposerSequence.LinkId equals y.Id into gj2
+					from Person in gj2.DefaultIfEmpty()
+					where Found.TieUpName != null && Found.SongId != null && Person != null && (oIsAdult ? Found.TieUpAgeLimit >= YlConstants.AGE_LIMIT_CERO_Z : Found.TieUpAgeLimit < YlConstants.AGE_LIMIT_CERO_Z)
+					orderby Person.Ruby, Person.Name, Found.Head, Found.TieUpRuby, Found.TieUpName, Found.SongRuby, Found.SongName
+					select new { Found, ComposerSequence, Person };
+			var aPrevRecord = new { Found = new TFound(), ComposerSequence = new TComposerSequence(), Person = new TPerson() };
+			aPrevRecord = null;
+			String aPrevPersonHead = null;
 
-			foreach (TFound aTFound in aQueryResult)
+			foreach (var aRecord in aQueryResult)
 			{
-				aComposerHead = !String.IsNullOrEmpty(aTFound.ComposerRuby) ? YlCommon.Head(aTFound.ComposerRuby) : YlCommon.Head(aTFound.ComposerName);
+				String aPersonHead = PersonHead(aRecord.Person);
 
-				if (aPrevTFound != null
-						&& aComposerHead != aPrevComposerHead)
+				if (aPrevRecord != null
+						&& (aPersonHead != aPrevPersonHead || aRecord.Person.Ruby != aPrevRecord.Person.Ruby || aRecord.Person.Name != aPrevRecord.Person.Name))
 				{
-					// ページが新しくなったので 1 ページ分出力
-					GenerateOneList(aPageInfoTree, aComposerNamesAndTFounds, oIsAdult,
-							KIND_FILE_NAME_COMPOSER, "作曲者別", aPrevComposerHead, OutputItems.ComposerName);
+					// 頭文字またはページが新しくなったので 1 ページ分出力
+					GenerateOneList(aPageInfoTree, aTieUpNamesAndTFounds, oIsAdult,
+							KIND_FILE_NAME_COMPOSER, aPrevPersonHead, aPrevRecord.Person.Name, OutputItems.TieUpName);
+					aPrevRecord = null;
 				}
 
-				if (/*aPrevTFound == null*/aComposerNamesAndTFounds.Count == 0
-						|| aPrevTFound != null && aTFound.ComposerName != aPrevTFound.ComposerName)
+				if (aPrevRecord == null
+						|| aPrevRecord != null && aRecord.Found.TieUpName != aPrevRecord.Found.TieUpName)
 				{
-					// 作曲者名が新しくなった
-					aComposerNamesAndTFounds[aTFound.ComposerName] = new List<TFound>();
+					// 番組名が新しくなった
+					aTieUpNamesAndTFounds[aRecord.Found.TieUpName] = new List<TFound>();
 				}
 
 				// 曲情報追加
-				aComposerNamesAndTFounds[aTFound.ComposerName].Add(aTFound);
+				aTieUpNamesAndTFounds[aRecord.Found.TieUpName].Add(aRecord.Found);
 
 				// ループ処理
-				aPrevTFound = aTFound;
-				aPrevComposerHead = aComposerHead;
+				aPrevRecord = aRecord;
+				aPrevPersonHead = aPersonHead;
 			}
 
-			if (aPrevTFound != null)
+			if (aPrevRecord != null)
 			{
-				GenerateOneList(aPageInfoTree, aComposerNamesAndTFounds, oIsAdult,
-						KIND_FILE_NAME_COMPOSER, "作曲者別", aPrevComposerHead, OutputItems.ComposerName);
+				GenerateOneList(aPageInfoTree, aTieUpNamesAndTFounds, oIsAdult,
+						KIND_FILE_NAME_COMPOSER, aPrevPersonHead, aPrevRecord.Person.Name, OutputItems.TieUpName);
 			}
 
 			// インデックス
-			GenerateIndexPageContent(aPageInfoTree, oIsAdult, KIND_FILE_NAME_COMPOSER, "作曲者別");
+			GenerateFreestyleIndexPageContent(aPageInfoTree, oIsAdult, KIND_FILE_NAME_COMPOSER, "五十音");
 
 			return aPageInfoTree;
 		}
