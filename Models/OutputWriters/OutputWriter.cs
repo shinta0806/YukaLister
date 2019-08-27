@@ -67,6 +67,15 @@ namespace YukaLister.Models.OutputWriters
 		// 検索結果テーブル
 		public Table<TFound> TableFound { get; set; }
 
+		// 人物テーブル
+		public Table<TPerson> TablePerson { get; set; }
+
+		// 歌手紐付テーブル
+		public Table<TArtistSequence> TableArtistSequence { get; set; }
+
+		// 作曲者紐付テーブル
+		public Table<TComposerSequence> TableComposerSequence { get; set; }
+
 		// タグテーブル
 		public Table<TTag> TableTag { get; set; }
 

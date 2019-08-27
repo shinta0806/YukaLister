@@ -33,11 +33,12 @@ namespace YukaLister.Models.Database
 		// コンストラクター
 		// oMusicInfoDbInDisk はインスタンス存在期間中は存在している前提
 		// --------------------------------------------------------------------
-		public TFoundSetter(MusicInfoDatabaseInDisk oMusicInfoDbInDisk)
+		public TFoundSetter(MusicInfoDatabaseInDisk oMusicInfoDbInDisk, DataContext oYukariDbContext = null)
 		{
 			mMusicInfoDbContext = new DataContext(oMusicInfoDbInDisk.Connection);
 			mMusicInfoDbCmd = new SQLiteCommand(oMusicInfoDbInDisk.Connection);
 			mCategoryNames = YlCommon.SelectCategoryNames(oMusicInfoDbInDisk.Connection);
+			mYukariDbContext = oYukariDbContext;
 		}
 
 		// --------------------------------------------------------------------
@@ -117,53 +118,14 @@ namespace YukaLister.Models.Database
 			oRecord.TieUpAgeLimit = oRecord.TieUpAgeLimit == 0 ? Common.StringToInt32(aDicByFile[YlConstants.RULE_VAR_AGE_LIMIT]) : oRecord.TieUpAgeLimit;
 			oRecord.SongOpEd = oRecord.SongOpEd == null ? aDicByFile[YlConstants.RULE_VAR_OP_ED] : oRecord.SongOpEd;
 			oRecord.SongName = oRecord.SongName == null ? aDicByFile[YlConstants.RULE_VAR_TITLE] : oRecord.SongName;
-			if (oRecord.ArtistName == null && aDicByFile[YlConstants.RULE_VAR_ARTIST] != null)
+
+			// SongId が無い場合は楽曲名を採用（フォルダー設定の歌手名やタグを紐付できるように）
+			if (String.IsNullOrEmpty(oRecord.SongId))
 			{
-				// ファイル名から歌手名を取得できている場合は、楽曲情報データベースからフリガナを探す
-				List<TPerson> aArtists;
-				aArtists = YlCommon.SelectMastersByName<TPerson>(mMusicInfoDbContext, aDicByFile[YlConstants.RULE_VAR_ARTIST]);
-				if (aArtists.Count > 0)
-				{
-					// 歌手名が楽曲情報データベースに登録されていた場合はその情報を使う
-					oRecord.ArtistName = aDicByFile[YlConstants.RULE_VAR_ARTIST];
-					oRecord.ArtistRuby = aArtists[0].Ruby;
-				}
-				else
-				{
-					// 歌手名そのままでは楽曲情報データベースに登録されていない場合
-					if (aDicByFile[YlConstants.RULE_VAR_ARTIST].IndexOf(YlConstants.VAR_VALUE_DELIMITER) >= 0)
-					{
-						// 区切り文字で区切られた複数の歌手名が記載されている場合は分解して解析する
-						String[] aArtistNames = aDicByFile[YlConstants.RULE_VAR_ARTIST].Split(YlConstants.VAR_VALUE_DELIMITER[0]);
-						foreach (String aArtistName in aArtistNames)
-						{
-							List<TPerson> aArtistsTmp = YlCommon.SelectMastersByName<TPerson>(mMusicInfoDbContext, aArtistName);
-							if (aArtistsTmp.Count > 0)
-							{
-								// 区切られた歌手名が楽曲情報データベースに存在する
-								aArtists.Add(aArtistsTmp[0]);
-							}
-							else
-							{
-								// 区切られた歌手名が楽曲情報データベースに存在しないので仮の人物を作成
-								TPerson aArtistTmp = new TPerson();
-								aArtistTmp.Name = aArtistTmp.Ruby = aArtistName;
-								aArtists.Add(aArtistTmp);
-							}
-						}
-						String aArtistName2;
-						String aArtistRuby2;
-						ConcatMasterNameAndRuby(aArtists.ToList<IRcMaster>(), out aArtistName2, out aArtistRuby2);
-						oRecord.ArtistName = aArtistName2;
-						oRecord.ArtistRuby = aArtistRuby2;
-					}
-					else
-					{
-						// 楽曲情報データベースに登録されていないので漢字のみ格納
-						oRecord.ArtistName = aDicByFile[YlConstants.RULE_VAR_ARTIST];
-					}
-				}
+				oRecord.SongId = TEMP_ID_PREFIX + oRecord.SongName;
 			}
+
+			SetTFoundArtistByDic(oRecord, aDicByFile);
 			oRecord.SongRuby = oRecord.SongRuby == null ? aDicByFile[YlConstants.RULE_VAR_TITLE_RUBY] : oRecord.SongRuby;
 			oRecord.Worker = oRecord.Worker == null ? aDicByFile[YlConstants.RULE_VAR_WORKER] : oRecord.Worker;
 			oRecord.Track = oRecord.Track == null ? aDicByFile[YlConstants.RULE_VAR_TRACK] : oRecord.Track;
@@ -202,12 +164,6 @@ namespace YukaLister.Models.Database
 			if (String.IsNullOrEmpty(oRecord.TieUpName))
 			{
 				oRecord.TieUpName = oRecord.Head;
-			}
-
-			// SongId が無い場合は楽曲名を採用（フォルダー設定のタグを紐付できるように）
-			if (String.IsNullOrEmpty(oRecord.SongId))
-			{
-				oRecord.SongId = oRecord.SongName;
 			}
 		}
 
@@ -285,13 +241,19 @@ namespace YukaLister.Models.Database
 		private const String OFF_VOCAL_WORDS = "|cho|cut|dam|guide|guidevocal|inst|joy|off|offcho|offvocal|offのみ|vc|オフ|オフボ|オフボーカル|ボイキャン|ボーカルキャンセル|配信|";
 		private const String BOTH_VOCAL_WORDS = "|2tr|2ch|onoff|offon|";
 
+		// 一時的に付与する ID の接頭辞
+		private const String TEMP_ID_PREFIX = "!";
+
 		// ====================================================================
 		// private メンバー変数
 		// ====================================================================
 
-		// データベースアクセス
+		// データベースアクセス（アロケート）
 		private DataContext mMusicInfoDbContext;
 		private SQLiteCommand mMusicInfoDbCmd;
+
+		// データベースアクセス（参照）
+		private DataContext mYukariDbContext;
 
 		// カテゴリー正規化用
 		List<String> mCategoryNames;
@@ -340,7 +302,7 @@ namespace YukaLister.Models.Database
 		}
 
 		// --------------------------------------------------------------------
-		// 複数の IRcMaster をフリガナ順に並べてカンマで結合
+		// 複数の IRcMaster をカンマで結合
 		// --------------------------------------------------------------------
 		private void ConcatMasterNameAndRuby(List<IRcMaster> oMasters, out String oName, out String oRuby)
 		{
@@ -350,9 +312,6 @@ namespace YukaLister.Models.Database
 				oRuby = null;
 				return;
 			}
-
-			// ToDo: 人物別リストを一人ずつ作れるようになったらソートは不要になる
-			oMasters.Sort(ConcatPersonNameAndRubyCompare);
 
 			StringBuilder aSbName = new StringBuilder();
 			StringBuilder aSbRuby = new StringBuilder();
@@ -370,16 +329,174 @@ namespace YukaLister.Models.Database
 		}
 
 		// --------------------------------------------------------------------
-		// 比較関数
+		// （oDicByFile から取得した）人物情報をゆかり用リストデータベースに登録
 		// --------------------------------------------------------------------
-		private Int32 ConcatPersonNameAndRubyCompare(IRcMaster oLhs, IRcMaster oRhs)
+		private void RegistPerson<T>(TFound oFound, TPerson oPerson) where T : class, IRcSequence, new()
 		{
-			if (oLhs.Ruby == oRhs.Ruby)
+			if (mYukariDbContext == null)
 			{
-				return String.Compare(oLhs.Name, oRhs.Name);
+				return;
 			}
 
-			return String.Compare(oLhs.Ruby, oRhs.Ruby);
+			// 人物は人物テーブルに登録済みか？
+			TPerson aPersonRecord = null;
+			if (!String.IsNullOrEmpty(oPerson.Id))
+			{
+				aPersonRecord = oPerson;
+			}
+			if (aPersonRecord == null)
+			{
+				// 人物テーブルにフォルダー設定の人物情報と同名の人物があるか？
+				Table<TPerson> aTablePerson = mYukariDbContext.GetTable<TPerson>();
+				IQueryable<TPerson> aPersonResult3 =
+						from x in aTablePerson
+						where x.Name.Equals(oPerson.Name)
+						select x;
+				aPersonRecord = YlCommon.FirstOrDefault(aPersonResult3);
+				if (aPersonRecord == null)
+				{
+					// 同名のタグが無いので、同 Id とするタグがまだ存在しなければ作成
+					String aPersonId = TEMP_ID_PREFIX + oPerson.Name;
+					IQueryable<TPerson> aPersonResult2 =
+							from x in aTablePerson
+							where x.Id.Equals(aPersonId)
+							select x;
+					aPersonRecord = YlCommon.FirstOrDefault(aPersonResult2);
+					if (aPersonRecord == null)
+					{
+						aPersonRecord = new TPerson
+						{
+							// IRcBase
+							Id = aPersonId,
+							Import = false,
+							Invalid = false,
+							UpdateTime = YlConstants.INVALID_MJD,
+							Dirty = true,
+
+							// IRcMaster
+							Name = oPerson.Name,
+							Ruby = null,
+							Keyword = null,
+						};
+						aTablePerson.InsertOnSubmit(aPersonRecord);
+					}
+				}
+			}
+
+#if DEBUGz
+			mYukariDbContext.SubmitChanges();
+#endif
+
+#if false
+			// TFound にタグ情報を追加
+			// 楽曲情報データベースで付与されたものと同じ場合は重複連結となるが、ゆかりが検索するためのものなので問題ない
+			aFoundRecord.TagName += "," + aTagRecord.Name;
+			if (!String.IsNullOrEmpty(aTagRecord.Ruby))
+			{
+				aFoundRecord.TagRuby += "," + aTagRecord.Ruby;
+			}
+#endif
+
+			// TXxxSequence にフォルダー設定のタグ情報が無ければ保存
+			// where で == を使うと FirstOrDefault() でエラーが発生するため Equals() を使う
+			Table<T> aTablePersonSequence = mYukariDbContext.GetTable<T>();
+			IQueryable<T> aPersonSequenceResult =
+					from x in aTablePersonSequence
+					where x.Id.Equals(oFound.SongId) && x.LinkId.Equals(aPersonRecord.Id)
+					select x;
+			T aPersonSequenceRecord = YlCommon.FirstOrDefault(aPersonSequenceResult);
+			if (aPersonSequenceRecord == null)
+			{
+				IQueryable<Int32> aSequenceResult =
+						from x in aTablePersonSequence
+						where x.Id.Equals(oFound.SongId)
+						select x.Sequence;
+				Int32 aSeqMax = -1;
+				foreach (Int32 aSequence in aSequenceResult)
+				{
+					aSeqMax = Math.Max(aSeqMax, aSequence);
+				}
+				aPersonSequenceRecord = new T
+				{
+					// IDbBase
+					Id = oFound.SongId,
+					Import = false,
+					Invalid = false,
+					UpdateTime = YlConstants.INVALID_MJD,
+					Dirty = true,
+
+					// IDbSequence
+					Sequence = aSeqMax + 1,
+					LinkId = aPersonRecord.Id,
+				};
+				aTablePersonSequence.InsertOnSubmit(aPersonSequenceRecord);
+			}
+
+			mYukariDbContext.SubmitChanges();
+		}
+
+		// --------------------------------------------------------------------
+		// 歌手情報を oDicByFile から設定
+		// --------------------------------------------------------------------
+		private void SetTFoundArtistByDic(TFound oRecord, Dictionary<String, String> oDicByFile)
+		{
+			if (oRecord.ArtistName == null && oDicByFile[YlConstants.RULE_VAR_ARTIST] != null)
+			{
+				// ファイル名から歌手名を取得できている場合は、楽曲情報データベースからフリガナを探す
+				List<TPerson> aArtists;
+				aArtists = YlCommon.SelectMastersByName<TPerson>(mMusicInfoDbContext, oDicByFile[YlConstants.RULE_VAR_ARTIST]);
+				if (aArtists.Count > 0)
+				{
+					// 歌手名が楽曲情報データベースに登録されていた場合はその情報を使う
+					oRecord.ArtistName = aArtists[0].Name;
+					oRecord.ArtistRuby = aArtists[0].Ruby;
+					RegistPerson<TArtistSequence>(oRecord, aArtists[0]);
+				}
+				else
+				{
+					// 歌手名そのままでは楽曲情報データベースに登録されていない場合
+					if (oDicByFile[YlConstants.RULE_VAR_ARTIST].IndexOf(YlConstants.VAR_VALUE_DELIMITER) >= 0)
+					{
+						// 区切り文字で区切られた複数の歌手名が記載されている場合は分解して解析する
+						String[] aArtistNames = oDicByFile[YlConstants.RULE_VAR_ARTIST].Split(YlConstants.VAR_VALUE_DELIMITER[0]);
+						foreach (String aArtistName in aArtistNames)
+						{
+							List<TPerson> aArtistsTmp = YlCommon.SelectMastersByName<TPerson>(mMusicInfoDbContext, aArtistName);
+							if (aArtistsTmp.Count > 0)
+							{
+								// 区切られた歌手名が楽曲情報データベースに存在する
+								aArtists.Add(aArtistsTmp[0]);
+							}
+							else
+							{
+								// 区切られた歌手名が楽曲情報データベースに存在しないので仮の人物を作成
+								TPerson aArtistTmp = new TPerson();
+								aArtistTmp.Name = aArtistTmp.Ruby = aArtistName;
+								aArtists.Add(aArtistTmp);
+							}
+						}
+						String aArtistName2;
+						String aArtistRuby2;
+						ConcatMasterNameAndRuby(aArtists.ToList<IRcMaster>(), out aArtistName2, out aArtistRuby2);
+						oRecord.ArtistName = aArtistName2;
+						oRecord.ArtistRuby = aArtistRuby2;
+						for (Int32 i = 0; i < aArtists.Count; i++)
+						{
+							RegistPerson<TArtistSequence>(oRecord, aArtists[i]);
+						}
+					}
+					else
+					{
+						// 楽曲情報データベースに登録されていないので漢字のみ格納
+						oRecord.ArtistName = oDicByFile[YlConstants.RULE_VAR_ARTIST];
+						TPerson aArtist = new TPerson
+						{
+							Name = oDicByFile[YlConstants.RULE_VAR_ARTIST],
+						};
+						RegistPerson<TArtistSequence>(oRecord, aArtist);
+					}
+				}
+			}
 		}
 
 		// --------------------------------------------------------------------

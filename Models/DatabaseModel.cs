@@ -426,7 +426,7 @@ namespace YukaLister.Models
 		// ====================================================================
 
 		// --------------------------------------------------------------------
-		// フォルダー設定で指定されているタグを付与する
+		// フォルダー設定で指定されているタグを TFound とゆかり用リストデータベースに付与する
 		// --------------------------------------------------------------------
 		private void AddFolderTagsInfo(String oFolderPathShLen, DataContext oYukariDbContext, IQueryable<TFound> oFounds)
 		{
@@ -485,7 +485,7 @@ namespace YukaLister.Models
 						aFoundRecord.TagRuby += "," + aTagRecord.Ruby;
 					}
 
-					// ゆかり用リストデータベースの TTag, TTagSequence にタグ情報を追加
+					// ゆかり用リストデータベースの TTagSequence にタグ情報を追加
 					// 1 つのフォルダー内に同じ曲が複数個存在する場合があるので、既に作業済みの曲はスキップ
 					if (aAddedIds.ContainsKey(aFoundRecord.SongId))
 					{
@@ -550,8 +550,8 @@ namespace YukaLister.Models
 			String aFolderPathLower = aFolderPathShLen.ToLower();
 
 			using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(mEnvironment))
-			using (TFoundSetter aTFoundSetter = new TFoundSetter(aMusicInfoDbInDisk))
 			using (DataContext aYukariDbContext = new DataContext(YukariListDbInMemory.Connection))
+			using (TFoundSetter aTFoundSetter = new TFoundSetter(aMusicInfoDbInDisk, aYukariDbContext))
 			{
 				Table<TFound> aTableFound = aYukariDbContext.GetTable<TFound>();
 				IQueryable<TFound> aQueryResult =

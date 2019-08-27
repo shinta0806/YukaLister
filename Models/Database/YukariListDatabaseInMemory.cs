@@ -34,6 +34,7 @@ namespace YukaLister.Models.Database
 
 			// インメモリーデータベースなので、常にテーブルは新規作成となる
 			CreateFoundTable();
+			CreatePersonTables();
 			CreateTagTables();
 			CreatePropertyTable();
 			mEnvironment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "インメモリーデータベースを作成しました。");
@@ -42,6 +43,22 @@ namespace YukaLister.Models.Database
 		// ====================================================================
 		// private メンバー関数
 		// ====================================================================
+
+		// --------------------------------------------------------------------
+		// 
+		// --------------------------------------------------------------------
+		private void CopyFromMusicInfoDb<T>(DataContext oMusicInfoDbContext, DataContext oYukariListDbContext) where T: class
+		{
+			// 楽曲情報データベースからレコード全抽出
+			Table<T> aTableInMusicInfoDb = oMusicInfoDbContext.GetTable<T>();
+			IQueryable<T> aQueryResult =
+					from x in aTableInMusicInfoDb
+					select x;
+
+			// ゆかり用リストデータベースにレコード書き込み
+			Table<T> aTableInYukariListDb = oYukariListDbContext.GetTable<T>();
+			aTableInYukariListDb.InsertAllOnSubmit(aQueryResult);
+		}
 
 		// --------------------------------------------------------------------
 		// 検索結果テーブルを作成
@@ -68,6 +85,40 @@ namespace YukaLister.Models.Database
 		}
 
 		// --------------------------------------------------------------------
+		// 人物関連のテーブルを作成し、楽曲情報データベースから内容をコピー
+		// --------------------------------------------------------------------
+		private void CreatePersonTables()
+		{
+			// テーブル作成
+			using (SQLiteCommand aCmd = new SQLiteCommand(Connection))
+			{
+				CreateTable(aCmd, typeof(TPerson), TPerson.FIELD_NAME_PERSON_NAME);
+				CreateTable(aCmd, typeof(TArtistSequence));
+				CreateTable(aCmd, typeof(TComposerSequence));
+			}
+
+			// 楽曲情報データベースからコピー
+			// 楽曲情報データベースにタグ情報が無い場合は例外が発生する
+			try
+			{
+				using (DataContext aYukariListDbContext = new DataContext(Connection))
+				using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(mEnvironment))
+				using (DataContext aMusicInfoDbContext = new DataContext(aMusicInfoDbInDisk.Connection))
+				{
+					CopyFromMusicInfoDb<TPerson>(aMusicInfoDbContext, aYukariListDbContext);
+					CopyFromMusicInfoDb<TArtistSequence>(aMusicInfoDbContext, aYukariListDbContext);
+					CopyFromMusicInfoDb<TComposerSequence>(aMusicInfoDbContext, aYukariListDbContext);
+					aYukariListDbContext.SubmitChanges();
+				}
+			}
+			catch (Exception oExcep)
+			{
+				mEnvironment.LogWriter.ShowLogMessage(TraceEventType.Error, "人物情報コピー時エラー：\n" + oExcep.Message, true);
+				mEnvironment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "　スタックトレース：\n" + oExcep.StackTrace);
+			}
+		}
+
+		// --------------------------------------------------------------------
 		// タグ関連のテーブルを作成し、楽曲情報データベースから内容をコピー
 		// --------------------------------------------------------------------
 		private void CreateTagTables()
@@ -87,26 +138,8 @@ namespace YukaLister.Models.Database
 				using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(mEnvironment))
 				using (DataContext aMusicInfoDbContext = new DataContext(aMusicInfoDbInDisk.Connection))
 				{
-					// タグレコード全抽出
-					Table<TTag> aTableTagInMusicInfoDb = aMusicInfoDbContext.GetTable<TTag>();
-					IQueryable<TTag> aTagQueryResult =
-							from x in aTableTagInMusicInfoDb
-							select x;
-
-					// タグレコード書き込み
-					Table<TTag> aTableTagInYukariListDb = aYukariListDbContext.GetTable<TTag>();
-					aTableTagInYukariListDb.InsertAllOnSubmit(aTagQueryResult);
-
-					// タグ紐付レコード全抽出
-					Table<TTagSequence> aTableTagSequenceInMusicInfoDb = aMusicInfoDbContext.GetTable<TTagSequence>();
-					IQueryable<TTagSequence> aTagSequenceQueryResult =
-							from x in aTableTagSequenceInMusicInfoDb
-							select x;
-
-					// タグ紐付レコード書き込み
-					Table<TTagSequence> aTableTagSequenceInYukariListDb = aYukariListDbContext.GetTable<TTagSequence>();
-					aTableTagSequenceInYukariListDb.InsertAllOnSubmit(aTagSequenceQueryResult);
-
+					CopyFromMusicInfoDb<TTag>(aMusicInfoDbContext, aYukariListDbContext);
+					CopyFromMusicInfoDb<TTagSequence>(aMusicInfoDbContext, aYukariListDbContext);
 					aYukariListDbContext.SubmitChanges();
 				}
 			}

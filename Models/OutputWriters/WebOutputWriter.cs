@@ -359,6 +359,12 @@ namespace YukaLister.Models.OutputWriters
 		// 期別リストの年数
 		private const Int32 SEASON_YEARS = 5;
 
+		// 文字列を HEX に変換する際の最大長
+		// C:\xampp\htdocs\list\List_GroupName_Hex1_Hex2.html
+		// Hex1 / Hex2 は MAX_HEX_SOURCE_LENGTH の 2 倍の長さになる
+		// 長くなるのは Hex1 か Hex2 のどちらかという前提で、パスの長さが 256 を超えない程度の指定にする
+		private const Int32 MAX_HEX_SOURCE_LENGTH = 100;
+
 		// ====================================================================
 		// private メンバー変数
 		// ====================================================================
@@ -568,53 +574,58 @@ namespace YukaLister.Models.OutputWriters
 			aPageInfoTree.Name = "歌手別";
 			aPageInfoTree.FileName = IndexFileName(oIsAdult, KIND_FILE_NAME_ARTIST);
 
-			// 歌手名とそれに紐付く楽曲群
-			Dictionary<String, List<TFound>> aArtistNamesAndTFounds = new Dictionary<String, List<TFound>>();
+			// タイアップ名とそれに紐付く楽曲群
+			Dictionary<String, List<TFound>> aTieUpNamesAndTFounds = new Dictionary<String, List<TFound>>();
 
-			IQueryable<TFound> aQueryResult =
-					from x in TableFound
-					where x.ArtistName != null && (oIsAdult ? x.TieUpAgeLimit >= YlConstants.AGE_LIMIT_CERO_Z : x.TieUpAgeLimit < YlConstants.AGE_LIMIT_CERO_Z)
-					orderby x.ArtistRuby, x.ArtistName, x.TieUpRuby, x.TieUpName, x.SongRuby, x.SongName
-					select x;
-			TFound aPrevTFound = null;
-			String aPrevArtistHead = null;
-			String aArtistHead = null;
+			var aQueryResult =
+					from Found in TableFound
+					join x in TableArtistSequence on Found.SongId equals x.Id into gj
+					from ArtistSequence in gj.DefaultIfEmpty()
+					join y in TablePerson on ArtistSequence.LinkId equals y.Id into gj2
+					from Person in gj2.DefaultIfEmpty()
+					where Found.TieUpName != null && Found.SongId != null && Person != null && (oIsAdult ? Found.TieUpAgeLimit >= YlConstants.AGE_LIMIT_CERO_Z : Found.TieUpAgeLimit < YlConstants.AGE_LIMIT_CERO_Z)
+					orderby Person.Ruby, Person.Name, Found.Head, Found.TieUpRuby, Found.TieUpName, Found.SongRuby, Found.SongName
+					select new { Found, ArtistSequence, Person };
+			var aPrevRecord = new { Found = new TFound(), ArtistSequence = new TArtistSequence(), Person = new TPerson() };
+			aPrevRecord = null;
+			String aPrevPersonHead = null;
 
-			foreach (TFound aTFound in aQueryResult)
+			foreach (var aRecord in aQueryResult)
 			{
-				aArtistHead = !String.IsNullOrEmpty(aTFound.ArtistRuby) ? YlCommon.Head(aTFound.ArtistRuby) : YlCommon.Head(aTFound.ArtistName);
+				String aPersonHead = PersonHead(aRecord.Person);
 
-				if (aPrevTFound != null
-						&& aArtistHead != aPrevArtistHead)
+				if (aPrevRecord != null
+						&& (aPersonHead != aPrevPersonHead || aRecord.Person.Ruby != aPrevRecord.Person.Ruby || aRecord.Person.Name != aPrevRecord.Person.Name))
 				{
-					// ページが新しくなったので 1 ページ分出力
-					GenerateOneList(aPageInfoTree, aArtistNamesAndTFounds, oIsAdult,
-							KIND_FILE_NAME_ARTIST, "歌手別", aPrevArtistHead, OutputItems.ArtistName);
+					// 頭文字またはページが新しくなったので 1 ページ分出力
+					GenerateOneList(aPageInfoTree, aTieUpNamesAndTFounds, oIsAdult,
+							KIND_FILE_NAME_ARTIST, aPrevPersonHead, aPrevRecord.Person.Name, OutputItems.TieUpName);
+					aPrevRecord = null;
 				}
 
-				if (aArtistNamesAndTFounds.Count == 0
-						|| aPrevTFound != null && aTFound.ArtistName != aPrevTFound.ArtistName)
+				if (aPrevRecord == null
+						|| aPrevRecord != null && aRecord.Found.TieUpName != aPrevRecord.Found.TieUpName)
 				{
-					// 歌手名が新しくなった
-					aArtistNamesAndTFounds[aTFound.ArtistName] = new List<TFound>();
+					// 番組名が新しくなった
+					aTieUpNamesAndTFounds[aRecord.Found.TieUpName] = new List<TFound>();
 				}
 
 				// 曲情報追加
-				aArtistNamesAndTFounds[aTFound.ArtistName].Add(aTFound);
+				aTieUpNamesAndTFounds[aRecord.Found.TieUpName].Add(aRecord.Found);
 
 				// ループ処理
-				aPrevTFound = aTFound;
-				aPrevArtistHead = aArtistHead;
+				aPrevRecord = aRecord;
+				aPrevPersonHead = aPersonHead;
 			}
 
-			if (aPrevTFound != null)
+			if (aPrevRecord != null)
 			{
-				GenerateOneList(aPageInfoTree, aArtistNamesAndTFounds, oIsAdult,
-						KIND_FILE_NAME_ARTIST, "歌手別", aPrevArtistHead, OutputItems.ArtistName);
+				GenerateOneList(aPageInfoTree, aTieUpNamesAndTFounds, oIsAdult,
+						KIND_FILE_NAME_ARTIST, aPrevPersonHead, aPrevRecord.Person.Name, OutputItems.TieUpName);
 			}
 
 			// インデックス
-			GenerateIndexPageContent(aPageInfoTree, oIsAdult, KIND_FILE_NAME_ARTIST, "歌手別");
+			GenerateFreestyleIndexPageContent(aPageInfoTree, oIsAdult, KIND_FILE_NAME_ARTIST, "五十音");
 
 			return aPageInfoTree;
 		}
@@ -1567,6 +1578,14 @@ namespace YukaLister.Models.OutputWriters
 		}
 
 		// --------------------------------------------------------------------
+		// 人物の頭文字
+		// --------------------------------------------------------------------
+		private String PersonHead(TPerson oPerson)
+		{
+			return !String.IsNullOrEmpty(oPerson.Ruby) ? YlCommon.Head(oPerson.Ruby) : YlCommon.Head(oPerson.Name);
+		}
+
+		// --------------------------------------------------------------------
 		// ページ内容を置換
 		// --------------------------------------------------------------------
 		private void ReplaceListContent(PageInfoTree oPageInfoTree, String oOld, String oNew)
@@ -1585,12 +1604,12 @@ namespace YukaLister.Models.OutputWriters
 		}
 
 		// --------------------------------------------------------------------
-		// 文字を UTF-8 HEX に変換
+		// 文字を UTF-16 HEX に変換
 		// --------------------------------------------------------------------
 		private String StringToHex(String oString)
 		{
-			Byte[] aByteData = Encoding.UTF8.GetBytes(oString);
-			return BitConverter.ToString(aByteData).Replace("-", String.Empty).ToLower();
+			Byte[] aByteData = Encoding.Unicode.GetBytes(oString);
+			return BitConverter.ToString(aByteData, 0, Math.Min(aByteData.Length, MAX_HEX_SOURCE_LENGTH)).Replace("-", String.Empty).ToLower();
 		}
 
 		// --------------------------------------------------------------------

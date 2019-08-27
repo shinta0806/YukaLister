@@ -100,6 +100,13 @@ namespace YukaLister.Models.SharedMisc
 				throw new Exception("各種 ID の先頭に付与する接頭辞に \"\\\"（円マーク）は使えません。");
 			}
 
+			// 以下は Ver 2.99 で追加した条件のため、既存データには存在する可能性があることに注意（システムが使うための文字）
+			if (oIdPrefix.IndexOf('!') >= 0)
+			{
+				throw new Exception("各種 ID の先頭に付与する接頭辞に \"!\"（エクスクラメーション）は使えません。");
+			}
+
+
 			return oIdPrefix;
 		}
 
@@ -982,6 +989,9 @@ namespace YukaLister.Models.SharedMisc
 			using (DataContext aYukariDbContext = new DataContext(oYukariListDbInMemory.Connection))
 			{
 				oOutputWriter.TableFound = aYukariDbContext.GetTable<TFound>();
+				oOutputWriter.TablePerson = aYukariDbContext.GetTable<TPerson>();
+				oOutputWriter.TableArtistSequence = aYukariDbContext.GetTable<TArtistSequence>();
+				oOutputWriter.TableComposerSequence = aYukariDbContext.GetTable<TComposerSequence>();
 				oOutputWriter.TableTag = aYukariDbContext.GetTable<TTag>();
 				oOutputWriter.TableTagSequence = aYukariDbContext.GetTable<TTagSequence>();
 				oOutputWriter.Output();
