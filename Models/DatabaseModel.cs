@@ -774,6 +774,13 @@ namespace YukaLister.Models
 		// --------------------------------------------------------------------
 		private Boolean CopyYukariListDb()
 		{
+			// インメモリーデータベースの準備が完了したかのチェック
+			while (!YukariListDbInMemory.IsCopied)
+			{
+				Debug.WriteLine("CopyYukariListDb() waiting...");
+				Thread.Sleep(Common.GENERAL_SLEEP_TIME);
+			}
+
 			if (mEnvironment.YukaListerSettings.ConfirmOutputYukariList)
 			{
 				if (MessageBox.Show("ゆかりリクエスト用リストを出力しますか？", "確認", MessageBoxButton.YesNo, MessageBoxImage.Exclamation) != MessageBoxResult.Yes)
