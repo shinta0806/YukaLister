@@ -383,20 +383,6 @@ namespace YukaLister.Models.Database
 				}
 			}
 
-#if DEBUGz
-			mYukariDbContext.SubmitChanges();
-#endif
-
-#if false
-			// TFound にタグ情報を追加
-			// 楽曲情報データベースで付与されたものと同じ場合は重複連結となるが、ゆかりが検索するためのものなので問題ない
-			aFoundRecord.TagName += "," + aTagRecord.Name;
-			if (!String.IsNullOrEmpty(aTagRecord.Ruby))
-			{
-				aFoundRecord.TagRuby += "," + aTagRecord.Ruby;
-			}
-#endif
-
 			// TXxxSequence にフォルダー設定のタグ情報が無ければ保存
 			// where で == を使うと FirstOrDefault() でエラーが発生するため Equals() を使う
 			Table<T> aTablePersonSequence = mYukariDbContext.GetTable<T>();

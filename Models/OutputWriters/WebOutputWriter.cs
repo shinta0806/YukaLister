@@ -593,6 +593,7 @@ namespace YukaLister.Models.OutputWriters
 			foreach (var aRecord in aQueryResult)
 			{
 				String aPersonHead = PersonHead(aRecord.Person);
+				Debug.WriteLine("GenerateArtistAndHeadsCore() " + aPersonHead + ", " + aRecord.Person.Ruby + ", " + aRecord.Person.Name + ", " + aRecord.Found.Head);
 
 				if (aPrevRecord != null
 						&& (aPersonHead != aPrevPersonHead || aRecord.Person.Ruby != aPrevRecord.Person.Ruby || aRecord.Person.Name != aPrevRecord.Person.Name))
@@ -1582,7 +1583,9 @@ namespace YukaLister.Models.OutputWriters
 		// --------------------------------------------------------------------
 		private String PersonHead(TPerson oPerson)
 		{
-			return !String.IsNullOrEmpty(oPerson.Ruby) ? YlCommon.Head(oPerson.Ruby) : YlCommon.Head(oPerson.Name);
+			// 人物データベースにルビが無い場合に名前から頭文字を取るようにすると、「その他」とひらがなが入り乱れてしまうため、
+			// ルビが無い場合は常に「その他」を返すようにする
+			return !String.IsNullOrEmpty(oPerson.Ruby) ? YlCommon.Head(oPerson.Ruby) : YlConstants.HEAD_MISC;
 		}
 
 		// --------------------------------------------------------------------
