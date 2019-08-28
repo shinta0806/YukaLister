@@ -365,6 +365,14 @@ namespace YukaLister.ViewModels
 			set => RaisePropertyChangedIfSet(ref mImportYukaListerPath, value);
 		}
 
+		// タグ情報をインポートする
+		private Boolean mImportTag;
+		public Boolean ImportTag
+		{
+			get => mImportTag;
+			set => RaisePropertyChangedIfSet(ref mImportTag, value);
+		}
+
 		// anison.info CSV をインポート
 		private Boolean mImportAnisonInfoMode;
 		public Boolean ImportAnisonInfoMode
@@ -1012,7 +1020,7 @@ namespace YukaLister.ViewModels
 				}
 
 				if (MessageBox.Show("ローカルの楽曲情報データベースを全て削除してから、内容をサーバーに合わせます。\n"
-						+ "タグ情報および、サーバーにアップロードしていないデータは全て失われます。\n" 
+						+ "タグ情報および、サーバーにアップロードしていないデータは全て失われます。\n"
 						+ "事前にエクスポートすることをお薦めします。\n内容をサーバーに合わせてよろしいですか？", "確認",
 						MessageBoxButton.YesNo, MessageBoxImage.Exclamation) == MessageBoxResult.No)
 				{
@@ -1306,6 +1314,7 @@ namespace YukaLister.ViewModels
 					// ゆかりすたーでエクスポートしたファイルをインポート
 					aImportWindowViewModel.ImportYukaListerMode = ImportYukaListerMode;
 					aImportWindowViewModel.ImportYukaListerPath = ImportYukaListerPath;
+					aImportWindowViewModel.ImportTag = ImportTag;
 
 					// anison.info CSV をインポート
 					aImportWindowViewModel.ImportAnisonInfoMode = ImportAnisonInfoMode;

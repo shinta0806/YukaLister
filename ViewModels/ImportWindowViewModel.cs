@@ -47,7 +47,8 @@ namespace YukaLister.ViewModels
 		// ゆかりすたーでエクスポートしたファイルをインポート
 		public Boolean ImportYukaListerMode { get; set; }
 		public String ImportYukaListerPath { get; set; }
-
+		public Boolean ImportTag { get; set; }
+		
 		// anison.info CSV をインポート
 		public Boolean ImportAnisonInfoMode { get; set; }
 		public String ImportProgramCsvPath { get; set; }
@@ -1160,7 +1161,10 @@ namespace YukaLister.ViewModels
 					ImportMasterTable<TTieUp>("タイアップ", aMusicInfoDbContext, aExportDbContext);
 					ImportMasterTable<TTieUpGroup>("シリーズ", aMusicInfoDbContext, aExportDbContext);
 					ImportMasterTable<TMaker>("制作会社", aMusicInfoDbContext, aExportDbContext);
-					ImportMasterTable<TTag>("タグ", aMusicInfoDbContext, aExportDbContext);
+					if (ImportTag)
+					{
+						ImportMasterTable<TTag>("タグ", aMusicInfoDbContext, aExportDbContext);
+					}
 
 					// 有効な別名テーブルをインポート
 					ImportAliasTable<TSongAlias>("楽曲別名", aMusicInfoDbContext, aExportDbContext);
@@ -1172,7 +1176,10 @@ namespace YukaLister.ViewModels
 					ImportSequenceTable<TComposerSequence>("作曲者紐付", aMusicInfoDbContext, aExportDbContext);
 					ImportSequenceTable<TArrangerSequence>("編曲者紐付", aMusicInfoDbContext, aExportDbContext);
 					ImportSequenceTable<TTieUpGroupSequence>("シリーズ紐付", aMusicInfoDbContext, aExportDbContext);
-					ImportSequenceTable<TTagSequence>("タグ紐付", aMusicInfoDbContext, aExportDbContext);
+					if (ImportTag)
+					{
+						ImportSequenceTable<TTagSequence>("タグ紐付", aMusicInfoDbContext, aExportDbContext);
+					}
 				}
 			}
 			catch (OperationCanceledException)

@@ -195,6 +195,9 @@
                         <Button x:Name="ButtonBrowseImportYukaLister" Height="Auto" Content="参照 (_1)" Style="{StaticResource MaterialDesignRaisedLightButton}" Margin="0" DockPanel.Dock="Right" Width="100" Command="{Binding ButtonBrowseImportYukaListerClickedCommand}"/>
                         <TextBox x:Name="TextBoxImportYukaLister" Text="{Binding ImportYukaListerPath}" IsEnabled="{Binding ImportYukaListerMode}" VerticalAlignment="Center" Margin="0,0,10,0"/>
                     </DockPanel>
+                    <StackPanel Margin="40,10,0,0">
+                        <CheckBox Content="タグ情報をインポートする" IsChecked="{Binding ImportTag}" IsEnabled="{Binding ImportYukaListerMode}" />
+                    </StackPanel>
                     <StackPanel Margin="20,20,0,0">
                         <RadioButton x:Name="RadioButtonImportAnisonInfoCsv" Content="anison.info CSV をインポート (_A)" IsChecked="{Binding ImportAnisonInfoMode}" GroupName="Import" />
                     </StackPanel>
