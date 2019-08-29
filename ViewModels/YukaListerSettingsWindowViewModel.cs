@@ -1067,7 +1067,7 @@ namespace YukaLister.ViewModels
 		{
 			try
 			{
-				String aPath = PathByOpeningDialog("ゆかりすたー情報ファイル", "ゆかりすたー情報ファイル|*" + YlConstants.FILE_EXT_YLINFO);
+				String aPath = PathByOpeningDialog("ゆかりすたー情報ファイル", "ゆかりすたー情報ファイル|*" + YlConstants.FILE_EXT_YLINFO + "|楽曲情報データベースバックアップ|*" + Common.FILE_EXT_BAK);
 				if (aPath != null)
 				{
 					ImportYukaListerPath = aPath;

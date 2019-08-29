@@ -48,7 +48,7 @@ namespace YukaLister.ViewModels
 		public Boolean ImportYukaListerMode { get; set; }
 		public String ImportYukaListerPath { get; set; }
 		public Boolean ImportTag { get; set; }
-		
+
 		// anison.info CSV をインポート
 		public Boolean ImportAnisonInfoMode { get; set; }
 		public String ImportProgramCsvPath { get; set; }
@@ -273,11 +273,6 @@ namespace YukaLister.ViewModels
 			if (String.IsNullOrEmpty(ImportYukaListerPath))
 			{
 				throw new Exception("ゆかりすたー情報ファイルを指定して下さい。");
-			}
-
-			if (Path.GetExtension(ImportYukaListerPath).ToLower() != YlConstants.FILE_EXT_YLINFO)
-			{
-				throw new Exception("ゆかりすたー情報ファイルではないファイルが指定されています。");
 			}
 		}
 
@@ -1140,19 +1135,31 @@ namespace YukaLister.ViewModels
 			{
 				CheckImportYukaLister();
 
-				// 解凍
-				String aTempFolder = YlCommon.TempFilePath() + "\\";
-				Directory.CreateDirectory(aTempFolder);
-				ZipFile.ExtractToDirectory(ImportYukaListerPath, aTempFolder);
-				String[] aFiles = Directory.GetFiles(aTempFolder, "*", SearchOption.AllDirectories);
-				if (aFiles.Length == 0)
+				String aFile;
+				switch(Path.GetExtension(ImportYukaListerPath).ToLower())
 				{
-					throw new Exception("ゆかりすたー情報ファイルにインポートできるデータが存在しません。");
+					case YlConstants.FILE_EXT_YLINFO:
+						// 解凍
+						String aTempFolder = YlCommon.TempFilePath() + "\\";
+						Directory.CreateDirectory(aTempFolder);
+						ZipFile.ExtractToDirectory(ImportYukaListerPath, aTempFolder);
+						String[] aFiles = Directory.GetFiles(aTempFolder, "*", SearchOption.AllDirectories);
+						if (aFiles.Length == 0)
+						{
+							throw new Exception("ゆかりすたー情報ファイルにインポートできるデータが存在しません。");
+						}
+						aFile = aFiles[0];
+						break;
+					case Common.FILE_EXT_BAK:
+						aFile = ImportYukaListerPath;
+						break;
+					default:
+						throw new Exception("ゆかりすたー情報ファイル・楽曲情報データベースバックアップではないファイルが指定されています。");
 				}
 
 				using (MusicInfoDatabaseInDisk aMusicInfoDbInDisk = new MusicInfoDatabaseInDisk(Environment))
 				using (DataContext aMusicInfoDbContext = new DataContext(aMusicInfoDbInDisk.Connection))
-				using (DatabaseInDisk aExportDbInDisk = new DatabaseInDisk(Environment, aFiles[0]))
+				using (DatabaseInDisk aExportDbInDisk = new DatabaseInDisk(Environment, aFile))
 				using (DataContext aExportDbContext = new DataContext(aExportDbInDisk.Connection))
 				{
 					// 有効なマスターテーブルをインポート（カテゴリー以外）
