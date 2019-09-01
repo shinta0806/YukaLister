@@ -901,6 +901,10 @@ namespace YukaLister.Models
 				TargetFolderInfo aPrevParentTargetFolderInfo = null;
 				FolderTask aPrevFolderTask = FolderTask.__End__;
 
+#if DEBUG
+				Thread.Sleep(5 * 1000);
+#endif
+
 				for (; ; )
 				{
 					if (mMainWindowViewModel.YukaListerDbStatus == YukaListerStatus.Error)

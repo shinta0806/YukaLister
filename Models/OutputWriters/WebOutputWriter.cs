@@ -360,10 +360,10 @@ namespace YukaLister.Models.OutputWriters
 		private const Int32 SEASON_YEARS = 5;
 
 		// 文字列を HEX に変換する際の最大長
-		// C:\xampp\htdocs\list\List_GroupName_Hex1_Hex2.html
+		// C:\Users\ユーザー名\AppData\Local\Temp\YukaLister\PID..\2_22\List_Artist_GroupName_Hex1_Hex2.html
 		// Hex1 / Hex2 は MAX_HEX_SOURCE_LENGTH の 2 倍の長さになる
 		// 長くなるのは Hex1 か Hex2 のどちらかという前提で、パスの長さが 256 を超えない程度の指定にする
-		private const Int32 MAX_HEX_SOURCE_LENGTH = 100;
+		private const Int32 MAX_HEX_SOURCE_LENGTH = 70;
 
 		// ====================================================================
 		// private メンバー変数
@@ -1545,7 +1545,14 @@ namespace YukaLister.Models.OutputWriters
 			// oPageInfoTree の内容を出力
 			if (!String.IsNullOrEmpty(oPageInfoTree.FileName))
 			{
-				File.WriteAllText(mTempFolderPath + oPageInfoTree.FileName, oPageInfoTree.Content, Encoding.UTF8);
+				try
+				{
+					File.WriteAllText(mTempFolderPath + oPageInfoTree.FileName, oPageInfoTree.Content, Encoding.UTF8);
+				}
+				catch (Exception)
+				{
+					// ファイル名が長すぎる場合はエラーとなる
+				}
 			}
 
 			// 子ページの内容を出力
