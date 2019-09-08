@@ -1,9 +1,9 @@
 <?php
 
 // ============================================================================
-// ゆかりすたー同期
+// ゆかりすたー METEOR 同期
 // ログイン状態管理クラス
-// Copyright (C) 2018 by SHINTA
+// Copyright (C) 2019 by SHINTA
 // ============================================================================
 
 // require
@@ -433,6 +433,8 @@ class	CPManager
 
 		$row = $this->select_account_by_name_and_password($posted_name, $posted_pw);
 		if ( $row === FALSE ) {
+			$this->insert_login(FALSE);
+		
 			// ログインできないのでログイン画面に戻る
 			header('Location:'.FILE_NAME_CP_LOGIN.'?'.PARAM_NAME_ERROR_MESSAGE.'='.urlencode('アカウント名またはパスワードが違います。'));
 			return;
@@ -440,6 +442,7 @@ class	CPManager
 
 		// ログイン成功
 		$this->login($row);
+		$this->insert_login(TRUE);
 		header('Location:'.FILE_NAME_CP_MAIN.$this->get_posted_parameter(CP_MAIN_PARAM));
 	}
 
@@ -764,6 +767,20 @@ class	CPManager
 		log_message('create_tables() TAccount '.$sql, LOG_LEVEL_DEBUG, FALSE);
 		$pdo->exec($sql);
 		
+		// TLogin
+		$sql = 'CREATE TABLE IF NOT EXISTS '.TABLE_NAME_LOGIN.' ('
+				.FIELD_NAME_LOGIN_NAME.' VARCHAR(255) NOT NULL,'
+				.FIELD_NAME_LOGIN_TIME.' DOUBLE NOT NULL,'
+				.FIELD_NAME_LOGIN_SUCCESS.' TINYINT(1) NOT NULL,'
+				.FIELD_NAME_LOGIN_APP_GENERATION.' VARCHAR(255),'
+				.FIELD_NAME_LOGIN_APP_VER.' VARCHAR(255),'
+				.FIELD_NAME_LOGIN_ID_PREFIX.' VARCHAR(255),'
+				.FIELD_NAME_LOGIN_SID.' VARCHAR(255),'
+				.'PRIMARY KEY ('.FIELD_NAME_LOGIN_NAME.','.FIELD_NAME_LOGIN_TIME.')'
+				.') '.CREATE_TABLE_OPTIONS.';';
+		log_message('create_tables() TLogin '.$sql, LOG_LEVEL_DEBUG, FALSE);
+		$pdo->exec($sql);
+		
 		// TStatistics
 		$sql = 'CREATE TABLE IF NOT EXISTS '.TABLE_NAME_STATISTICS.' ('
 				.FIELD_NAME_STATISTICS_UID.' INT NOT NULL,'
@@ -929,6 +946,29 @@ class	CPManager
 					.'1, "SyncTest_P_5");';
 			$pdo->exec($sql);
 		}
+	}
+
+	// -------------------------------------------------------------------
+	// テスト用
+	// ToDo: リリース時には削除
+	// -------------------------------------------------------------------
+	private function create_tables_test()
+	{
+		$pdo = $this->connect_db();
+		
+		// TLogin
+		$sql = 'CREATE TABLE IF NOT EXISTS '.TABLE_NAME_LOGIN.' ('
+				.FIELD_NAME_LOGIN_NAME.' VARCHAR(255) NOT NULL,'
+				.FIELD_NAME_LOGIN_TIME.' DOUBLE NOT NULL,'
+				.FIELD_NAME_LOGIN_SUCCESS.' TINYINT(1) NOT NULL,'
+				.FIELD_NAME_LOGIN_APP_GENERATION.' VARCHAR(255),'
+				.FIELD_NAME_LOGIN_APP_VER.' VARCHAR(255),'
+				.FIELD_NAME_LOGIN_ID_PREFIX.' VARCHAR(255),'
+				.FIELD_NAME_LOGIN_SID.' VARCHAR(255),'
+				.'PRIMARY KEY ('.FIELD_NAME_LOGIN_NAME.','.FIELD_NAME_LOGIN_TIME.')'
+				.') '.CREATE_TABLE_OPTIONS.';';
+		log_message('create_tables() TLogin '.$sql, LOG_LEVEL_DEBUG, FALSE);
+		$pdo->exec($sql);
 	}
 
 	// -------------------------------------------------------------------
@@ -1284,6 +1324,29 @@ class	CPManager
 	}
 
 	// -------------------------------------------------------------------
+	// ログイン結果記録
+	// -------------------------------------------------------------------
+	private function insert_login($is_success)
+	{
+		$pdo = $this->connect_db();
+		$sql = 'INSERT INTO '.TABLE_NAME_LOGIN.' VALUES ('
+				.':name,'
+				.' '.$this->now_mjd().','
+				.' '.var_to_string($is_success).','
+				.':app_generation,'
+				.':app_ver,'
+				.':id_prefix,'
+				.':sid);';
+		$stmt = $pdo->prepare($sql);
+		$stmt->bindValue(':name', $this->get_posted_parameter(PARAM_NAME_NAME), PDO::PARAM_STR);
+		$stmt->bindValue(':app_generation', $this->get_posted_parameter(PARAM_NAME_APP_GENERATION), PDO::PARAM_STR);
+		$stmt->bindValue(':app_ver', $this->get_posted_parameter(PARAM_NAME_APP_VER), PDO::PARAM_STR);
+		$stmt->bindValue(':id_prefix', $this->get_posted_parameter(PARAM_NAME_ID_PREFIX), PDO::PARAM_STR);
+		$stmt->bindValue(':sid', $this->get_posted_parameter(PARAM_NAME_SID), PDO::PARAM_STR);
+		$stmt->execute();
+	}
+
+	// -------------------------------------------------------------------
 	// 連想配列の内容を INSERT
 	// ＜返値＞ 成功：TRUE
 	// -------------------------------------------------------------------
@@ -1557,16 +1620,6 @@ class	CPManager
 		$_SESSION[SESSION_INFO_ACCOUNT_ADMIN] = $row[FIELD_NAME_ACCOUNT_ADMIN] != 0;
 		$_SESSION[SESSION_INFO_ACCOUNT_LOGIN_TIME] = $row[FIELD_NAME_ACCOUNT_LOGIN_TIME];
 		$_SESSION[SESSION_INFO_POST_ERROR_EXISTS] = FALSE;
-		
-		$pdo = $this->connect_db();
-		$sql = 'UPDATE '.TABLE_NAME_ACCOUNT
-				.' SET '.FIELD_NAME_ACCOUNT_LOGIN_TIME.' = :login_time'
-				.' WHERE '.FIELD_NAME_ACCOUNT_UID.' = :uid';
-		//log_message('login() '.$sql, LOG_LEVEL_STATUS, FALSE);
-		$stmt = $pdo->prepare($sql);
-		$stmt->bindValue(':login_time', $this->now_mjd(), PDO::PARAM_STR);
-		$stmt->bindValue(':uid', $_SESSION[SESSION_INFO_ACCOUNT_UID], PDO::PARAM_INT);
-		$stmt->execute();
 		
 		log_message('ログイン完了'.$this->user_info(), LOG_LEVEL_NOTICE, FALSE);
 	}

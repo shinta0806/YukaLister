@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Linq;
 using System.Diagnostics;
+using System.DirectoryServices.AccountManagement;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -1198,6 +1199,16 @@ namespace YukaLister.Models.Http
 		// --------------------------------------------------------------------
 		private void LoginToSyncServer()
 		{
+			// SID 取得
+			String aSid = null;
+			try
+			{
+				aSid = UserPrincipal.Current.Sid?.ToString();
+			}
+			catch (Exception)
+			{
+			}
+
 			// ログイン情報送信
 			Dictionary<String, String> aPostParams = new Dictionary<String, String>
 			{
@@ -1205,6 +1216,10 @@ namespace YukaLister.Models.Http
 				{ "Name",mEnvironment.YukaListerSettings.SyncAccount },
 				{ "PW", YlCommon.Decrypt(mEnvironment.YukaListerSettings.SyncPassword) },
 				{ "Mode", SYNC_MODE_NAME_LOGIN },
+				{ "IdPrefix", mEnvironment.YukaListerSettings.IdPrefix },
+				{ "Sid", aSid },
+				{ "AppGeneration", YlConstants.APP_GENERATION },
+				{ "AppVer", YlConstants.APP_VER },
 			};
 			mLogWriterSync.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "楽曲情報データベース同期サーバーにログインします...");
 			Post(aPostParams);

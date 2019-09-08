@@ -1,9 +1,9 @@
 <?php
 
 // ============================================================================
-// ゆかりすたー同期
+// ゆかりすたー METEOR 同期
 // コントロールパネル：共通モジュール
-// Copyright (C) 2018 by SHINTA
+// Copyright (C) 2019 by SHINTA
 // ============================================================================
 
 // ----------------------------------------------------------------------------
@@ -19,7 +19,6 @@ define('ACCOUNT_NAME_MAX_LENGTH', 20);
 define('ACCOUNT_PASSWORD_MIN_LENGTH', 4);
 define('ATCV_CONTAINER_FILE', 'ContainerFile');
 define('COOKIE_NAME_PHP_SESSION_ID', 'PHPSESSID');
-//define('CP_MAIN_PARAM', 'CPMainParam');
 define('CREATE_TABLE_OPTIONS', 'CHARACTER SET utf8 COLLATE utf8_bin');
 define('FIELD_NAME_SONG_PREFIX', 'song_');
 define('FIELD_NAME_PERSON_PREFIX', 'person_');
@@ -35,14 +34,18 @@ define('FIELD_NAME_COMPOSER_SEQUENCE_PREFIX', 'composer_sequence_');
 define('FIELD_NAME_ARRANGER_SEQUENCE_PREFIX', 'arranger_sequence_');
 define('FIELD_NAME_TIE_UP_GROUP_SEQUENCE_PREFIX', 'tie_up_group_sequence_');
 define('FIELD_NAME_ACCOUNT_PREFIX', 'account_');
+define('FIELD_NAME_LOGIN_PREFIX', 'login_');
 define('FIELD_NAME_STATISTICS_PREFIX', 'statistics_');
 define('FIELD_NAME_SUFFIX_ACCEPTS', 'accepts');
 define('FIELD_NAME_SUFFIX_ADMIN', 'admin');
 define('FIELD_NAME_SUFFIX_AGE_LIMIT', 'age_limit');
 define('FIELD_NAME_SUFFIX_ALIAS', 'alias');
+define('FIELD_NAME_SUFFIX_APP_GENERATION', 'app_generation');
+define('FIELD_NAME_SUFFIX_APP_VER', 'app_ver');
 define('FIELD_NAME_SUFFIX_BYTES', 'bytes');
 define('FIELD_NAME_SUFFIX_CATEGORY_ID', 'category_id');
 define('FIELD_NAME_SUFFIX_ID', 'id');
+define('FIELD_NAME_SUFFIX_ID_PREFIX', 'id_prefix');
 define('FIELD_NAME_SUFFIX_IMPORT', 'import');
 define('FIELD_NAME_SUFFIX_INVALID', 'invalid');
 define('FIELD_NAME_SUFFIX_KEYWORD', 'keyword');
@@ -58,8 +61,11 @@ define('FIELD_NAME_SUFFIX_RELEASE_DATE', 'release_date');
 define('FIELD_NAME_SUFFIX_RUBY', 'ruby');
 define('FIELD_NAME_SUFFIX_PASSWORD', 'password');
 define('FIELD_NAME_SUFFIX_SEQUENCE', 'sequence');
+define('FIELD_NAME_SUFFIX_SID', 'sid');
+define('FIELD_NAME_SUFFIX_SUCCESS', 'success');
 define('FIELD_NAME_SUFFIX_SYNC_BY', 'sync_by');
 define('FIELD_NAME_SUFFIX_TIE_UP_ID', 'tie_up_id');
+define('FIELD_NAME_SUFFIX_TIME', 'time');
 define('FIELD_NAME_SUFFIX_UID', 'uid');
 define('FIELD_NAME_SUFFIX_UPDATE_TIME', 'update_time');
 define('FILE_NAME_CP_LOGIN', 'CPLogin.php');
@@ -118,16 +124,20 @@ define('NOT_LOGGED_IN_NO_SESSION_INFO', 2);
 define('OLD_LOG_MAX_GENERATION', 10);
 define('OLD_LOG_SUFFIX', '_Old_');
 define('PARAM_NAME_ADMIN', 'Admin');
+define('PARAM_NAME_APP_GENERATION', 'AppGeneration');
+define('PARAM_NAME_APP_VER', 'AppVer');
 define('PARAM_NAME_CURRENT_PASSWORD', 'CurrentPW');
 define('PARAM_NAME_DATE', 'Date');
 define('PARAM_NAME_ERROR_MESSAGE', 'MsgE');
 define('PARAM_NAME_FILE', 'File');
+define('PARAM_NAME_ID_PREFIX', 'IdPrefix');
 define('PARAM_NAME_MODE', 'Mode');
 define('PARAM_NAME_NAME', 'Name');
 define('PARAM_NAME_NEW_PASSWORD', 'NewPW');
 define('PARAM_NAME_NEW_PASSWORD_CONFIRM', 'NewPWConfirm');
 define('PARAM_NAME_NOTICE_MESSAGE', 'MsgN');
 define('PARAM_NAME_PASSWORD', 'PW');
+define('PARAM_NAME_SID', 'Sid');
 define('PARAM_NAME_UID', 'Uid');
 define('PHP_FOOTER', '?>');
 define('PHP_HEADER', '<?php');
@@ -141,9 +151,9 @@ define('SESSION_INFO_ACCOUNT_LOGIN_TIME', 'AccountLoginTime');
 define('SESSION_INFO_POST_ERROR_EXISTS', 'PostErrorExists');
 define('SESSION_INFO_POST_ERROR_MESSAGE', 'PostErrorMessage');
 define('SESSION_INFO_REJECT_UPDATE_TIME', 'RejectUpdateTime');
-define('SYSTEM_NAME', 'ゆかりすたー同期');
-define('SYSTEM_VER', 'Ver 5.43 β');
-define('SYSTEM_COPYRIGHT', 'Copyright (C) 2018 by SHINTA');
+define('SYSTEM_NAME', 'ゆかりすたー METEOR 同期');
+define('SYSTEM_VER', 'Ver 3.14');
+define('SYSTEM_COPYRIGHT', 'Copyright (C) 2019 by SHINTA');
 define('TABLE_NAME_SONG', 't_song');
 define('TABLE_NAME_PERSON', 't_person');
 define('TABLE_NAME_TIE_UP', 't_tie_up');
@@ -158,6 +168,7 @@ define('TABLE_NAME_COMPOSER_SEQUENCE', 't_composer_sequence');
 define('TABLE_NAME_ARRANGER_SEQUENCE', 't_arranger_sequence');
 define('TABLE_NAME_TIE_UP_GROUP_SEQUENCE', 't_tie_up_group_sequence');
 define('TABLE_NAME_ACCOUNT', 't_account');
+define('TABLE_NAME_LOGIN', 't_login');
 define('TABLE_NAME_STATISTICS', 't_statistics');
 define('TMPL_MARK_ADD_HEADER', '<!-- $AddHeader$ -->');
 define('TMPL_MARK_BODY_PROPERTY', '<!-- $BodyProperty$ -->');
@@ -292,6 +303,13 @@ define('FIELD_NAME_ACCOUNT_PASSWORD', FIELD_NAME_ACCOUNT_PREFIX.FIELD_NAME_SUFFI
 define('FIELD_NAME_ACCOUNT_ADMIN', FIELD_NAME_ACCOUNT_PREFIX.FIELD_NAME_SUFFIX_ADMIN);
 define('FIELD_NAME_ACCOUNT_LOGIN_TIME', FIELD_NAME_ACCOUNT_PREFIX.FIELD_NAME_SUFFIX_LOGIN_TIME);
 define('FIELD_NAME_ACCOUNT_UPDATE_TIME', FIELD_NAME_ACCOUNT_PREFIX.FIELD_NAME_SUFFIX_UPDATE_TIME);
+define('FIELD_NAME_LOGIN_NAME', FIELD_NAME_LOGIN_PREFIX.FIELD_NAME_SUFFIX_NAME);
+define('FIELD_NAME_LOGIN_TIME', FIELD_NAME_LOGIN_PREFIX.FIELD_NAME_SUFFIX_TIME);
+define('FIELD_NAME_LOGIN_SUCCESS', FIELD_NAME_LOGIN_PREFIX.FIELD_NAME_SUFFIX_SUCCESS);
+define('FIELD_NAME_LOGIN_APP_GENERATION', FIELD_NAME_LOGIN_PREFIX.FIELD_NAME_SUFFIX_APP_GENERATION);
+define('FIELD_NAME_LOGIN_APP_VER', FIELD_NAME_LOGIN_PREFIX.FIELD_NAME_SUFFIX_APP_VER);
+define('FIELD_NAME_LOGIN_ID_PREFIX', FIELD_NAME_LOGIN_PREFIX.FIELD_NAME_SUFFIX_ID_PREFIX);
+define('FIELD_NAME_LOGIN_SID', FIELD_NAME_LOGIN_PREFIX.FIELD_NAME_SUFFIX_SID);
 define('FIELD_NAME_STATISTICS_UID', FIELD_NAME_STATISTICS_PREFIX.FIELD_NAME_SUFFIX_UID);
 define('FIELD_NAME_STATISTICS_MONTH', FIELD_NAME_STATISTICS_PREFIX.FIELD_NAME_SUFFIX_MONTH);
 define('FIELD_NAME_STATISTICS_BYTES', FIELD_NAME_STATISTICS_PREFIX.FIELD_NAME_SUFFIX_BYTES);
