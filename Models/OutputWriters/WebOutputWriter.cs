@@ -338,10 +338,8 @@ namespace YukaLister.Models.OutputWriters
 		private const String HTML_VAR_CATEGORY = "<!-- $Category$ -->";
 		private const String HTML_VAR_CATEGORY_INDEX = "<!-- $CategoryIndex$ -->";
 		private const String HTML_VAR_CHAPTER_NAME = "<!-- $ChapterName$ -->";
-		private const String HTML_VAR_CLASS_OF_AL = "<!-- $ClassOfAl$ -->";
 		private const String HTML_VAR_CLASS_OF_KANA = "<!-- $ClassOfKana$ -->";
 		private const String HTML_VAR_CLASS_OF_MISC = "<!-- $ClassOfMisc$ -->";
-		private const String HTML_VAR_CLASS_OF_NUM = "<!-- $ClassOfNum$ -->";
 		private const String HTML_VAR_DIRECTORY = "<!-- $Directory$ -->";
 		private const String HTML_VAR_GENERATE_DATE = "<!-- $GenerateDate$ -->";
 		private const String HTML_VAR_GROUP_NAVI = "<!-- $GroupNavi$ -->";

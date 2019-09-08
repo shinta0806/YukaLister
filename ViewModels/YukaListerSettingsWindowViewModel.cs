@@ -151,12 +151,12 @@ namespace YukaLister.ViewModels
 			}
 		}
 
-		// ID 接頭辞
-		private String mIdPrefix;
-		public String IdPrefix
+		// リムーバブルメディア接続時、前回のフォルダーを自動的に追加する
+		private Boolean mAddFolderOnDeviceArrived;
+		public Boolean AddFolderOnDeviceArrived
 		{
-			get => mIdPrefix;
-			set => RaisePropertyChangedIfSet(ref mIdPrefix, value);
+			get => mAddFolderOnDeviceArrived;
+			set => RaisePropertyChangedIfSet(ref mAddFolderOnDeviceArrived, value);
 		}
 
 		// ゆかりでのプレビューを可能にするか
@@ -165,6 +165,14 @@ namespace YukaLister.ViewModels
 		{
 			get => mProvideYukariPreview;
 			set => RaisePropertyChangedIfSet(ref mProvideYukariPreview, value);
+		}
+
+		// ID 接頭辞
+		private String mIdPrefix;
+		public String IdPrefix
+		{
+			get => mIdPrefix;
+			set => RaisePropertyChangedIfSet(ref mIdPrefix, value);
 		}
 
 		#endregion
@@ -1699,6 +1707,7 @@ namespace YukaLister.ViewModels
 		{
 			// 設定タブ
 			Environment.YukaListerSettings.YukariConfigPathSeed = YukariConfigPathSeed;
+			Environment.YukaListerSettings.AddFolderOnDeviceArrived = AddFolderOnDeviceArrived;
 			Environment.YukaListerSettings.ProvideYukariPreview = ProvideYukariPreview;
 			Environment.YukaListerSettings.IdPrefix = IdPrefix;
 
@@ -1743,6 +1752,7 @@ namespace YukaLister.ViewModels
 		{
 			// 設定タブ
 			YukariConfigPathSeed = Environment.YukaListerSettings.YukariConfigPathSeed;
+			AddFolderOnDeviceArrived = Environment.YukaListerSettings.AddFolderOnDeviceArrived;
 			ProvideYukariPreview = Environment.YukaListerSettings.ProvideYukariPreview;
 			IdPrefix = Environment.YukaListerSettings.IdPrefix;
 

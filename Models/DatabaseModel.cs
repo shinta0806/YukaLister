@@ -851,6 +851,11 @@ namespace YukaLister.Models
 		// --------------------------------------------------------------------
 		private void DeviceArrival(String oDriveLetter)
 		{
+			if (!mEnvironment.YukaListerSettings.AddFolderOnDeviceArrived)
+			{
+				return;
+			}
+
 			AutoTargetInfo aAutoTargetInfo = LoadAutoTargetInfo2Sh(oDriveLetter + "\\");
 
 			foreach (String aFolder in aAutoTargetInfo.Folders)

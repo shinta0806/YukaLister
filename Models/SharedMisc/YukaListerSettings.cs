@@ -43,6 +43,22 @@ namespace YukaLister.Models.SharedMisc
 			set => this[KEY_NAME_YUKARI_CONFIG_PATH_SEED] = value;
 		}
 
+		// リムーバブルメディア接続時、前回のフォルダーを自動的に追加する
+		private const String KEY_NAME_ADD_FOLDER_ON_DEVICE_ARRIVED = "AddFolderOnDeviceArrived";
+		[UserScopedSetting]
+		[DefaultSettingValue(Common.BOOLEAN_STRING_TRUE)]
+		public Boolean AddFolderOnDeviceArrived
+		{
+			get
+			{
+				return (Boolean)this[KEY_NAME_ADD_FOLDER_ON_DEVICE_ARRIVED];
+			}
+			set
+			{
+				this[KEY_NAME_ADD_FOLDER_ON_DEVICE_ARRIVED] = value;
+			}
+		}
+
 		// ゆかりでのプレビューを可能にするか
 		private const String KEY_NAME_PROVIDE_YUKARI_PREVIEW = "ProvideYukariPreview";
 		[UserScopedSetting]
