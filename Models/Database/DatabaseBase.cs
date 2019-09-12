@@ -17,7 +17,7 @@ using System.Data.SQLite;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-
+using System.Reflection;
 using YukaLister.Models.SharedMisc;
 
 namespace YukaLister.Models.Database
@@ -275,6 +275,66 @@ namespace YukaLister.Models.Database
 		{
 			return new FileInfo(Connection.FileName).LastWriteTime;
 		}
+
+		// ====================================================================
+		// protected メンバー関数
+		// ====================================================================
+
+		// --------------------------------------------------------------------
+		// データベースのバックアップを作成する
+		// --------------------------------------------------------------------
+		protected void Backup(String oSrcPath)
+		{
+			String aFileNameForLog = Path.GetFileNameWithoutExtension(oSrcPath);
+
+			try
+			{
+				if (!File.Exists(oSrcPath))
+				{
+					return;
+				}
+
+				// バックアップ先の決定（既に存在する場合はバックアップをスキップ：1 日 1 回まで）
+				FileInfo aDbFileInfo = new FileInfo(oSrcPath);
+				String aBackupDbPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + "\\" + YlConstants.FOLDER_NAME_DATABASE
+						+ Path.GetFileNameWithoutExtension(oSrcPath) + "_(bak)_" + aDbFileInfo.LastWriteTime.ToString("yyyy_MM_dd") + Common.FILE_EXT_BAK;
+				if (File.Exists(aBackupDbPath))
+				{
+					return;
+				}
+
+				// バックアップ
+				File.Copy(oSrcPath, aBackupDbPath);
+				mEnvironment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "データベース " + aFileNameForLog + " のバックアップ作成：" + aBackupDbPath);
+
+				// 溢れたバックアップを削除
+				List<FileInfo> aBackupFileInfos = new List<FileInfo>();
+				String[] aBackupFiles = Directory.GetFiles(Path.GetDirectoryName(oSrcPath),
+						Path.GetFileNameWithoutExtension(oSrcPath) + "_(bak)_*" + Common.FILE_EXT_BAK);
+				foreach (String aBackupFile in aBackupFiles)
+				{
+					aBackupFileInfos.Add(new FileInfo(aBackupFile));
+				}
+				aBackupFileInfos.Sort((a, b) => -a.LastWriteTime.CompareTo(b.LastWriteTime));
+				for (Int32 i = aBackupFileInfos.Count - 1; i >= NUM_MUSIC_INFO_DB_BACKUP_GENERATIONS; i--)
+				{
+					File.Delete(aBackupFileInfos[i].FullName);
+					mEnvironment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "データベース " + aFileNameForLog + " のバックアップ削除：" + aBackupFileInfos[i].FullName);
+				}
+			}
+			catch (Exception oExcep)
+			{
+				mEnvironment.LogWriter.ShowLogMessage(TraceEventType.Warning, "データベース " + aFileNameForLog + " のバックアップ作成が完了しませんでした。\n" + oExcep.Message, true);
+			}
+		}
+
+		// ====================================================================
+		// private メンバー定数
+		// ====================================================================
+
+		// 楽曲情報データベースバックアップ世代数
+		private const Int32 NUM_MUSIC_INFO_DB_BACKUP_GENERATIONS = 31;
+
 	}
 	// public class DatabaseInDisk ___END___
 

@@ -200,20 +200,15 @@ namespace YukaLister.Models.SharedMisc
 		{
 			Dictionary<String, String> aVarMap = new Dictionary<String, String>();
 
-			// 番組マスターにも同様の項目があるもの
-			aVarMap[YlConstants.RULE_VAR_CATEGORY] = "番組分類";
-			//aVarMap[RULE_VAR_GAME_CATEGORY] = "ゲーム種別";
-			aVarMap[YlConstants.RULE_VAR_PROGRAM] = "番組名";
+			// タイアップマスターにも同様の項目があるもの
+			aVarMap[YlConstants.RULE_VAR_CATEGORY] = "カテゴリー";
+			aVarMap[YlConstants.RULE_VAR_PROGRAM] = "タイアップ名";
 			aVarMap[YlConstants.RULE_VAR_AGE_LIMIT] = "年齢制限";
 
 			// 楽曲マスターにも同様の項目があるもの
 			aVarMap[YlConstants.RULE_VAR_OP_ED] = "摘要（OP/ED 別）";
 			aVarMap[YlConstants.RULE_VAR_TITLE] = "楽曲名";
-
-			// ファイル名からのみ取得可能なもの
-			aVarMap[YlConstants.RULE_VAR_TITLE_RUBY] = "ガッキョクメイ";
-
-			// 楽曲マスターにも同様の項目があるもの
+			aVarMap[YlConstants.RULE_VAR_TITLE_RUBY] = "楽曲名フリガナ";
 			aVarMap[YlConstants.RULE_VAR_ARTIST] = "歌手名";
 
 			// ファイル名からのみ取得可能なもの
@@ -221,9 +216,7 @@ namespace YukaLister.Models.SharedMisc
 			aVarMap[YlConstants.RULE_VAR_TRACK] = "トラック情報";
 			aVarMap[YlConstants.RULE_VAR_ON_VOCAL] = "オンボーカルトラック";
 			aVarMap[YlConstants.RULE_VAR_OFF_VOCAL] = "オフボーカルトラック";
-			//aVarMap[NklCommon.RULE_VAR_COMPOSER] = "作曲者";
-			//aVarMap[NklCommon.RULE_VAR_LYRIST] = "作詞者";
-			aVarMap[YlConstants.RULE_VAR_COMMENT] = "コメント";
+			aVarMap[YlConstants.RULE_VAR_COMMENT] = "備考";
 
 			// 楽曲マスターにも同様の項目があるもの
 			aVarMap[YlConstants.RULE_VAR_TAG] = "タグ";

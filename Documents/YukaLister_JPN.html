@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>ゆかりすたー METEOR Ver 2.8 ヘルプ</title>
+<title>ゆかりすたー METEOR Ver 3.1 ヘルプ</title>
 <link rel="stylesheet" href="HelpParts/SHIHelpG2.css" type="text/css">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 <script src="HelpParts/Scroll.js"></script>
@@ -23,13 +23,6 @@
 
 <a name="Top"></a>
 
-<a name="Warning"></a>
-<h1>まだまともに動きません</h1>
-
-<p>
-人柱向けです。
-</p>
-
 <a name="Hajimeni"></a>
 <h1>はじめに</h1>
 
@@ -42,7 +35,7 @@
 <br>
 ゆかりすたー METEOR とゆかりが協調して動作することにより、例えば、ファイル名に歌手名が含まれていない場合でも歌手名検索が可能になったり、フリガナでの検索が可能になったりするなど、単なるファイル名検索よりも一歩進んだ検索が可能となります。<br clear="right">
 <br>
-さらに検索に加えて、ニコカラ動画ファイルを見やすく整理したリストを作成することもできます。リストのサンプルは<a href="SampleFolderSettings/リスト生成結果/index.html" target="_blank">こちら</a>になります【未作成】。<br>
+さらに検索に加えて、ニコカラ動画ファイルを見やすく整理したリストを作成することもできます。リストのサンプルは<a href="SampleFolderSettings/リスト生成結果/index.html" target="_blank">こちら</a>になります。サンプルの詳細については<a href="#Sample">サンプル</a>章をご覧ください。<br>
 <br>
 なお、本ヘルプで縮小表示されている画像は、クリックすると原寸大で表示されます。<br clear="right">
 </p>
@@ -532,6 +525,15 @@ anison.info CSV は、anison.info のウェブ上の情報よりも項目数が�
 入力した楽曲情報データベースをもとに、ニコカラ動画ファイルがきちんと整理されているか、以下の方法で確認ができます。<br>
 </p>
 
+<a name="MeisyounohensyuuwindowdeKakunin"></a>
+<h3>名称の編集ウィンドウで確認</h3>
+
+<p>
+名称の編集ウィンドウの下半分に、楽曲情報データベースを適用した結果の属性判定結果が表示されます。<br>
+<br>
+楽曲情報データベースの内容を修正すると、直ちに情報が最新となりますので、名称の編集ウィンドウで確認するのが最も手軽です。<br>
+</p>
+
 <a name="YukaridenoListhyoujideKakunin"></a>
 <h3>ゆかりでのリスト表示で確認</h3>
 
@@ -539,6 +541,8 @@ anison.info CSV は、anison.info のウェブ上の情報よりも項目数が�
 メインウィンドウのゆかり検索対象フォルダーに追加されたフォルダー内にあるニコカラ動画ファイルについて、自動的にゆかり用リストが出力されます。<br>
 <br>
 <a href="#YukaridenoListhyouji">ゆかりでのリスト表示</a>節に記載の手順でゆかり用リストを表示し、楽曲情報データベースの内容がリストに反映されているかを確認します。<br>
+<br>
+なお、楽曲情報データベースの内容を更新した場合、リストに反映させるには一度ゆかりすたー METEOR を再起動する必要があります。<br>
 </p>
 
 <a name="HtmllisthyoujideKakunin"></a>
@@ -548,6 +552,8 @@ anison.info CSV は、anison.info のウェブ上の情報よりも項目数が�
 メインウィンドウのゆかり検索対象フォルダーに追加されたフォルダー内にあるニコカラ動画ファイルについて、HTML 形式でのリストを出力し、楽曲情報データベースの内容がリストに反映されているかを確認します。<br>
 <br>
 HTML 形式でのリスト出力については、<a href="#Kankyousettei">環境設定章</a>を参照して下さい。<br>
+<br>
+なお、楽曲情報データベースの内容を更新した場合、リストに反映させるには一度ゆかりすたー METEOR を再起動する必要があります。<br>
 </p>
 
 <a name="Mitourokukenshutsu"></a>
@@ -674,16 +680,89 @@ HTML 形式でのリスト出力については、<a href="#Kankyousettei">環�
 <a name="RiyoushakaranoMondaihoukoku"></a>
 <h1>利用者からの問題報告</h1>
 
+<a name="Mondaihoukokukinoutowa"></a>
+<h2>リスト問題報告機能とは</h2>
+
 <p>
-※未作成<br>
-（報告の流れの順に記述予定）<br>
+リスト問題報告機能は、ゆかり用リストを閲覧した人が問題（例：楽曲名が間違っている等）に気付いた際、その場で指摘できる機能です。<br>
+<br>
+リスト作成者だけではなく利用者全員でのチェックが可能となることにより、リストの精度を高めるチャンスが飛躍的に向上します。<br>
 </p>
 
-<a name="Reportichiranwindow"></a>
-<h2>リスト問題報告一覧ウィンドウ</h2>
+<a name="RiyoushaniyoruMondaihoukokunoYarikata"></a>
+<h2>利用者による問題報告のやり方</h2>
 
 <p>
-※未作成<br>
+<a href="HelpParts/YukaLister_Report_Link.png" target="_blank"><img src="HelpParts/YukaLister_Report_Link.png" alt="" width="256" align="right" border="0" hspace="10" vspace="10"></a>
+ゆかり用リストの右端には、「報告」リンクが付いています（HTML リストには付いていないので間違えないで下さい）。<br>
+<br>
+利用者がリストの問題を発見した場合、問題のある箇所の報告リンクをクリックします。<br clear="right">
+<br>
+<a href="HelpParts/YukaLister_Report_ReportForm.png" target="_blank"><img src="HelpParts/YukaLister_Report_ReportForm.png" alt="" width="256" align="right" border="0" hspace="10" vspace="10"></a>
+「リストの問題を報告」ページが開き、現在のリストの内容が表示され、その下に、問題の内容を入力できるフォームが表示されます。<br>
+<br>
+問題のある項目が何かを選択したうえで、正しい内容や、コメント、報告者名を入力します。<br>
+<br>
+「問題を報告する」ボタンをクリックすると、報告完了です。<br>
+</p>
+
+<a name="HoukokusaretamondainoKakunin"></a>
+<h2>報告された問題の確認</h2>
+
+<p>
+<a href="HelpParts/YukaLister_Report_Notice.png" target="_blank"><img src="HelpParts/YukaLister_Report_Notice.png" alt="" width="256" align="right" border="0" hspace="10" vspace="10"></a>
+利用者から報告されたリストの問題をゆかりすたー METEOR 上で確認するには、ゆかりすたー METEOR のメインウィンドウを見ます。メインウィンドウ上部の「報告されたリストの問題を一覧表示」ボタン上に、報告された問題の数が表示されます。<br clear="right">
+<br>
+<a href="HelpParts/YukaLister_Report_List.png" target="_blank"><img src="HelpParts/YukaLister_Report_List.png" alt="" width="256" align="right" border="0" hspace="10" vspace="10"></a>
+「報告されたリストの問題を一覧表示」ボタンをクリックすると、報告された問題が一覧表示されます。<br clear="right">
+</p>
+
+<a name="HoukokusaretamondaihenoTaiou"></a>
+<h2>報告された問題への対応</h2>
+
+<p>
+<a href="HelpParts/YukaLister_Report_Detail.png" target="_blank"><img src="HelpParts/YukaLister_Report_Detail.png" alt="" width="256" align="right" border="0" hspace="10" vspace="10"></a>
+問題一覧の中から目的の報告を選択して「詳細」ボタンをクリックすると、「報告されたリスト問題の管理」ウィンドウが開き、問題の詳細を見ることができます。<br>
+<br>
+そこから各種設定ウィンドウを開けますので、<br>
+</p>
+
+<ul>
+<li>名称の編集ウィンドウから名寄せや楽曲情報データベースの修正をする</li>
+<li>フォルダー設定ウィンドウから命名規則を修正する</li>
+</ul>
+
+<p>
+などの対応を取ります。<br>
+<br>
+その後、「対応コメント」に対応内容を入力し、対応状況を「完了」とすることで、対応の記録を残せます。<br>
+<br>
+対応完了にすると、リスト問題報告一覧ウィンドウから表示が消えますが、「すべて」のチェックを選ぶことで、対応完了した問題を再度表示することもできます。<br>
+</p>
+
+<a name="Douki"></a>
+<h1>同期</h1>
+
+<a name="Doukikinoutowa"></a>
+<h2>同期機能とは</h2>
+
+<p>
+複数台のパソコンでゆかりすたー METEOR を使用する際、楽曲情報データベースの内容を常に最新の同じ内容に保つための機能が同期です。<br>
+<br>
+例えば、昼間は画面の広いデスクトップパソコンでゆかりすたー METEOR を使っていて、夜はベッドに寝ながらノートパソコンでゆかりすたー METEOR を使う、という使い方をしている場合、楽曲情報をデスクトップパソコンに入力しても、通常はノートパソコンにはその内容が反映されません。<br>
+<br>
+しかし、同期機能を使うことで、デスクトップパソコンで入力した楽曲情報データベースの内容がノートパソコンにも反映されるようになります。デスクトップパソコンとノートパソコンに同期設定をしておくことで、楽曲情報をデスクトップパソコンとノートパソコンのどちらで入力しても、もう片方のパソコンで参照できるため、利便性・作業効率の向上が可能となります。<br>
+</p>
+
+<a name="DoukikinounoTsukaikata"></a>
+<h2>同期機能の使い方</h2>
+
+<p>
+同期機能を使うためには、Web サーバーにゆかりすたー METEOR の同期機能を組み込む必要があります。<br>
+<br>
+組み込み作業は難易度が高く、上級者向けですので、本ヘルプでは解説しません。<br>
+<br>
+SyncServer フォルダー内のファイルを Web サーバーに組み込み、適切な MySQL の設定が自力でできる上級者の方のみ、同期機能をお使い下さい。<br>
 </p>
 
 <a name="Kankyousettei"></a>
@@ -705,8 +784,22 @@ HTML 形式でのリスト出力については、<a href="#Kankyousettei">環�
 ゆかりおよびゆかりすたー METEORを標準のフォルダーにインストールしている場合は、この項目はデフォルトのままにしておいて下さい。<br>
 </p>
 
+<a name="AutoTarget"></a>
+<h3>起動時やリムーバブルメディア接続時、前回のフォルダーを自動的に追加する</h3>
+
+<p>
+このオプションを有効にしておくと、ゆかり検索対象フォルダーの追加の手間が省けます。<br>
+</p>
+
+<a name="ServerForYukari"></a>
+<h3>ゆかり用サーバー機能を提供する</h3>
+
+<p>
+このオプションを有効にしておくと、ゆかり上でのプレビュー等が可能になります。<br>
+</p>
+
 <a name="IdSettouji"></a>
-<h3>ID 接頭辞</h3>
+<h3>ID 先頭付与文字列</h3>
 
 <p>
 ゆかりすたー METEOR では、登録される楽曲情報データベースのデータを識別するための ID を付与していますが、その ID の先頭に付与する文字列を指定します。<br>
@@ -720,7 +813,14 @@ ID を区別できるようにするためのものなので、任意の文字�
 <p>
 といったように指定すると良いでしょう。<br>
 <br>
-また、OS 再インストール時など設定が消去された場合は、以前に使用していた ID 接頭辞とは異なるものを指定して下さい。以前に「リビング」を指定した場合は、「リビング2」などにすると良いでしょう。<br>
+また、OS 再インストール時など設定が消去された場合は、以前に使用していた ID 先頭付与文字列とは異なるものを指定して下さい。以前に「リビング」を指定した場合は、「リビング2」などにすると良いでしょう。<br>
+</p>
+
+<a name="Listtaisyoutab"></a>
+<h2>リスト対象タブ</h2>
+
+<p>
+リスト化対象のファイルの拡張子を指定できます。ゆかり検索対象フォルダーを追加した際、フォルダー内のファイルのうち、ここで指定した拡張子を持つファイルのみが、リストに表示されます。<br>
 </p>
 
 <a name="ListsyutsuryokutabYukari"></a>
@@ -735,6 +835,24 @@ ID を区別できるようにするためのものなので、任意の文字�
 
 <p>
 出力設定ボタンをクリックすると、ゆかりリクエスト用リストの出力設定を行うことができます。<br>
+</p>
+
+<a name="YukariListsyutsuryokusakifolder"></a>
+<h3>リスト出力先フォルダー</h3>
+
+<p>
+ゆかりリクエスト用リストが出力されるフォルダーを表示しています。変更はできません。<br>
+<br>
+ゆかりリクエスト用リストの出力先は<a href="#Yukarisetteifile">ゆかり設定ファイルの場所</a>から自動算出されますので、変更したい場合は、ゆかり設定ファイルの場所を指定し直して下さい。<br>
+</p>
+
+<a name="YukariListsyutsuryokumaekakunin"></a>
+<h3>ゆかりリクエスト用リスト出力前に確認する</h3>
+
+<p>
+ゆかりリクエスト用リストを出力する前に、出力して良いかどうかの確認を行います。<br>
+<br>
+ゆかりリクエスト用リストは必要に応じて随時出力されるため、このオプションを有効にすると頻繁に確認を求められることになり面倒です。通常はオフのままにして置いて下さい。<br>
 </p>
 
 <a name="KidoujiniZenkainoYukariyourequestlistwoClearsuru"></a>
@@ -774,11 +892,25 @@ ID を区別できるようにするためのものなので、任意の文字�
 <a name="Maintenancetab"></a>
 <h2>メンテナンスタブ</h2>
 
+<a name="Autocheckrss"></a>
+<h3>ゆかりすたーの最新情報・更新版を自動的に確認する</h3>
+
+<p>
+ゆかりすたー METEOR に関する最新情報や更新版があるかどうか、インターネット上で自動的に確認し、ある場合は表示・バージョンアップを行うことができます。<br>
+</p>
+
+<a name="Logwohozonnsuru"></a>
+<h3>ログを保存する</h3>
+
+<p>
+ゆかりすたー METEOR のログを保存します。動作に問題が発生したときに開発者とやり取りする際、手助けになる場合があります。<br>
+</p>
+
 <a name="GakkyokujouhoudatabasewoDoukisuru"></a>
 <h3>楽曲情報データベースを同期する</h3>
 
 <p>
-※後日<br>
+同期については<a href="#Douki">同期</a>章をご覧ください。<br>
 </p>
 
 <a name="Importtab"></a>
@@ -796,7 +928,7 @@ ID を区別できるようにするためのものなので、任意の文字�
 <h3>ゆかりすたー METEOR でエクスポートしたファイルをインポート</h3>
 
 <p>
-※後日<br>
+エクスポートタブでエクスポートしたゆかりすたー情報ファイルや、自動的にバックアップされている楽曲情報データベースから、楽曲情報を取り込みます。<br>
 </p>
 
 <a name="AnisonInfoCsvwoImport"></a>
@@ -825,7 +957,9 @@ ID を区別できるようにするためのものなので、任意の文字�
 <h2>エクスポートタブ</h2>
 
 <p>
-※後日<br>
+楽曲情報データベースの内容を外部ストレージに保存することで、バックアップを取ることができます。<br>
+<br>
+エクスポート先を指定してから、エクスポートボタンをクリックして下さい。<br>
 </p>
 
 <a name="Listshutsuryokusettei"></a>
@@ -930,9 +1064,9 @@ NEW にリスト化された新しいニコカラファイルは元の番組分�
 <p>
 一定の命名規則に従ってリネームされているニコカラファイルと、そのニコカラファイルをうまくリスト化するためのフォルダー設定のサンプルを、SampleFolderSettings に入れてあります。<br>
 <br>
-Samples フォルダー内の CSV ファイルをすべて UserCSVs フォルダーにコピーしたうえで、リスト化対象フォルダーを SampleFolderSettings（フルパスで指定して下さい）にしてリスト生成すると、リストが生成されます。<br>
+環境設定で SampleFolderSettings フォルダー内のゆかりすたー情報ファイルフォルダーにあるファイルをインポートしてください。その後、リスト化対象フォルダーを SampleFolderSettings（フルパスで指定して下さい）にしてリスト生成すると、リストが生成されます。<br>
 <br>
-全てのファイルが「その他」に分類されてしまう場合は、UserCSVs フォルダーに CSV ファイル群をコピーしたか再度確認して下さい。また、Database フォルダーにある Info.sqlite3（情報キャッシュデータベース）を一度削除してから再度リスト生成してみて下さい。<br>
+全てのファイルが「その他」に分類されてしまう場合は、インポートを行ったか再度確認して下さい。<br>
 <br>
 開発者環境にて生成したリストを <a href="SampleFolderSettings/リスト生成結果/index.html" target="_blank">SampleFolderSettings/リスト生成結果</a> フォルダーに入れてありますので参考にして下さい。<br>
 <br>
@@ -947,7 +1081,7 @@ Samples フォルダー内の CSV ファイルをすべて UserCSVs フォルダ
 AAA さんはシンプルに動画を管理しており、フォルダー分けはせずに、<br>
 </p>
 <pre>
-番組名_楽曲名
+タイアップ名_楽曲名
 </pre>
 <p>
 というルールでファイルを整理しています。
@@ -956,6 +1090,7 @@ AAA さんはシンプルに動画を管理しており、フォルダー分け�
 <h3>リスト化の設定</h3>
 
 <p>
+<a href="HelpParts/YukaLister_SampleFolderSettings_AAA.png" target="_blank"><img src="HelpParts/YukaLister_SampleFolderSettings_AAA.png" alt="" width="256" align="right" border="0" hspace="10" vspace="10"></a>
 ファイル名からはニコカラ制作者が読み取れないため、フォルダー設定の固定値項目でニコカラ制作者を設定しています。
 </p>
 
@@ -964,17 +1099,17 @@ AAA さんはシンプルに動画を管理しており、フォルダー分け�
 
 <h3>ファイル整理方法</h3>
 <p>
-BBB さんは番組分類ごとのフォルダーを作成したうえで、
+BBB さんはカテゴリーごとのフォルダーを作成したうえで、
 </p>
 <pre>
-【番組名】楽曲名_BBB
+【タイアップ名】楽曲名_BBB
 </pre>
 <p>
 というルールでファイルを整理しています。<br>
-たまにコメントを付けて、<br>
+たまに備考（コメント）を付けて、<br>
 </p>
 <pre>
-【番組名】楽曲名※コメント_BBB
+【タイアップ名】楽曲名※備考_BBB
 </pre>
 <p>
 というルールになることがあります。
@@ -982,9 +1117,10 @@ BBB さんは番組分類ごとのフォルダーを作成したうえで、
 
 <h3>リスト化の設定</h3>
 <p>
-コメントが付いている場合と付いていない場合で命名規則が異なっているため、フォルダー設定では 2 つの命名規則を設定しています。<br>
+<a href="HelpParts/YukaLister_SampleFolderSettings_BBB.png" target="_blank"><img src="HelpParts/YukaLister_SampleFolderSettings_BBB.png" alt="" width="256" align="right" border="0" hspace="10" vspace="10"></a>
+備考が付いている場合と付いていない場合で命名規則が異なっているため、フォルダー設定では 2 つの命名規則を設定しています。<br>
 <br>
-複数の命名規則が設定された場合は、上から順にチェックされるため、コメント付きの命名規則を先に登録しています。コメント無しを先に登録してしまうと、「※コメント」の部分も含めて楽曲名と解釈されてしまうためです。<br>
+複数の命名規則が設定された場合は、上から順にチェックされるため、備考付きの命名規則を先に登録しています。備考無しを先に登録してしまうと、「※備考」の部分も含めて楽曲名と解釈されてしまうためです。<br>
 <br>
 フォルダーを問わず命名規則は一貫しているため、フォルダー設定は BBB さんの親フォルダーで一度指定すれば、すべてのサブフォルダーで適用されます。<br>
 </p>
@@ -997,19 +1133,20 @@ BBB さんは番組分類ごとのフォルダーを作成したうえで、
 CCC さんは
 </p>
 <pre>
-番組名／楽曲名／CCC
+タイアップ名／楽曲名／CCC
 </pre>
 <p>
 というルールでファイルを整理しています。<br>
 <br>
-いい加減な性格なので、番組名や楽曲名が公式通りになっておらず、表記揺れしています。<br>
+いい加減な性格なので、タイアップ名や楽曲名が公式通りになっておらず、表記揺れしています。<br>
 </p>
 
 <h3>リスト化の設定</h3>
 <p>
-番組名、楽曲名、提供者をファイル名から取得する設定にしています。<br>
+タイアップ名、楽曲名、ニコカラ製作者をファイル名から取得する設定にしています。<br>
 <br>
-番組名や楽曲名が表記揺れしているため、program_alias.csv などの別名 CSV ファイルにて別名登録を行っています。<br>
+<a href="HelpParts/YukaLister_SampleFolderSettings_CCC.png" target="_blank"><img src="HelpParts/YukaLister_SampleFolderSettings_CCC.png" alt="" width="256" align="right" border="0" hspace="10" vspace="10"></a>
+タイアップ名や楽曲名が表記揺れしているため、名称の編集ウィンドウで名寄せ登録を行っています。例えば、ファイル名では「ももたろう」となっていますが、正式なタイアップ名は「桃太郎」のため、「ももたろう」→「桃太郎」の名寄せをしています。<br clear="right">
 </p>
 
 <a name="DDDsannoRei"></a>
@@ -1028,13 +1165,14 @@ DDD さんは童謡のニコカラを作成しており、
 
 <h3>リスト化の設定</h3>
 <p>
-ガッキョクメイ（楽曲名の読み仮名）、楽曲名、提供者をファイル名から取得する設定にしています。<br>
+<a href="HelpParts/YukaLister_SampleFolderSettings_DDD.png" target="_blank"><img src="HelpParts/YukaLister_SampleFolderSettings_DDD.png" alt="" width="256" align="right" border="0" hspace="10" vspace="10"></a>
+楽曲名フリガナ、楽曲名、ニコカラ制作者をファイル名から取得する設定にしています。<br>
 <br>
-童謡の場合、紐付く番組がありません。番組名が取得できる場合は番組名の五十音順にリスト化されますが、このように番組名が取得できない場合は、楽曲名の五十音順にリスト化されます。<br>
+童謡の場合、紐付くタイアップがありません。タイアップ名が取得できる場合はタイアップ名の五十音順にリスト化されますが、このようにタイアップ名が取得できない場合は、楽曲名の五十音順にリスト化されます。<br>
 <br>
 DDD さんは楽曲名の頭文字でファイルを整理していますので、この頭文字を楽曲名の読み仮名として取得することで、楽曲名が漢字の場合でも、正しく五十音順にリスト化されるようになります。<br>
 <br>
-紐付く番組がないために番組分類が「その他」となってしまうのを防ぐため、フォルダー固定値で、番組分類を「童謡」としています。<br>
+紐付くタイアップがないためにカテゴリーが「その他」となってしまうのを防ぐため、フォルダー固定値で、番組分類を「一般」としています。<br>
 </p>
 
 <a name="Komattatokiwa"></a>
@@ -1108,7 +1246,6 @@ DDD さんは楽曲名の頭文字でファイルを整理していますので�
 <div id="LCol">
 
 <!-- CFileMerge:IndexBegin -->
-<div class="SideMenuItemH1"><a href="#Warning">まだまともに動きません</a></div>
 <div class="SideMenuItemH1"><a href="#Hajimeni">はじめに</a></div>
 <div class="SideMenuItemH2"><a href="#Gaiyou">概要</a></div>
 <div class="SideMenuItemH2"><a href="#Dousakankyou">動作環境</a></div>
@@ -1143,9 +1280,16 @@ DDD さんは楽曲名の頭文字でファイルを整理していますので�
 <div class="SideMenuItemH2"><a href="#JouhougennoYuusenjuni">情報源の優先順位</a></div>
 <div class="SideMenuItemH2"><a href="#ListKoumoku">リスト項目</a></div>
 <div class="SideMenuItemH1"><a href="#RiyoushakaranoMondaihoukoku">利用者からの問題報告</a></div>
-<div class="SideMenuItemH2"><a href="#Reportichiranwindow">リスト問題報告一覧ウィンドウ</a></div>
+<div class="SideMenuItemH2"><a href="#Mondaihoukokukinoutowa">リスト問題報告機能とは</a></div>
+<div class="SideMenuItemH2"><a href="#RiyoushaniyoruMondaihoukokunoYarikata">利用者による問題報告のやり方</a></div>
+<div class="SideMenuItemH2"><a href="#HoukokusaretamondainoKakunin">報告された問題の確認</a></div>
+<div class="SideMenuItemH2"><a href="#HoukokusaretamondaihenoTaiou">報告された問題への対応</a></div>
+<div class="SideMenuItemH1"><a href="#Douki">同期</a></div>
+<div class="SideMenuItemH2"><a href="#Doukikinoutowa">同期機能とは</a></div>
+<div class="SideMenuItemH2"><a href="#DoukikinounoTsukaikata">同期機能の使い方</a></div>
 <div class="SideMenuItemH1"><a href="#Kankyousettei">環境設定</a></div>
 <div class="SideMenuItemH2"><a href="#Setteitab">設定タブ</a></div>
+<div class="SideMenuItemH2"><a href="#Listtaisyoutab">リスト対象タブ</a></div>
 <div class="SideMenuItemH2"><a href="#ListsyutsuryokutabYukari">リスト出力タブ：ゆかりリクエスト用リスト（PHP）</a></div>
 <div class="SideMenuItemH2"><a href="#ListsyutsuryokutabEtsuran">リスト出力タブ：閲覧用リスト（PHP）</a></div>
 <div class="SideMenuItemH2"><a href="#Maintenancetab">メンテナンスタブ</a></div>

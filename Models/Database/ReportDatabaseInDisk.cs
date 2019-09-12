@@ -34,6 +34,14 @@ namespace YukaLister.Models.Database
 		// ====================================================================
 
 		// --------------------------------------------------------------------
+		// リスト問題報告データベースのバックアップを作成する
+		// --------------------------------------------------------------------
+		public void Backup()
+		{
+			Backup(mEnvironment.YukaListerSettings.ReportDbInDiskPath());
+		}
+
+		// --------------------------------------------------------------------
 		// データベース新規作成（既存がある場合は作成しない）
 		// --------------------------------------------------------------------
 		public void CreateDatabaseIfNeeded()
@@ -56,6 +64,7 @@ namespace YukaLister.Models.Database
 		// --------------------------------------------------------------------
 		private void CreateDatabase()
 		{
+			Backup();
 			mEnvironment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "リスト問題報告データベースを準備しています...");
 
 			// クリア

@@ -949,29 +949,6 @@ class	CPManager
 	}
 
 	// -------------------------------------------------------------------
-	// テスト用
-	// ToDo: リリース時には削除
-	// -------------------------------------------------------------------
-	private function create_tables_test()
-	{
-		$pdo = $this->connect_db();
-		
-		// TLogin
-		$sql = 'CREATE TABLE IF NOT EXISTS '.TABLE_NAME_LOGIN.' ('
-				.FIELD_NAME_LOGIN_NAME.' VARCHAR(255) NOT NULL,'
-				.FIELD_NAME_LOGIN_TIME.' DOUBLE NOT NULL,'
-				.FIELD_NAME_LOGIN_SUCCESS.' TINYINT(1) NOT NULL,'
-				.FIELD_NAME_LOGIN_APP_GENERATION.' VARCHAR(255),'
-				.FIELD_NAME_LOGIN_APP_VER.' VARCHAR(255),'
-				.FIELD_NAME_LOGIN_ID_PREFIX.' VARCHAR(255),'
-				.FIELD_NAME_LOGIN_SID.' VARCHAR(255),'
-				.'PRIMARY KEY ('.FIELD_NAME_LOGIN_NAME.','.FIELD_NAME_LOGIN_TIME.')'
-				.') '.CREATE_TABLE_OPTIONS.';';
-		log_message('create_tables() TLogin '.$sql, LOG_LEVEL_DEBUG, FALSE);
-		$pdo->exec($sql);
-	}
-
-	// -------------------------------------------------------------------
 	// "20180123" 形式の文字列を DateTime に変換
 	// "" も変換できる
 	// -------------------------------------------------------------------

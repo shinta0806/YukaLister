@@ -184,6 +184,7 @@ namespace YukaLister.Models
 			using (ReportDatabaseInDisk aReportDbInDisk = new ReportDatabaseInDisk(mEnvironment))
 			{
 				aReportDbInDisk.CreateDatabaseIfNeeded();
+				aReportDbInDisk.Backup();
 			}
 
 			// ゆかり用データベース構築

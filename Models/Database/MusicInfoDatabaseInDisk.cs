@@ -81,45 +81,7 @@ namespace YukaLister.Models.Database
 		// --------------------------------------------------------------------
 		public void Backup()
 		{
-			try
-			{
-				if (!File.Exists(MusicInfoDbInDiskPath()))
-				{
-					return;
-				}
-
-				// バックアップ先の決定（既に存在する場合はバックアップをスキップ：1 日 1 回まで）
-				FileInfo aDbFileInfo = new FileInfo(MusicInfoDbInDiskPath());
-				String aBackupDbPath = Path.GetDirectoryName(MusicInfoDbInDiskPath()) + "\\" + Path.GetFileNameWithoutExtension(MusicInfoDbInDiskPath())
-						+ "_(bak)_" + aDbFileInfo.LastWriteTime.ToString("yyyy_MM_dd") + Common.FILE_EXT_BAK;
-				if (File.Exists(aBackupDbPath))
-				{
-					return;
-				}
-
-				// バックアップ
-				File.Copy(MusicInfoDbInDiskPath(), aBackupDbPath);
-				mEnvironment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "楽曲情報データベースのバックアップ作成：" + aBackupDbPath);
-
-				// 溢れたバックアップを削除
-				List<FileInfo> aBackupFileInfos = new List<FileInfo>();
-				String[] aBackupFiles = Directory.GetFiles(Path.GetDirectoryName(MusicInfoDbInDiskPath()),
-						Path.GetFileNameWithoutExtension(MusicInfoDbInDiskPath()) + "_(bak)_*" + Common.FILE_EXT_BAK);
-				foreach (String aBackupFile in aBackupFiles)
-				{
-					aBackupFileInfos.Add(new FileInfo(aBackupFile));
-				}
-				aBackupFileInfos.Sort((a, b) => -a.LastWriteTime.CompareTo(b.LastWriteTime));
-				for (Int32 i = aBackupFileInfos.Count - 1; i >= NUM_MUSIC_INFO_DB_BACKUP_GENERATIONS; i--)
-				{
-					File.Delete(aBackupFileInfos[i].FullName);
-					mEnvironment.LogWriter.ShowLogMessage(Common.TRACE_EVENT_TYPE_STATUS, "楽曲情報データベースのバックアップ削除：" + aBackupFileInfos[i].FullName);
-				}
-			}
-			catch (Exception oExcep)
-			{
-				mEnvironment.LogWriter.ShowLogMessage(TraceEventType.Warning, "楽曲情報データベースのバックアップ作成が完了しませんでした。\n" + oExcep.Message, true);
-			}
+			Backup(MusicInfoDbInDiskPath());
 		}
 
 		// --------------------------------------------------------------------
@@ -185,13 +147,12 @@ namespace YukaLister.Models.Database
 		}
 
 		// ====================================================================
-		// private メンバー関数
+		// private メンバー定数
 		// ====================================================================
 
 		// --------------------------------------------------------------------
 		// フォルダー名
 		// --------------------------------------------------------------------
-		private const String FOLDER_NAME_DATABASE = "Database\\";
 
 		// --------------------------------------------------------------------
 		// ファイル名
@@ -201,10 +162,6 @@ namespace YukaLister.Models.Database
 		// --------------------------------------------------------------------
 		// その他
 		// --------------------------------------------------------------------
-
-		// 楽曲情報データベースバックアップ世代数
-		private const Int32 NUM_MUSIC_INFO_DB_BACKUP_GENERATIONS = 31;
-
 
 		// ====================================================================
 		// private メンバー関数
@@ -304,11 +261,8 @@ namespace YukaLister.Models.Database
 		// --------------------------------------------------------------------
 		private static String MusicInfoDbInDiskPath()
 		{
-			return Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + "\\" + FOLDER_NAME_DATABASE + FILE_NAME_MUSIC_INFO;
+			return Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + "\\" + YlConstants.FOLDER_NAME_DATABASE + FILE_NAME_MUSIC_INFO;
 		}
-
-
-
 
 	}
 	// public class YukariListDatabaseInDisk ___END___
